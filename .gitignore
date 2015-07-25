@@ -1,4 +1,11 @@
-*
-!src
-!src/*
-!.gitignore
+*.jar
+mdl
+out
+.idea
+*.log
+*.dll
+*.jar
+*.iml
+*.class
+*.txt
+*.so
