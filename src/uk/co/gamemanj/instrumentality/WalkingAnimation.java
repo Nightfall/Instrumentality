@@ -15,20 +15,20 @@ public class WalkingAnimation implements IAnimation {
         float atime = time + 0.65f;
         if (atime > 1.0f)
             atime -= 1.0f;
-        if (boneName.equalsIgnoreCase("leg_L"))
+        if (boneName.equalsIgnoreCase("leg_L")||boneName.equalsIgnoreCase("L_leg"))
             return getLegTransform(false, atime);
-        if (boneName.equalsIgnoreCase("knee_L"))
+        if (boneName.equalsIgnoreCase("knee_L")||boneName.equalsIgnoreCase("L_knee"))
             return getKneeTransform(false, atime);
-        if (boneName.equalsIgnoreCase("ankle_L"))
+        if (boneName.equalsIgnoreCase("ankle_L")||boneName.equalsIgnoreCase("L_foot"))
             return getAnkleTransform(false, atime);
         float stime = atime + 0.50f;
         if (stime > 1.0f)
             stime -= 1.0f;
-        if (boneName.equalsIgnoreCase("leg_R"))
+        if (boneName.equalsIgnoreCase("leg_R")||boneName.equalsIgnoreCase("R_leg"))
             return getLegTransform(true, stime);
-        if (boneName.equalsIgnoreCase("knee_R"))
+        if (boneName.equalsIgnoreCase("knee_R")||boneName.equalsIgnoreCase("R_knee"))
             return getKneeTransform(true, stime);
-        if (boneName.equalsIgnoreCase("ankle_R"))
+        if (boneName.equalsIgnoreCase("ankle_R")||boneName.equalsIgnoreCase("R_foot"))
             return getAnkleTransform(true, stime);
         String[] wiggle = {
                 "head",

@@ -34,14 +34,14 @@ public class Main {
         fis.read(data);
         fis.close();
         PMXFile pf = new PMXFile(data);
-        PMXModel pm = new PMXModel(pf);
+        PMXModel pm = new PMXModel(pf,new PMXTransformThreadPool(7));
         WalkingAnimation wa=new WalkingAnimation();
         FadeInAnimation fia=new FadeInAnimation(wa);
         pm.anim=fia;
         int scrWidth=800,scrHeight=600;
         float rotX=90, posY=-1;
         boolean animate=false,eDownLast=false;
-        Display.setTitle("Miku Test");
+        Display.setTitle("The GT/Obsidian Group Collaboration Project.");
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
         GL11.glViewport(0, 0, scrWidth, scrHeight);
@@ -183,6 +183,8 @@ public class Main {
                 wa.time+=deltaTime;
                 while (wa.time>1)
                     wa.time-=1;
+            }
+            if (Keyboard.isKeyDown(Keyboard.KEY_0)) {
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_RETURN)) {
                 System.out.println(wa.time);

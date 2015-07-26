@@ -10,6 +10,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Allows animating a model file, and rendering using LWJGL.
@@ -29,7 +30,7 @@ public class PMXModel {
     /**
      * The cached IBS transforms. Since the file should never change, this is never cleared.
      */
-    private HashMap<PMXFile.PMXBone, Matrix4f> cachedIBSTransforms = new HashMap<PMXFile.PMXBone, Matrix4f>();
+    private ConcurrentHashMap<PMXFile.PMXBone, Matrix4f> cachedIBSTransforms = new ConcurrentHashMap<PMXFile.PMXBone, Matrix4f>();
 
     private final IntBuffer[] indexBuffer;
 
@@ -37,9 +38,12 @@ public class PMXModel {
     private final FloatBuffer buffer_n;
     private final FloatBuffer buffer_t;
 
-    public PMXModel(PMXFile pf) {
-        this.theFile = pf;
-        this.indexBuffer = new IntBuffer[pf.matData.length];
+    public PMXTransformThreadPool threadPool;
+
+    public PMXModel(PMXFile pf, PMXTransformThreadPool pttp) {
+        theFile = pf;
+        indexBuffer = new IntBuffer[pf.matData.length];
+        threadPool=pttp;
 
         buffer_v=BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
         buffer_n=BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
@@ -49,7 +53,7 @@ public class PMXModel {
 
         for(int i = 0; i < theFile.matData.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
-            this.indexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 3);
+            indexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 3);
             for(int ind = 0; ind < mat.faceCount;ind++) {
                 indexBuffer[i].put(theFile.faceData[face][0]);
                 indexBuffer[i].put(theFile.faceData[face][1]);
@@ -57,13 +61,18 @@ public class PMXModel {
                 face++;
             }
         }
+        for(int vi = 0; vi < theFile.vertexData.length; vi++) {
+            PMXFile.PMXVertex ver = theFile.vertexData[vi];
+            buffer_t.put(new float[]{ver.texU, ver.texV});
+        }
     }
 
     /**
      * @param bone The bone to get the IBS of
+     * @param translation Disable for normals
      * @return An IBS matrix
      */
-    public Matrix4f createIBS(PMXFile.PMXBone bone) {
+    public Matrix4f createIBS(PMXFile.PMXBone bone,boolean translation) {
         float dX = bone.connectionPosOfsX;
         float dY = bone.connectionPosOfsY;
         float dZ = bone.connectionPosOfsZ;
@@ -82,21 +91,22 @@ public class PMXModel {
         float t = (float) Math.atan(dY / dX);
         float p = (float) Math.acos(dZ / magnitude);
         Matrix4f intoBoneSpace = new Matrix4f();
-        // translate by the inverse position
 
         intoBoneSpace.rotate(t, new Vector3f(0, 0, 1));
         intoBoneSpace.rotate(p, new Vector3f(1, 0, 0));
 
-        intoBoneSpace.translate(new Vector3f(-(bone.posX), -(bone.posY), -(bone.posZ)));
+        // translate by the inverse position
+        if (translation)
+            intoBoneSpace.translate(new Vector3f(-(bone.posX), -(bone.posY), -(bone.posZ)));
         return intoBoneSpace;
     }
 
-    private Matrix4f getBoneMatrix(PMXFile.PMXBone bone) {
+    private Matrix4f getBoneMatrix(PMXFile.PMXBone bone,boolean translation) {
         PoseBoneTransform boneTransform = anim.getBoneTransform(bone.globalName);
         if (boneTransform==null)
             return new Matrix4f();
 
-        Matrix4f t = createIBS(bone);
+        Matrix4f t = createIBS(bone,translation);
         Matrix4f i = new Matrix4f();
         Matrix4f.mul(t, i, i);
 
@@ -110,7 +120,7 @@ public class PMXModel {
     }
 
     /**
-     * Transform a vertex by a bone. Public because debugging tools.
+     * Transform a vertex by a bone.
      */
     public Vector3f transformCore(PMXFile.PMXBone bone, Vector3f vIn, boolean normal) {
         if (anim == null)
@@ -127,7 +137,7 @@ public class PMXModel {
                     Matrix4f intoBoneSpace = cachedIBSTransforms.get(bone);
 
                     if (intoBoneSpace == null) {
-                        intoBoneSpace = createIBS(bone);
+                        intoBoneSpace = createIBS(bone, !normal);
                         cachedIBSTransforms.put(bone, intoBoneSpace);
                     }
 
@@ -153,72 +163,21 @@ public class PMXModel {
     }
 
     /**
-     * Transform a PMXFile vertex by the PMX file's bone set moved by the model's current animation.
-     *
-     * @param vert Vertex to transform.
-     * @return An array containing the transformed position of the vector.
-     */
-    public Vector3f[] transformVertex(PMXFile.PMXVertex vert) {
-        switch (vert.weightType) {
-            case 0:
-                return new Vector3f[]{transformCore(theFile.boneData[vert.boneIndices[0]], new Vector3f(vert.posX, vert.posY, vert.posZ), false),
-                        transformCore(theFile.boneData[vert.boneIndices[0]], new Vector3f(vert.normalX, vert.normalY, vert.normalZ), true)};
-            case 1:
-                return new Vector3f[]{ipol2Vec(transformCore(theFile.boneData[vert.boneIndices[0]], new Vector3f(vert.posX, vert.posY, vert.posZ), false), transformCore(theFile.boneData[vert.boneIndices[1]], new Vector3f(vert.posX, vert.posY, vert.posZ), false), vert.boneWeights[0]),
-                        ipol2Vec(transformCore(theFile.boneData[vert.boneIndices[0]], new Vector3f(vert.posX, vert.posY, vert.posZ), true), transformCore(theFile.boneData[vert.boneIndices[1]], new Vector3f(vert.posX, vert.posY, vert.posZ), true), vert.boneWeights[0])};
-            default:
-                // Other weight types won't work in shaders even if you add them here
-                throw new RuntimeException("cannot render WT " + vert.weightType);
-        }
-    }
-
-    /**
-     * Only used in the above function.
-     * Interpolates with weighting 2 vectors.
-     *
-     * @param vector3f   Vector A. Note that the data within this argument is modified.
-     * @param vector3f1  Vector B.
-     * @param boneWeight The weight of the first vector.
-     * @return Vector A (reference to vector3f)
-     */
-    private Vector3f ipol2Vec(Vector3f vector3f, Vector3f vector3f1, float boneWeight) {
-        vector3f.x *= boneWeight;
-        vector3f.y *= boneWeight;
-        vector3f.z *= boneWeight;
-        boneWeight = 1.0f - boneWeight;
-        vector3f.x += vector3f1.x * boneWeight;
-        vector3f.y += vector3f1.y * boneWeight;
-        vector3f.z += vector3f1.z * boneWeight;
-        return vector3f;
-    }
-
-    /**
      * Renders this model, with a given set of textures.
      * Make sure to enable GL_TEXTURE_2D before calling.
      *
      * @param textureBinder Binds a texture.
      */
     public void render(IMaterialBinder textureBinder) {
-        int f = 0;
 
-        int i;
-        for(i = 0; i < this.theFile.vertexData.length; ++i) {
-            PMXFile.PMXVertex mat = theFile.vertexData[i];
-            Vector3f[] v3f = transformVertex(mat);
-            buffer_v.put(new float[]{v3f[0].x, v3f[0].y, v3f[0].z});
-            buffer_n.put(new float[]{v3f[1].x, v3f[1].y, v3f[1].z});
-            buffer_t.put(new float[]{mat.texU, mat.texV});
-            ++f;
-        }
-
+        threadPool.transformModel(this, buffer_v, buffer_n);
         buffer_v.rewind();
         buffer_n.rewind();
         buffer_t.rewind();
-
-        for(i = 0; i < theFile.matData.length; ++i) {
+        for(int i = 0; i < theFile.matData.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             textureBinder.bindMaterial(mat);
-            GL11.glColor4d(mat.diffR, mat.diffG, mat.diffB, mat.diffA);
+            GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
             GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
             GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
             GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
