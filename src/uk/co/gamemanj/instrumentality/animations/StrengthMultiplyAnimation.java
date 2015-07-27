@@ -1,13 +1,15 @@
-package uk.co.gamemanj.instrumentality;
+package uk.co.gamemanj.instrumentality.animations;
+
+import uk.co.gamemanj.instrumentality.PoseBoneTransform;
 
 /**
  * Created on 25/07/15.
  */
-public class FadeInAnimation implements IAnimation {
-    public double mulAmount=0,speed=1.0d;
+public class StrengthMultiplyAnimation implements IAnimation {
+    public float mulAmount=1.0f;
     public IAnimation beingFaded;
 
-    public FadeInAnimation(IAnimation wa) {
+    public StrengthMultiplyAnimation(IAnimation wa) {
         beingFaded=wa;
     }
 
@@ -25,14 +27,14 @@ public class FadeInAnimation implements IAnimation {
         pbt.Z0*=mulAmount;
         pbt.Z1*=mulAmount;
         pbt.Z2*=mulAmount;
+        pbt.TX0*=mulAmount;
+        pbt.TY0*=mulAmount;
+        pbt.TZ0*=mulAmount;
         return pbt;
     }
 
     @Override
     public void update(double deltaTime) {
-        mulAmount+=deltaTime*speed;
-        if (mulAmount>1.0d)
-            mulAmount=1.0d;
         beingFaded.update(deltaTime);
     }
 }

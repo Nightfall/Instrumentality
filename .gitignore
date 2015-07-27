@@ -9,3 +9,4 @@ out
 *.class
 *.txt
 *.so
+.swp

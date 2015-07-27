@@ -1,53 +1,80 @@
 package uk.co.gamemanj.instrumentality;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.LWJGLException;
-import org.lwjgl.LWJGLUtil;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.Color;
 import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import uk.co.gamemanj.instrumentality.animations.*;
 
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.HashMap;
 
 /**
+ * FULL LIST OF KEYBOARD CONTROLS:
+ * WASD: Camera controls.
+ * E: Animation Update Toggle.
+ * R: Walking Flag Disable.
+ * Up/Down: Turns on/off the walking flag.
+ * Left/Right: Time Controls On Unit 00.
+ * Shift: Sneak
+ * Ctrl: Sprint
+ *
+ * C(obalt)
+ *
+ * Before using, look in PlayerControlAnimation for some notes
+ *
  * Created on 24/07/15.
  */
 public class Main {
     public static void main(String[] args) throws Exception {
+
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
         fis.read(data);
         fis.close();
         PMXFile pf = new PMXFile(data);
-        PMXModel pm = new PMXModel(pf,new PMXTransformThreadPool(7));
-        WalkingAnimation wa=new WalkingAnimation();
-        FadeInAnimation fia=new FadeInAnimation(wa);
-        pm.anim=fia;
+        // The threadpool basically holds the objects.
+        // Right now it allocates 1 thread per model,
+        // but this could be switched to a "set thread count" system in future.
+        PMXTransformThreadPool pttp=new PMXTransformThreadPool(1);
+        PMXModel[] pm = new PMXModel[1];
+        WalkingAnimation[] wa=new WalkingAnimation[pm.length];
+        PlayerControlAnimation[] pca=new PlayerControlAnimation[pm.length];
+        for (int i=0;i<pm.length;i++) {
+            /*
+             * Animation graph diagram (ASCII)
+             * OverlayAnimation
+             *  |        |
+             *  | StrengthMultiplyAnimation
+             *  | ^      |
+             *  | ^>WalkingAnimation
+             *  | ^
+             * PlayerControlAnimation (sends data, see arrows)
+             */
+            pm[i]=new PMXModel(pf, pttp);
+            wa[i]=new WalkingAnimation();
+            StrengthMultiplyAnimation sma=new StrengthMultiplyAnimation(wa[i]);
+            pca[i]=new PlayerControlAnimation(wa[i],sma);
+            pm[i].anim=new OverlayAnimation(new IAnimation[] {sma,pca[i]});
+            pttp.addModel(pm[i]);
+        }
         int scrWidth=800,scrHeight=600;
         float rotX=90, posY=-1;
-        boolean animate=false,eDownLast=false;
-        Display.setTitle("The GT/Obsidian Group Collaboration Project.");
+        boolean animate=true,eDownLast=false;
+        Display.setTitle("Gamemanj PMX Animation Workbench");
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
+        Mouse.create();
         GL11.glViewport(0, 0, scrWidth, scrHeight);
 
-        GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-        GL11.glClearDepth(1.0f);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDepthFunc(GL11.GL_LEQUAL);
 
@@ -86,6 +113,13 @@ public class Main {
         }
         Keyboard.create();
         while (!Display.isCloseRequested()) {
+            boolean cobalt=Keyboard.isKeyDown(Keyboard.KEY_C);
+            if (cobalt) {
+                GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
+            } else {
+                GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            }
+            GL11.glClearDepth(1.0f);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
             GL11.glLoadIdentity();
 
@@ -99,33 +133,46 @@ public class Main {
             GL11.glTranslated(0, 0, -testTime);
             GL11.glScaled(0.2d, 0.2d, 0.2d);
 
-            GL11.glEnable(GL11.GL_TEXTURE_2D);
-            pm.render(new IMaterialBinder() {
-                @Override
-                public void bindMaterial(PMXFile.PMXMaterial texture) {
-                    GL11.glBindTexture(GL11.GL_TEXTURE_2D, materialTextures.get(texture));
-                }
-            });
+            if (!cobalt)
+                GL11.glEnable(GL11.GL_TEXTURE_2D);
+            for (int i=0;i<pm.length;i++) {
+                GL11.glPushMatrix();
+                GL11.glTranslated(i*16,0,0);
+                pm[i].render(new IMaterialBinder() {
+                    @Override
+                    public void bindMaterial(PMXFile.PMXMaterial texture) {
+                        GL11.glBindTexture(GL11.GL_TEXTURE_2D, materialTextures.get(texture));
+                    }
+                },cobalt);
+                GL11.glPopMatrix();
+            }
             GL11.glDisable(GL11.GL_TEXTURE_2D);
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
+            if (cobalt)
+                GL11.glColor4d(0.0f, 0.2f, 1.0f, 1.0f);
             for (PMXFile.PMXBone bone : pf.boneData) {
-                GL11.glPointSize(2);
-                Vector3f v3f = pm.transformCore(bone, new Vector3f(bone.posX, bone.posY, bone.posZ), false);
-                if (bone.parentBoneIndex != -1) {
-                    GL11.glBegin(GL11.GL_LINES);
-                    GL11.glColor3d(1, 0, 0);
+                for (int i=0;i<pm.length;i++) {
+                    Vector3f v3f = pm[i].transformCore(bone, new Vector3f(bone.posX, bone.posY, bone.posZ), false);
+                    if (bone.parentBoneIndex != -1) {
+                        GL11.glLineWidth(1.0f);
+                        GL11.glBegin(GL11.GL_LINES);
+                        if (!cobalt)
+                            GL11.glColor3d(1, 0, 0);
+                        GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
+                        if (!cobalt)
+                            GL11.glColor3d(0, 1, 0);
+                        Vector3f v3f2 = pm[i].transformCore(pf.boneData[bone.parentBoneIndex], new Vector3f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ), false);
+                        GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
+                        GL11.glEnd();
+                    }
+                    GL11.glPointSize(4);
+                    GL11.glBegin(GL11.GL_POINTS);
+                    if (!cobalt)
+                        GL11.glColor3d(0, 0, 1);
                     GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
-                    GL11.glColor3d(0, 1, 0);
-                    Vector3f v3f2 = pm.transformCore(pf.boneData[bone.parentBoneIndex], new Vector3f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ),false);
-                    GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
                     GL11.glEnd();
                 }
-                GL11.glPointSize(4);
-                GL11.glBegin(GL11.GL_POINTS);
-                GL11.glColor3d(0, 0, 1);
-                GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
-                GL11.glEnd();
             }
             GL11.glPopMatrix();
             GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -144,7 +191,8 @@ public class Main {
             double deltaTime=delta/1000.0d;
 
             if (animate)
-                pm.update(deltaTime);
+                for (int i=0;i<pm.length;i++)
+                    pm[i].update(deltaTime);
 
             Keyboard.poll();
             if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
@@ -164,36 +212,44 @@ public class Main {
             if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
                 posY-=deltaTime;
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_UP)) {
-                fia.mulAmount -= deltaTime;
-                if (fia.mulAmount<0)
-                    fia.mulAmount=0;
+            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
+                pca[0].sneakStateTarget=1;
+            } else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
+                pca[0].sneakStateTarget=-1;
+            } else {
+                pca[0].sneakStateTarget=0;
             }
-            if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
-                fia.mulAmount += deltaTime;
-                if (fia.mulAmount>1)
-                    fia.mulAmount=1;
-            }
+            if (Keyboard.isKeyDown(Keyboard.KEY_UP))
+                pca[0].walkingFlag=true;
+            if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
+                pca[0].walkingFlag=false;
             if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-                wa.time -= deltaTime;
-                while (wa.time<0)
-                    wa.time+=1;
+                wa[0].time -= deltaTime;
+                while (wa[0].time<0)
+                    wa[0].time+=1;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-                wa.time+=deltaTime;
-                while (wa.time>1)
-                    wa.time-=1;
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_0)) {
+                wa[0].time+=deltaTime;
+                while (wa[0].time>1)
+                    wa[0].time-=1;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_RETURN)) {
-                System.out.println(wa.time);
-                wa.time=0;
+                System.out.println(wa[0].time);
+                wa[0].time=0;
             }
+
+            pca[0].walkingFlag=!Keyboard.isKeyDown(Keyboard.KEY_R);
             long v=frameEndpoint-currentTime;
             if (v>1)
                 Thread.sleep(v);
             frameEndpoint=currentTime+30;
+
+            float eyesX=(Mouse.getX()/(float)scrWidth)-0.5f;
+            float eyesY=(Mouse.getY()/(float)scrHeight)-0.5f;
+            for (PlayerControlAnimation spca : pca) {
+                spca.lookLR=eyesX;
+                spca.lookUD=eyesY;
+            }
         }
         Display.destroy();
     }

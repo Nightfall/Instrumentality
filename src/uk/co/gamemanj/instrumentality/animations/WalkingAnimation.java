@@ -1,34 +1,42 @@
-package uk.co.gamemanj.instrumentality;
+package uk.co.gamemanj.instrumentality.animations;
 
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
+import uk.co.gamemanj.instrumentality.PoseBoneTransform;
+import uk.co.gamemanj.instrumentality.animations.IAnimation;
 
 /**
  * Created on 24/07/15.
  */
 public class WalkingAnimation implements IAnimation {
-    public float directionAdjustment, time = 0, wtime = 0;
+    public float time = 0, wtime = 0;
+    /**
+     * Controlled by PlayerControlAnimation, for sneaking.
+     */
     public float speed = 1.0f;
+
+    /**
+     * Find a way to use this, it makes walking just that tad bit more realistic :)
+     */
+    public float directionAdjustment=0.0f;
 
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
         float atime = time + 0.65f;
         if (atime > 1.0f)
             atime -= 1.0f;
-        if (boneName.equalsIgnoreCase("leg_L")||boneName.equalsIgnoreCase("L_leg"))
+        if (boneName.equalsIgnoreCase("leg_L"))
             return getLegTransform(false, atime);
-        if (boneName.equalsIgnoreCase("knee_L")||boneName.equalsIgnoreCase("L_knee"))
+        if (boneName.equalsIgnoreCase("knee_L"))
             return getKneeTransform(false, atime);
-        if (boneName.equalsIgnoreCase("ankle_L")||boneName.equalsIgnoreCase("L_foot"))
+        if (boneName.equalsIgnoreCase("ankle_L"))
             return getAnkleTransform(false, atime);
         float stime = atime + 0.50f;
         if (stime > 1.0f)
             stime -= 1.0f;
-        if (boneName.equalsIgnoreCase("leg_R")||boneName.equalsIgnoreCase("R_leg"))
+        if (boneName.equalsIgnoreCase("leg_R"))
             return getLegTransform(true, stime);
-        if (boneName.equalsIgnoreCase("knee_R")||boneName.equalsIgnoreCase("R_knee"))
+        if (boneName.equalsIgnoreCase("knee_R"))
             return getKneeTransform(true, stime);
-        if (boneName.equalsIgnoreCase("ankle_R")||boneName.equalsIgnoreCase("R_foot"))
+        if (boneName.equalsIgnoreCase("ankle_R"))
             return getAnkleTransform(true, stime);
         String[] wiggle = {
                 "head",
@@ -41,20 +49,30 @@ public class WalkingAnimation implements IAnimation {
                 "R_longhair_03",
                 "spine00",
                 "spine01",
-                "hip"
+                "hip",
+                "root",
+                /* If you uncomment this and the 2 lines below relating to it, you're a pervert.
+                "Skrt_LF_01",
+                "Skrt_RF_01"
+                */
         };
         float[] amount = {
-                0.05f,
-                0.05f,
-                -0.2f,
-                0.15f,
-                -0.25f,
-                0.2f,
-                -0.375f,
-                0.15f,
                 0.01f,
                 0.01f,
-                0.01f
+                -0.2f/2,
+                0.15f/2,
+                -0.25f/2,
+                0.2f/2,
+                -0.375f/2,
+                0.15f/2,
+                0.02f,
+                0.02f,
+                0.02f,
+                0.02f,
+                /* See above comment.
+                2.0f,
+                2.0f
+                */
         };
         for (int ai = 0; ai < wiggle.length; ai++) {
             if (wiggle[ai].equalsIgnoreCase(boneName)) {

@@ -5,11 +5,10 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
+import uk.co.gamemanj.instrumentality.animations.IAnimation;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -26,11 +25,6 @@ public class PMXModel {
      * Animation. Can be changed at any time.
      */
     public IAnimation anim;
-
-    /**
-     * The cached IBS transforms. Since the file should never change, this is never cleared.
-     */
-    private ConcurrentHashMap<PMXFile.PMXBone, Matrix4f> cachedIBSTransforms = new ConcurrentHashMap<PMXFile.PMXBone, Matrix4f>();
 
     private final IntBuffer[] indexBuffer;
 
@@ -68,6 +62,9 @@ public class PMXModel {
     }
 
     /**
+     * This used to be created in transformCore, then cached forever
+     * now that's no longer needed, as the entire transform matrix is cached for the frame -
+     * caching this is a waste of time now.
      * @param bone The bone to get the IBS of
      * @param translation Disable for normals
      * @return An IBS matrix
@@ -101,26 +98,64 @@ public class PMXModel {
         return intoBoneSpace;
     }
 
-    private Matrix4f getBoneMatrix(PMXFile.PMXBone bone,boolean translation) {
-        PoseBoneTransform boneTransform = anim.getBoneTransform(bone.globalName);
-        if (boneTransform==null)
-            return new Matrix4f();
-
-        Matrix4f t = createIBS(bone,translation);
+    public Matrix4f getBoneMatrix(PMXFile.PMXBone bone,boolean translation) {
+        PoseBoneTransform boneTransform = anim.getBoneTransform(compatibilityCheck(bone.globalName));
         Matrix4f i = new Matrix4f();
-        Matrix4f.mul(t, i, i);
+        if (boneTransform!=null) {
+            Matrix4f t = createIBS(bone, translation);
+            Matrix4f.mul(t, i, i);
 
-        Matrix4f bt=new Matrix4f();
-        boneTransform.apply(bt);
-        Matrix4f.mul(bt, i, i);
+            Matrix4f bt = new Matrix4f();
+            boneTransform.apply(bt,translation);
+            Matrix4f.mul(bt, i, i);
 
-        t.invert();
-        Matrix4f.mul(t, i, i);
+            t.invert();
+            Matrix4f.mul(t, i, i);
+        }
+        if (bone.parentBoneIndex!=-1)
+            Matrix4f.mul(getBoneMatrix(theFile.boneData[bone.parentBoneIndex],translation), i, i);
         return i;
     }
 
     /**
+     * Some models use different names for what are essentially the same bones.
+     * Put checks here to find these.
+     *
+     * Note that if animations don't work correctly with the new name of a bone,
+     * it is better to put the compatibility in the affected animations
+     * (so the values can be adjusted to compensate)
+     *
+     * @param globalName The original globalName of the bone.
+     * @return The translated bone name, or the original if it is not in the compatibility table.
+     */
+    private String compatibilityCheck(String globalName) {
+
+        // Kagamine Rin Legs
+
+        if (globalName.equalsIgnoreCase("L_leg"))
+            return "leg_L";
+        if (globalName.equalsIgnoreCase("L_knee"))
+            return "knee_L";
+        if (globalName.equalsIgnoreCase("L_foot"))
+            return "ankle_L";
+
+        if (globalName.equalsIgnoreCase("R_leg"))
+            return "leg_R";
+        if (globalName.equalsIgnoreCase("R_knee"))
+            return "knee_R";
+        if (globalName.equalsIgnoreCase("R_foot"))
+            return "ankle_R";
+
+        return globalName;
+    }
+
+    /**
      * Transform a vertex by a bone.
+     * By now, this has become "only for comparison to getBoneMatrix for testing",
+     * as getBoneMatrix does much the same job but does it by returning one matrix,
+     * which allows said matrix to be cached across the entire transform.
+     * If this ever doesn't match getBoneMatrix, either this is outdated due to something new,
+     * or getBoneMatrix has a bug in it.
      */
     public Vector3f transformCore(PMXFile.PMXBone bone, Vector3f vIn, boolean normal) {
         if (anim == null)
@@ -131,26 +166,16 @@ public class PMXModel {
             // If we're not transforming this bone, don't waste time
             if (boneTransform != null) {
                 Matrix4f boneMatrix = new Matrix4f();
-                boneTransform.apply(boneMatrix);
-                if (!normal) {
-                    // first off, bring into the current bone's space
-                    Matrix4f intoBoneSpace = cachedIBSTransforms.get(bone);
+                boneTransform.apply(boneMatrix,!normal);
+                // first off, bring into the current bone's space
+                Matrix4f intoBoneSpace = createIBS(bone, !normal);
 
-                    if (intoBoneSpace == null) {
-                        intoBoneSpace = createIBS(bone, !normal);
-                        cachedIBSTransforms.put(bone, intoBoneSpace);
-                    }
-
-
-                    // Now go into bone space, transform, then leave
-                    Vector4f inBoneSpace = Matrix4f.transform(intoBoneSpace, v4f, null);
-                    inBoneSpace = Matrix4f.transform(boneMatrix, inBoneSpace, null);
-                    Matrix4f leaveBoneSpace = new Matrix4f();
-                    Matrix4f.invert(intoBoneSpace, leaveBoneSpace);
-                    Matrix4f.transform(leaveBoneSpace, inBoneSpace, v4f);
-                } else {
-                    v4f = Matrix4f.transform(boneMatrix, v4f, null);
-                }
+                // Now go into bone space, transform, then leave
+                Vector4f inBoneSpace = Matrix4f.transform(intoBoneSpace, v4f, null);
+                inBoneSpace = Matrix4f.transform(boneMatrix, inBoneSpace, null);
+                Matrix4f leaveBoneSpace = new Matrix4f();
+                Matrix4f.invert(intoBoneSpace, leaveBoneSpace);
+                Matrix4f.transform(leaveBoneSpace, inBoneSpace, v4f);
             }
 
             if (bone.parentBoneIndex == -1) {
@@ -167,8 +192,9 @@ public class PMXModel {
      * Make sure to enable GL_TEXTURE_2D before calling.
      *
      * @param textureBinder Binds a texture.
+     * @param cobalt undocumented feature
      */
-    public void render(IMaterialBinder textureBinder) {
+    public void render(IMaterialBinder textureBinder,boolean cobalt) {
 
         threadPool.transformModel(this, buffer_v, buffer_n);
         buffer_v.rewind();
@@ -177,7 +203,12 @@ public class PMXModel {
         for(int i = 0; i < theFile.matData.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             textureBinder.bindMaterial(mat);
-            GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
+            if (cobalt) {
+                GL11.glPointSize(1.0f);
+                GL11.glColor4d(0.0f, 0.2f, 0.5f, 1.0f);
+            } else {
+                GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
+            }
             GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
             GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
             GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
@@ -185,7 +216,7 @@ public class PMXModel {
             GL11.glTexCoordPointer(2, 0, buffer_t);
             GL11.glNormalPointer(0, buffer_n);
             indexBuffer[i].rewind();
-            GL11.glDrawElements(4, indexBuffer[i]);
+            GL11.glDrawElements(cobalt ? GL11.GL_POINTS : GL11.GL_TRIANGLES, indexBuffer[i]);
             GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
             GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
             GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
