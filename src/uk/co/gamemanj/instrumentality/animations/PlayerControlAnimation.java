@@ -1,5 +1,6 @@
 package uk.co.gamemanj.instrumentality.animations;
 
+import org.lwjgl.Sys;
 import uk.co.gamemanj.instrumentality.PoseBoneTransform;
 
 /**
@@ -85,7 +86,46 @@ public class PlayerControlAnimation implements IAnimation {
                 return pbt;
             }
         }
+        if (boneName.equalsIgnoreCase("L_longhair_01"))
+            return getLonghairTransform(false,0);
+        if (boneName.equalsIgnoreCase("R_longhair_01"))
+            return getLonghairTransform(true,0);
+        if (boneName.equalsIgnoreCase("L_longhair_02"))
+            return getLonghairTransform(false,1);
+        if (boneName.equalsIgnoreCase("R_longhair_02"))
+            return getLonghairTransform(true,1);
+        if (boneName.equalsIgnoreCase("L_longhair_03"))
+            return getLonghairTransform(false,2);
+        if (boneName.equalsIgnoreCase("R_longhair_03"))
+            return getLonghairTransform(true,2);
         return null;
+    }
+
+    private PoseBoneTransform getLonghairTransform(boolean b,int segment) {
+        PoseBoneTransform pbt=new PoseBoneTransform();
+
+        if (segment==0) {
+            pbt.Y0=((float)(Math.sin((lookUD)*Math.PI)*0.7f))-0.2f;
+            if (pbt.Y0<0)
+                pbt.Y0=0;
+            if (lookUD<0.226f)
+                pbt.Y0=0.257f;
+        } else {
+            if (segment==1) {
+                pbt.Y0 = (float) (Math.sin(lookUD - 0.2f) * 0.7f);
+                if (pbt.Y0 > 0)
+                    pbt.Y0 = 0;
+                if (pbt.Y0 < 0)
+                    pbt.Y0 *= -6.0f;
+                if (lookUD<0.226f)
+                    pbt.Y0 *= 0.8f;
+            } else {
+
+            }
+        }
+        pbt.Y0*=((segment!=0)?-0.25f:1);
+        pbt.Y0*=(b?-2:2);
+        return pbt;
     }
 
     private PoseBoneTransform getLegTransform(boolean b) {

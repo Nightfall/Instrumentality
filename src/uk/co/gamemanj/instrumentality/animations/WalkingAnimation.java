@@ -78,8 +78,6 @@ public class WalkingAnimation implements IAnimation {
             if (wiggle[ai].equalsIgnoreCase(boneName)) {
                 PoseBoneTransform pbt = new PoseBoneTransform();
                 pbt.X1 = (float) Math.sin(wtime * (Math.PI * 2)) * amount[ai];
-                if (boneName.contains("longhair_02"))
-                    pbt.Y0 = boneName.contains("L") ? 0.5f : -0.5f;
                 return pbt;
             }
         }
