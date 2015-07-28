@@ -1,5 +1,6 @@
 package uk.co.gamemanj.instrumentality;
 
+import org.lwjgl.Sys;
 import org.lwjgl.util.vector.Matrix3f;
 import org.lwjgl.util.vector.Matrix4f;
 
@@ -11,11 +12,36 @@ import java.util.concurrent.ConcurrentSkipListSet;
  * Created on 26/07/15.
  */
 public class PMXTransformThreadPool {
-    private ConcurrentHashMap<PMXModel, PMXTransformingModel> modelSet = new ConcurrentHashMap<PMXModel, PMXTransformingModel>();
-    private int coresPerModel;
+    public ConcurrentHashMap<PMXModel, PMXTransformingModel> modelSet = new ConcurrentHashMap<PMXModel, PMXTransformingModel>();
+    public PMXTransformThread[] threads;
+
+    /**
+     * Keeps the threads alive.
+     */
+    public void keepAlive() {
+        for (int i = 0; i < threads.length; i++)
+            threads[i].lastUpdate = System.currentTimeMillis();
+    }
+
+    /**
+     * Tells the threads to die ASAP.
+     */
+    public void killSwitch() {
+        for (int i = 0; i < threads.length; i++)
+            threads[i].killSwitch = true;
+    }
 
     public PMXTransformThreadPool(int cpm) {
-        coresPerModel = cpm;
+        threads = new PMXTransformThread[cpm];
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new PMXTransformThread();
+            threads[i].ofs = i;
+            threads[i].stride = threads.length;
+            threads[i].pttp = this;
+            threads[i].lastUpdate = System.currentTimeMillis();
+            threads[i].setPriority(Thread.MIN_PRIORITY);
+            threads[i].start();
+        }
     }
 
     public void addModel(PMXModel pm) {
@@ -23,17 +49,7 @@ public class PMXTransformThreadPool {
         ptm.pmxModel = pm;
         ptm.vertexBuffer = new float[pm.theFile.vertexData.length * 3];
         ptm.normalBuffer = new float[pm.theFile.vertexData.length * 3];
-        ptm.thePool = new PMXTransformThread[coresPerModel];
-        for (int i = 0; i < coresPerModel; i++) {
-            PMXTransformThread ptt = ptm.thePool[i] = new PMXTransformThread();
-            ptt.ofs = i;
-            ptt.stride = coresPerModel;
-            ptt.model = pm;
-            ptt.vertexArray = ptm.vertexBuffer;
-            ptt.normalArray = ptm.normalBuffer;
-            ptt.lastUpdateTime = System.currentTimeMillis();
-            ptt.start();
-        }
+        ptm.lastUpdateTime = System.currentTimeMillis();
         modelSet.put(pm, ptm);
     }
 
@@ -48,16 +64,15 @@ public class PMXTransformThreadPool {
         PMXTransformingModel ptm = modelSet.get(model);
         vertexArray.put(ptm.vertexBuffer);
         normalArray.put(ptm.normalBuffer);
-        for (int i = 0; i < ptm.thePool.length; i++)
-            ptm.thePool[i].lastUpdateTime = System.currentTimeMillis();
+        ptm.lastUpdateTime = System.currentTimeMillis();
         return;
     }
 
-    private class PMXTransformingModel implements Comparable<PMXTransformingModel> {
-        private float[] vertexBuffer;
-        private float[] normalBuffer;
-        private PMXModel pmxModel;
-        private PMXTransformThread[] thePool;
+    public class PMXTransformingModel implements Comparable<PMXTransformingModel> {
+        public float[] vertexBuffer;
+        public float[] normalBuffer;
+        public PMXModel pmxModel;
+        public long lastUpdateTime;
 
         @Override
         public int compareTo(PMXTransformingModel o) {
