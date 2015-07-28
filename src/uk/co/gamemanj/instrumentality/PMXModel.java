@@ -27,6 +27,7 @@ public class PMXModel {
     public IAnimation anim;
 
     private final IntBuffer[] indexBuffer;
+    private final IntBuffer[] cobaltIndexBuffer;
 
     private final FloatBuffer buffer_v;
     private final FloatBuffer buffer_n;
@@ -37,6 +38,7 @@ public class PMXModel {
     public PMXModel(PMXFile pf, PMXTransformThreadPool pttp) {
         theFile = pf;
         indexBuffer = new IntBuffer[pf.matData.length];
+        cobaltIndexBuffer = new IntBuffer[pf.matData.length];
         threadPool=pttp;
 
         buffer_v=BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
@@ -48,7 +50,17 @@ public class PMXModel {
         for(int i = 0; i < theFile.matData.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             indexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 3);
+            cobaltIndexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 6);
             for(int ind = 0; ind < mat.faceCount;ind++) {
+                cobaltIndexBuffer[i].put(theFile.faceData[face][0]);
+                cobaltIndexBuffer[i].put(theFile.faceData[face][1]);
+
+                cobaltIndexBuffer[i].put(theFile.faceData[face][1]);
+                cobaltIndexBuffer[i].put(theFile.faceData[face][2]);
+
+                cobaltIndexBuffer[i].put(theFile.faceData[face][2]);
+                cobaltIndexBuffer[i].put(theFile.faceData[face][0]);
+
                 indexBuffer[i].put(theFile.faceData[face][0]);
                 indexBuffer[i].put(theFile.faceData[face][1]);
                 indexBuffer[i].put(theFile.faceData[face][2]);
@@ -200,26 +212,41 @@ public class PMXModel {
         buffer_v.rewind();
         buffer_n.rewind();
         buffer_t.rewind();
-        for(int i = 0; i < theFile.matData.length; i++) {
-            PMXFile.PMXMaterial mat = theFile.matData[i];
-            textureBinder.bindMaterial(mat);
-            if (cobalt) {
-                GL11.glPointSize(1.0f);
-                GL11.glColor4d(0.0f, 0.2f, 0.5f, 1.0f);
-            } else {
-                GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
+        for (int pass = 0; pass < (cobalt ? 5 : 1); pass++) {
+            for (int i = 0; i < theFile.matData.length; i++) {
+                cobaltIndexBuffer[i].rewind();
+                indexBuffer[i].rewind();
+                PMXFile.PMXMaterial mat = theFile.matData[i];
+                textureBinder.bindMaterial(mat);
+                if (cobalt) {
+                    float mul = new float[]{
+                            0.1f,
+                            0.2f,
+                            0.55f,
+                            0.75f,
+                            1.0f
+                    }[pass];
+                    GL11.glLineWidth(5 - pass);
+                    //GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
+                    GL11.glColor4d(0.0f, 0.1f + (0.1f * mul), 0.4f + (0.6f * mul), 1.0f);
+                } else {
+                    GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
+                }
+                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+                GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
+                GL11.glVertexPointer(3, 0, buffer_v);
+                GL11.glTexCoordPointer(2, 0, buffer_t);
+                GL11.glNormalPointer(0, buffer_n);
+                if (cobalt) {
+                    GL11.glDrawElements(GL11.GL_LINES, cobaltIndexBuffer[i]);
+                } else {
+                    GL11.glDrawElements(GL11.GL_TRIANGLES, indexBuffer[i]);
+                }
+                GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+                GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
             }
-            GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-            GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-            GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
-            GL11.glVertexPointer(3, 0, buffer_v);
-            GL11.glTexCoordPointer(2, 0, buffer_t);
-            GL11.glNormalPointer(0, buffer_n);
-            indexBuffer[i].rewind();
-            GL11.glDrawElements(cobalt ? GL11.GL_POINTS : GL11.GL_TRIANGLES, indexBuffer[i]);
-            GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-            GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
-            GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
         }
     }
 

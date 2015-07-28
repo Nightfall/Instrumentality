@@ -1,13 +1,15 @@
 package uk.co.gamemanj.instrumentality.animations;
 
-import org.lwjgl.Sys;
 import uk.co.gamemanj.instrumentality.PoseBoneTransform;
 
 /**
  * Another reason I like programmatically modifying bone positions!
  * Note that to avoid complications involving stacking animations, this won't attempt to twist the legs/lower body area.
  * Also, you may want to change the way the target speed is calculated.
+ *
  * Right now it's based on sneakState, but you may want it to be calculated based on horizontal velocity.
+ * Also: Read the variable comments below, you "control" the system via these variables
+ *
  * Created on 27/07/15.
  */
 public class PlayerControlAnimation implements IAnimation {
@@ -19,11 +21,20 @@ public class PlayerControlAnimation implements IAnimation {
      * 1.0f and -1.0f are directly up/down. 0.0f is looking directly ahead.
      */
     public float lookUD=0.1f;
+
     /**
      * Set to 1.0f for sneaking,-1.0f for sprinting
      */
     public float sneakStateTarget=0;
     public float sneakState=0;
+
+    /**
+     * Set to 1.0f for fighting/placing/using,-1.0f for blocking.
+     * Note that fightingStateTarget is automatically set to 0.0f after fightingState(fightingStrengthControl) reaches 1.0f.
+     * This allows you to simply set fightingStateTarget to 1.0f every time an "action" happens-
+     * the rest is automated by the animation system.
+     */
+    public float fightingStateTarget = 0;
 
     /**
      * Used for transitioning to/from the walking animation.
@@ -39,11 +50,14 @@ public class PlayerControlAnimation implements IAnimation {
      * Controls the strength of the walking animation.
      * Used to fade in/out the walking animation depending on if the player is, you know, walking.
      */
-    public StrengthMultiplyAnimation strengthControl;
+    public StrengthMultiplyAnimation walkingStrengthControl;
 
-    public PlayerControlAnimation(WalkingAnimation wa,StrengthMultiplyAnimation str) {
+    public FightingAnimation fighting;
+
+    public PlayerControlAnimation(WalkingAnimation wa, StrengthMultiplyAnimation wastr, FightingAnimation fa) {
         walking=wa;
-        strengthControl=str;
+        walkingStrengthControl = wastr;
+        fighting = fa;
     }
 
     @Override
@@ -81,7 +95,7 @@ public class PlayerControlAnimation implements IAnimation {
             if (sneakState>0) {
                 PoseBoneTransform pbt = new PoseBoneTransform();
                 double bob=0.3f+(Math.sin((walking.time)*Math.PI*4)*0.5f);
-                bob*=strengthControl.mulAmount;
+                bob *= walkingStrengthControl.mulAmount;
                 pbt.TZ0 = ((-sneakState) * (1.2f+(float)bob));
                 return pbt;
             }
@@ -192,15 +206,33 @@ public class PlayerControlAnimation implements IAnimation {
             if (walking.speed<speedTarget+0.1f)
                 walking.speed=speedTarget;
         if (walkingFlag) {
-            strengthControl.mulAmount+=deltaTime*8.0f;
-            if (strengthControl.mulAmount>1)
-                strengthControl.mulAmount=1;
+            walkingStrengthControl.mulAmount += deltaTime * 8.0f;
+            if (walkingStrengthControl.mulAmount > 1)
+                walkingStrengthControl.mulAmount = 1;
         } else {
-            strengthControl.mulAmount-=deltaTime*8.0f;
-            if (strengthControl.mulAmount<0) {
-                strengthControl.mulAmount = 0;
+            walkingStrengthControl.mulAmount -= deltaTime * 8.0f;
+            if (walkingStrengthControl.mulAmount < 0) {
+                walkingStrengthControl.mulAmount = 0;
                 walking.time=0;
             }
+        }
+        if (fighting.aPos < fightingStateTarget) {
+            fighting.aPos += deltaTime * 8.0f;
+        } else if (fighting.aPos > fightingStateTarget) {
+            fighting.aPos -= deltaTime * 8.0f;
+        }
+        if (fighting.aPos > -0.1f)
+            if (fighting.aPos < 0.1f)
+                if (fightingStateTarget > -0.1f)
+                    if (fightingStateTarget < 0.1f)
+                        fighting.aPos = fightingStateTarget;
+
+        if (fighting.aPos < -1.0f) {
+            fighting.aPos = -1.0f;
+        }
+        if (fighting.aPos > 1.0f) {
+            fighting.aPos = 1.0f;
+            fightingStateTarget = 0;
         }
     }
 }
