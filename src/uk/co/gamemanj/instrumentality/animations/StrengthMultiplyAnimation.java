@@ -13,11 +13,18 @@ public class StrengthMultiplyAnimation implements IAnimation {
         beingFaded=wa;
     }
 
+    public StrengthMultiplyAnimation(IAnimation oB, float v) {
+        beingFaded = oB;
+        mulAmount = v;
+    }
+
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
         PoseBoneTransform pbt=beingFaded.getBoneTransform(boneName);
         if (pbt==null)
             return null;
+        // We're going to modify this instance, some things may not like that
+        pbt = new PoseBoneTransform(pbt);
         pbt.X0*=mulAmount;
         pbt.X1*=mulAmount;
         pbt.X2*=mulAmount;

@@ -26,10 +26,15 @@ import java.util.HashMap;
  * Left/Right: Time Controls On Unit 00.
  * Shift: Sneak
  * Ctrl: Sprint
- *
  * C(obalt)
  *
- * Before using, look in PlayerControlAnimation for some notes
+ * NOTE: THESE OPTIONS ARE USELESS WITHOUT CODE MODIFICATIONS
+ * YUIO,HJKL: Controlling some parameters is difficult so this allows live feedback
+ * Enter: Dumps live feedback data
+ *
+ * Usage of these 2 controls is basically in FightingAnimation, but now there's no use for them there, it should be redirected wherever needed.
+ *
+ * Before using this code, look in PlayerControlAnimation for some notes
  *
  * Created on 24/07/15.
  */
@@ -57,7 +62,7 @@ public class Main {
              * PlayerControlAnimation>>>>>>>^
              *
              * Note that PCA sends data to other animations for sub-tasks,
-             * while doing direct control for others - see arrows for where it takes control.
+             * while doing direct control for others - see arrows for where it sends data to other animations.
              */
             pm[i]=new PMXModel(pf, pttp);
 
@@ -235,6 +240,26 @@ public class Main {
                 pca[0].walkingFlag=true;
             if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
                 pca[0].walkingFlag=false;
+
+            if (Keyboard.isKeyDown(Keyboard.KEY_Y))
+                pca[0].fighting.DBG0 += deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_U))
+                pca[0].fighting.DBG1 += deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_I))
+                pca[0].fighting.DBG2 += deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_O))
+                pca[0].fighting.DBG3 += deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_H))
+                pca[0].fighting.DBG0 -= deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_J))
+                pca[0].fighting.DBG1 -= deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_K))
+                pca[0].fighting.DBG2 -= deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_L))
+                pca[0].fighting.DBG3 -= deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_RETURN))
+                System.out.println(pca[0].fighting.DBG0 + "," + pca[0].fighting.DBG1 + "," + pca[0].fighting.DBG2 + "," + pca[0].fighting.DBG3);
+
             if (Mouse.isButtonDown(0)) {
                 if (!mb0l)
                     pca[0].fightingStateTarget = 1.0f;

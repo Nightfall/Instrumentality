@@ -7,7 +7,7 @@ import uk.co.gamemanj.instrumentality.PoseBoneTransform;
  */
 public class FightingAnimation implements IAnimation {
 
-    public float aPos;
+    public float aPos, DBG0, DBG1, DBG2, DBG3;
 
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
@@ -31,6 +31,9 @@ public class FightingAnimation implements IAnimation {
             usagePBT.X0 = (float) Math.toRadians(20);
             usagePBT.Y0 = (float) Math.toRadians(30);
             PoseBoneTransform blockPBT = new PoseBoneTransform();
+            blockPBT.X0 = (float) Math.toRadians(35.3f);
+            blockPBT.Y0 = (float) Math.toRadians(-6f);
+            blockPBT.Z0 = (float) Math.toRadians(-1.7f);
             PoseBoneTransform pbt = new PoseBoneTransform(holdingPBT, usagePBT, usage);
             return new PoseBoneTransform(pbt, blockPBT, block);
         }
@@ -41,6 +44,10 @@ public class FightingAnimation implements IAnimation {
             usagePBT.X0 = (float) Math.toRadians(40);
             usagePBT.Z0 = (float) Math.toRadians(80);
             PoseBoneTransform blockPBT = new PoseBoneTransform();
+            blockPBT.X0 = (float) Math.toRadians(43.5f);
+            blockPBT.Y0 = (float) Math.toRadians(103);
+            blockPBT.Z0 = (float) Math.toRadians(20);
+            blockPBT.X1 = (float) Math.toRadians(-47.7f);
             PoseBoneTransform pbt = new PoseBoneTransform(holdingPBT, usagePBT, usage);
             return new PoseBoneTransform(pbt, blockPBT, block);
         }

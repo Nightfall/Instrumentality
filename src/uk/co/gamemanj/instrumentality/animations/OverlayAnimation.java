@@ -28,7 +28,6 @@ public class OverlayAnimation implements IAnimation {
             result.X2+=pbt.X2;
             result.Y2+=pbt.Y2;
             result.Z2+=pbt.Z2;
-
             result.TX0+=pbt.TX0;
             result.TY0+=pbt.TY0;
             result.TZ0+=pbt.TZ0;
