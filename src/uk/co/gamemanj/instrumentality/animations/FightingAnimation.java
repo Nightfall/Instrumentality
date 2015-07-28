@@ -28,6 +28,8 @@ public class FightingAnimation implements IAnimation {
             holdingPBT.X0 = (float) Math.toRadians(30);
             holdingPBT.Y0 = (float) Math.toRadians(20);
             PoseBoneTransform usagePBT = new PoseBoneTransform();
+            usagePBT.X0 = (float) Math.toRadians(20);
+            usagePBT.Y0 = (float) Math.toRadians(30);
             PoseBoneTransform blockPBT = new PoseBoneTransform();
             PoseBoneTransform pbt = new PoseBoneTransform(holdingPBT, usagePBT, usage);
             return new PoseBoneTransform(pbt, blockPBT, block);
@@ -36,6 +38,8 @@ public class FightingAnimation implements IAnimation {
             PoseBoneTransform holdingPBT = new PoseBoneTransform();
             holdingPBT.X0 = (float) Math.toRadians(30);
             PoseBoneTransform usagePBT = new PoseBoneTransform();
+            usagePBT.X0 = (float) Math.toRadians(40);
+            usagePBT.Z0 = (float) Math.toRadians(80);
             PoseBoneTransform blockPBT = new PoseBoneTransform();
             PoseBoneTransform pbt = new PoseBoneTransform(holdingPBT, usagePBT, usage);
             return new PoseBoneTransform(pbt, blockPBT, block);

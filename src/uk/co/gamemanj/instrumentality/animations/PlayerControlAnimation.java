@@ -227,10 +227,10 @@ public class PlayerControlAnimation implements IAnimation {
                     if (fightingStateTarget < 0.1f)
                         fighting.aPos = fightingStateTarget;
 
-        if (fighting.aPos < -1.0f) {
+        if (fighting.aPos <= -1.0f) {
             fighting.aPos = -1.0f;
         }
-        if (fighting.aPos > 1.0f) {
+        if (fighting.aPos >= 1.0f) {
             fighting.aPos = 1.0f;
             fightingStateTarget = 0;
         }

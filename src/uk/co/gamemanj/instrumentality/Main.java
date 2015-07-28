@@ -75,6 +75,7 @@ public class Main {
         int scrWidth=800,scrHeight=600;
         float rotX=90, posY=-1;
         boolean animate=true,eDownLast=false;
+        boolean mb0l = false, mb1l = false;
         Display.setTitle("Gamemanj PMX Animation Workbench");
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
@@ -234,11 +235,22 @@ public class Main {
                 pca[0].walkingFlag=true;
             if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
                 pca[0].walkingFlag=false;
-            pca[0].fightingStateTarget = 0.0f;
-            if (Mouse.isButtonDown(0))
-                pca[0].fightingStateTarget = 1.0f;
-            if (Mouse.isButtonDown(1))
-                pca[0].fightingStateTarget = -1.0f;
+            if (Mouse.isButtonDown(0)) {
+                if (!mb0l)
+                    pca[0].fightingStateTarget = 1.0f;
+                mb0l = true;
+            } else {
+                mb0l = false;
+            }
+            if (Mouse.isButtonDown(1)) {
+                if (!mb1l)
+                    pca[0].fightingStateTarget = -1.0f;
+                mb1l = true;
+            } else {
+                if (mb1l)
+                    pca[0].fightingStateTarget = 0.0f;
+                mb1l = false;
+            }
 
             pca[0].walkingFlag=!Keyboard.isKeyDown(Keyboard.KEY_R);
             long v=frameEndpoint-currentTime;
