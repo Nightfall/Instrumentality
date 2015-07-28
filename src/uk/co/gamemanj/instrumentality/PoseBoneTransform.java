@@ -36,6 +36,10 @@ public class PoseBoneTransform {
 
     public PoseBoneTransform(PoseBoneTransform A, PoseBoneTransform B, float i) {
         i = 1.0f - i;
+        if (A == null)
+            A = new PoseBoneTransform();
+        if (B == null)
+            B = new PoseBoneTransform();
         X0 = (A.X0 * i) + (B.X0 * (1.0f - i));
         Y0 = (A.Y0 * i) + (B.Y0 * (1.0f - i));
         Z0 = (A.Z0 * i) + (B.Z0 * (1.0f - i));
@@ -49,6 +53,21 @@ public class PoseBoneTransform {
         TX0 = (A.TX0 * i) + (B.TX0 * (1.0f - i));
         TY0 = (A.TY0 * i) + (B.TY0 * (1.0f - i));
         TZ0 = (A.TZ0 * i) + (B.TZ0 * (1.0f - i));
+    }
+
+    public PoseBoneTransform(PoseBoneTransform boneTransform) {
+        X0 = boneTransform.X0;
+        Y0 = boneTransform.Y0;
+        Z0 = boneTransform.Z0;
+        X1 = boneTransform.X1;
+        Y1 = boneTransform.Y1;
+        Z1 = boneTransform.Z1;
+        X2 = boneTransform.X2;
+        Y2 = boneTransform.Y2;
+        Z2 = boneTransform.Z2;
+        TX0 = boneTransform.TX0;
+        TY0 = boneTransform.TY0;
+        TZ0 = boneTransform.TZ0;
     }
 
     public void apply(Matrix4f boneMatrix,boolean translate) {
