@@ -20,6 +20,37 @@ public class PoseBoneTransform {
      * The translation values(applied before rotation)
      */
     public float TX0,TY0,TZ0;
+
+    public PoseBoneTransform() {
+
+    }
+
+    /**
+     * My Little Miku
+     * Interpolation Is Magic
+     *
+     * @param A The pose to interpolate from.
+     * @param B The pose to interpolate to.
+     * @param i The interpolation value.
+     */
+
+    public PoseBoneTransform(PoseBoneTransform A, PoseBoneTransform B, float i) {
+        i = 1.0f - i;
+        X0 = (A.X0 * i) + (B.X0 * (1.0f - i));
+        Y0 = (A.Y0 * i) + (B.Y0 * (1.0f - i));
+        Z0 = (A.Z0 * i) + (B.Z0 * (1.0f - i));
+        X1 = (A.X1 * i) + (B.X1 * (1.0f - i));
+        Y1 = (A.Y1 * i) + (B.Y1 * (1.0f - i));
+        Z1 = (A.Z1 * i) + (B.Z1 * (1.0f - i));
+        X2 = (A.X2 * i) + (B.X2 * (1.0f - i));
+        Y2 = (A.Y2 * i) + (B.Y2 * (1.0f - i));
+        Z2 = (A.Z2 * i) + (B.Z2 * (1.0f - i));
+
+        TX0 = (A.TX0 * i) + (B.TX0 * (1.0f - i));
+        TY0 = (A.TY0 * i) + (B.TY0 * (1.0f - i));
+        TZ0 = (A.TZ0 * i) + (B.TZ0 * (1.0f - i));
+    }
+
     public void apply(Matrix4f boneMatrix,boolean translate) {
         if (translate)
             boneMatrix.translate(new Vector3f(TX0,TY0,TZ0));

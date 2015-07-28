@@ -41,29 +41,35 @@ public class Main {
         fis.read(data);
         fis.close();
         PMXFile pf = new PMXFile(data);
-        // The threadpool basically holds the objects.
-        // Right now it allocates 1 thread per model,
-        // but this could be switched to a "set thread count" system in future.
-        PMXTransformThreadPool pttp=new PMXTransformThreadPool(1);
+        PMXTransformThreadPool pttp = new PMXTransformThreadPool(3);
         PMXModel[] pm = new PMXModel[1];
-        WalkingAnimation[] wa=new WalkingAnimation[pm.length];
         PlayerControlAnimation[] pca=new PlayerControlAnimation[pm.length];
         for (int i=0;i<pm.length;i++) {
+            pttp.keepAlive();
             /*
              * Animation graph diagram (ASCII)
-             * OverlayAnimation
-             *  |        |
-             *  | StrengthMultiplyAnimation
-             *  | ^      |
-             *  | ^>WalkingAnimation
-             *  | ^
-             * PlayerControlAnimation (sends data, see arrows)
+             * OverlayAnimation-----------------+
+             *  |        |                      |
+             *  | StrengthMultiplyAnimation FightingAnimation
+             *  | ^      |                  ^
+             *  | ^>WalkingAnimation        ^
+             *  | ^                         ^
+             * PlayerControlAnimation>>>>>>>^
+             *
+             * Note that PCA sends data to other animations for sub-tasks,
+             * while doing direct control for others - see arrows for where it takes control.
              */
             pm[i]=new PMXModel(pf, pttp);
-            wa[i]=new WalkingAnimation();
-            StrengthMultiplyAnimation sma=new StrengthMultiplyAnimation(wa[i]);
-            pca[i]=new PlayerControlAnimation(wa[i],sma);
-            pm[i].anim=new OverlayAnimation(new IAnimation[] {sma,pca[i]});
+
+            WalkingAnimation wa = new WalkingAnimation();
+            wa.time = i * 0.1f;
+            StrengthMultiplyAnimation smaW = new StrengthMultiplyAnimation(wa);
+
+            FightingAnimation fa = new FightingAnimation();
+
+            pca[i] = new PlayerControlAnimation(wa, smaW, fa);
+            pca[i].walkingFlag = true;
+            pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i]});
             pttp.addModel(pm[i]);
         }
         int scrWidth=800,scrHeight=600;
@@ -113,6 +119,8 @@ public class Main {
         }
         Keyboard.create();
         while (!Display.isCloseRequested()) {
+            long frameStart = System.currentTimeMillis();
+            pttp.keepAlive();
             boolean cobalt=Keyboard.isKeyDown(Keyboard.KEY_C);
             if (cobalt) {
                 GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
@@ -184,7 +192,11 @@ public class Main {
                 GL11.glVertex3d(0,0,i/4.0d);
             }
             GL11.glEnd();
+
             Display.update();
+            Keyboard.poll();
+            Mouse.poll();
+
             long currentTime=System.currentTimeMillis();
             // Frame start is frameEndpoint-20 (note that the delta does include the sleep)
             int delta=(int)(currentTime-(frameEndpoint-30));
@@ -194,7 +206,6 @@ public class Main {
                 for (int i=0;i<pm.length;i++)
                     pm[i].update(deltaTime);
 
-            Keyboard.poll();
             if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
                 rotX-=deltaTime*45;
             }
@@ -223,25 +234,17 @@ public class Main {
                 pca[0].walkingFlag=true;
             if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
                 pca[0].walkingFlag=false;
-            if (Keyboard.isKeyDown(Keyboard.KEY_LEFT)) {
-                wa[0].time -= deltaTime;
-                while (wa[0].time<0)
-                    wa[0].time+=1;
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_RIGHT)) {
-                wa[0].time+=deltaTime;
-                while (wa[0].time>1)
-                    wa[0].time-=1;
-            }
-            if (Keyboard.isKeyDown(Keyboard.KEY_RETURN)) {
-                System.out.println(wa[0].time);
-                wa[0].time=0;
-            }
+            pca[0].fightingStateTarget = 0.0f;
+            if (Mouse.isButtonDown(0))
+                pca[0].fightingStateTarget = 1.0f;
+            if (Mouse.isButtonDown(1))
+                pca[0].fightingStateTarget = -1.0f;
 
             pca[0].walkingFlag=!Keyboard.isKeyDown(Keyboard.KEY_R);
             long v=frameEndpoint-currentTime;
             if (v>1)
                 Thread.sleep(v);
+            Display.setTitle("GPMXAW: FrameTime " + (currentTime - frameStart) + "ms");
             frameEndpoint=currentTime+30;
 
             float eyesX=(Mouse.getX()/(float)scrWidth)-0.5f;
@@ -251,6 +254,7 @@ public class Main {
                 spca.lookUD=eyesY;
             }
         }
+        pttp.killSwitch();
         Display.destroy();
     }
 }
