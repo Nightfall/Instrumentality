@@ -45,7 +45,7 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
         }
         // This pose was actually developed during work on onehandedgendo...
         // Also: I think upperclass shock?
-        if (poseName.equalsIgnoreCase("creepy_laugh") || poseName.equalsIgnoreCase("upperclass_shock")) {
+        if (poseName.equalsIgnoreCase("creepy_laugh")) {
             PoseAnimation pa = new PoseAnimation();
             PoseBoneTransform pbt = new PoseBoneTransform();
             pbt.X0 = (float) Math.toRadians(20);
@@ -87,6 +87,20 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
             pbt = new PoseBoneTransform();
             pbt.Y0 = -0.53f;
             pa.hashMap.put("third1_r", pbt);
+            pbt = new PoseBoneTransform();
+            pbt.Y0 = -0.63f;
+            pa.hashMap.put("little1_r", pbt);
+            for (int i = 0; i < 1; i++) {
+                pbt = new PoseBoneTransform();
+                pbt.Y0 = -0.1f;
+                pa.hashMap.put("fore" + (i + 2) + "_r", pbt);
+                pbt = new PoseBoneTransform();
+                pbt.Y0 = -0.1f;
+                pa.hashMap.put("middle" + (i + 2) + "_r", pbt);
+                pbt = new PoseBoneTransform();
+                pbt.Y0 = -0.1f;
+                pa.hashMap.put("third" + (i + 2) + "_r", pbt);
+            }
             return pa;
         }
         return null;
@@ -94,6 +108,6 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
 
     @Override
     public String[] getPoses() {
-        return new String[]{"idle", "hai!", "@one_butterflies_haven_keynsham_quiet", "creepy_laugh", "upperclass_shock", "one_handed_gendo"};
+        return new String[]{"idle", "hai!", "creepy_laugh", "one_handed_gendo"};
     }
 }

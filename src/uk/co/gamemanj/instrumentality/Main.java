@@ -21,6 +21,7 @@ import java.util.HashMap;
 /**
  * FULL LIST OF KEYBOARD CONTROLS:
  * WASD: Camera controls.
+ * FV: Zoom control!
  * E: Animation Update Toggle.
  * R: Walking Flag Disable.
  * Up/Down: Turns on/off the walking flag.
@@ -98,8 +99,8 @@ public class Main {
             pttp.addModel(pm[i]);
         }
         int scrWidth=800,scrHeight=600;
-        float rotX=90, posY=-1;
-        boolean animate=true,eDownLast=false;
+        float rotX = 90, posY = -1, zoom = 7.0f;
+        boolean animate = true, eDownLast = false, rDownLast = false;
         boolean mb0l = false, mb1l = false;
         Display.setTitle("Gamemanj PMX Animation Workbench");
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
@@ -160,7 +161,7 @@ public class Main {
             long ll=System.currentTimeMillis();
             ll&=8191;
             float testTime=ll/(400.0f);
-            GL11.glTranslated(0, posY, -7.0d);
+            GL11.glTranslated(0, posY, -zoom);
             GL11.glRotated(rotX, 0, 1, 0);
             GL11.glTranslated(0, 0, testTime);
             GL11.glPushMatrix();
@@ -238,16 +239,30 @@ public class Main {
             if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
                 rotX+=deltaTime*45;
             }
+
             boolean eDown=Keyboard.isKeyDown(Keyboard.KEY_E);
             if (eDown)
                 if (!eDownLast)
                     animate=!animate;
             eDownLast=eDown;
+
+            boolean rDown = Keyboard.isKeyDown(Keyboard.KEY_R);
+            if (rDown)
+                if (!rDownLast)
+                    pca[0].walkingFlag = !pca[0].walkingFlag;
+            rDownLast = rDown;
+
             if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
                 posY+=deltaTime;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
                 posY-=deltaTime;
+            }
+            if (Keyboard.isKeyDown(Keyboard.KEY_F)) {
+                zoom += deltaTime;
+            }
+            if (Keyboard.isKeyDown(Keyboard.KEY_V)) {
+                zoom -= deltaTime;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
                 pca[0].sneakStateTarget=1;
@@ -304,7 +319,6 @@ public class Main {
                 mb1l = false;
             }
 
-            pca[0].walkingFlag=!Keyboard.isKeyDown(Keyboard.KEY_R);
             long v=frameEndpoint-currentTime;
             if (v>1)
                 Thread.sleep(v);
