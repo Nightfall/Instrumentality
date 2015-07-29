@@ -30,10 +30,7 @@ public class StrengthMultiplyAnimation implements IAnimation {
         pbt.X2*=mulAmount;
         pbt.Y0*=mulAmount;
         pbt.Y1*=mulAmount;
-        pbt.Y2*=mulAmount;
         pbt.Z0*=mulAmount;
-        pbt.Z1*=mulAmount;
-        pbt.Z2*=mulAmount;
         pbt.TX0*=mulAmount;
         pbt.TY0*=mulAmount;
         pbt.TZ0*=mulAmount;

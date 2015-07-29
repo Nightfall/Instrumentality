@@ -13,8 +13,8 @@ public class PoseBoneTransform {
      * (for example: rotation on one axis to raise/lower head should be applied after left/right rotation)
      */
     public float X0,Y0,Z0;
-    public float X1,Y1,Z1;
-    public float X2,Y2,Z2;
+    public float X1,Y1;
+    public float X2;
 
     /**
      * The translation values(applied before rotation)
@@ -45,10 +45,7 @@ public class PoseBoneTransform {
         Z0 = (A.Z0 * i) + (B.Z0 * (1.0f - i));
         X1 = (A.X1 * i) + (B.X1 * (1.0f - i));
         Y1 = (A.Y1 * i) + (B.Y1 * (1.0f - i));
-        Z1 = (A.Z1 * i) + (B.Z1 * (1.0f - i));
         X2 = (A.X2 * i) + (B.X2 * (1.0f - i));
-        Y2 = (A.Y2 * i) + (B.Y2 * (1.0f - i));
-        Z2 = (A.Z2 * i) + (B.Z2 * (1.0f - i));
 
         TX0 = (A.TX0 * i) + (B.TX0 * (1.0f - i));
         TY0 = (A.TY0 * i) + (B.TY0 * (1.0f - i));
@@ -61,10 +58,7 @@ public class PoseBoneTransform {
         Z0 = boneTransform.Z0;
         X1 = boneTransform.X1;
         Y1 = boneTransform.Y1;
-        Z1 = boneTransform.Z1;
         X2 = boneTransform.X2;
-        Y2 = boneTransform.Y2;
-        Z2 = boneTransform.Z2;
         TX0 = boneTransform.TX0;
         TY0 = boneTransform.TY0;
         TZ0 = boneTransform.TZ0;
@@ -79,9 +73,6 @@ public class PoseBoneTransform {
         boneMatrix.rotate(Z0,new Vector3f(0,0,1));
         boneMatrix.rotate(X1,new Vector3f(1,0,0));
         boneMatrix.rotate(Y1,new Vector3f(0,1,0));
-        boneMatrix.rotate(Z1,new Vector3f(0,0,1));
         boneMatrix.rotate(X2,new Vector3f(1,0,0));
-        boneMatrix.rotate(Y2,new Vector3f(0,1,0));
-        boneMatrix.rotate(Z2,new Vector3f(0,0,1));
     }
 }
