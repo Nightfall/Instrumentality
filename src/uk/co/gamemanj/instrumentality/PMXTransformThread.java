@@ -14,9 +14,13 @@ import java.nio.FloatBuffer;
 public class PMXTransformThread extends Thread {
     public PMXTransformThreadPool pttp;
     public int stride, ofs;
-    // Keep-alive
+    // Keep-alive. If this times out (30 seconds),
     public long lastUpdate = 0;
+    // Or this is switched on...
     public boolean killSwitch = false;
+    // Or this thread dies...(set to this thread for an "ignore")
+    public Thread monitorThread;
+    // Then the thread exits.
 
     // These exist because they're easier to pass around as instance vars
     private Matrix4f[] matrix4fTs, matrix4fNTs;
@@ -87,7 +91,7 @@ public class PMXTransformThread extends Thread {
     @Override
     public void run() {
         long frameEndpoint = System.currentTimeMillis();
-        while (((lastUpdate + 30000) > System.currentTimeMillis()) && (!killSwitch)) {
+        while (((lastUpdate + 30000) > System.currentTimeMillis()) && (!killSwitch) && monitorThread.isAlive()) {
             PMXTransformThreadPool.PMXTransformingModel[] a = pttp.modelSet.values().toArray(new PMXTransformThreadPool.PMXTransformingModel[0]);
             for (int i = ofs; i < a.length; i += stride)
                 processModel(a[i]);

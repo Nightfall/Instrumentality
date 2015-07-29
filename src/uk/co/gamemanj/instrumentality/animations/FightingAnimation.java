@@ -7,7 +7,7 @@ import uk.co.gamemanj.instrumentality.PoseBoneTransform;
  */
 public class FightingAnimation implements IAnimation {
 
-    public float aPos, DBG0, DBG1, DBG2, DBG3;
+    public float aPos;
 
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
@@ -17,12 +17,7 @@ public class FightingAnimation implements IAnimation {
             block = -usage;
             usage = 0;
         }
-        if (boneName.equalsIgnoreCase("R_shouler")) {
-            PoseBoneTransform pbt = new PoseBoneTransform();
-            pbt.X0 = (float) Math.toRadians(20);
-            pbt.Y0 = (float) Math.toRadians(-30);
-            return pbt;
-        }
+
         if (boneName.equalsIgnoreCase("L_shouler")) {
             PoseBoneTransform holdingPBT = new PoseBoneTransform();
             holdingPBT.X0 = (float) Math.toRadians(30);

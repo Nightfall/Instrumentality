@@ -12,7 +12,7 @@ public class PoseAnimation implements IAnimation {
 
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
-        return hashMap.get(boneName);
+        return hashMap.get(boneName.toLowerCase());
     }
 
     @Override

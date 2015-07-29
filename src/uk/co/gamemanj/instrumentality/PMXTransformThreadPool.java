@@ -31,7 +31,12 @@ public class PMXTransformThreadPool {
             threads[i].killSwitch = true;
     }
 
-    public PMXTransformThreadPool(int cpm) {
+    /**
+     * Creates a threadpool.
+     * @param cpm Amount of threads to create.
+     * @param monitor If this thread dies, the threadpool assumes the program has died, and cleans up after itself.
+     */
+    public PMXTransformThreadPool(int cpm, Thread monitor) {
         threads = new PMXTransformThread[cpm];
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new PMXTransformThread();
@@ -39,6 +44,7 @@ public class PMXTransformThreadPool {
             threads[i].stride = threads.length;
             threads[i].pttp = this;
             threads[i].lastUpdate = System.currentTimeMillis();
+            threads[i].monitorThread=monitor;
             threads[i].setPriority(Thread.MIN_PRIORITY);
             threads[i].start();
         }

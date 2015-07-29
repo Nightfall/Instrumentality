@@ -1,6 +1,7 @@
 package uk.co.gamemanj.instrumentality;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -9,11 +10,11 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Vector3f;
 import uk.co.gamemanj.instrumentality.animations.*;
+import uk.co.gamemanj.instrumentality.animations.libraries.EmoteAnimationLibrary;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -27,12 +28,15 @@ import java.util.HashMap;
  * Shift: Sneak
  * Ctrl: Sprint
  * C(obalt)
+ * Q: YOU NEED THE CONSOLE FOR THIS: Lists emotes. Type in the name to apply it.
+ * Oh, and try to type it in 30 seconds, the threads may assume the program crashed otherwise
  *
- * NOTE: THESE OPTIONS ARE USELESS WITHOUT CODE MODIFICATIONS
- * YUIO,HJKL: Controlling some parameters is difficult so this allows live feedback
+ * NOTE: To use the following you need to actually modify the code in places
+ *
+ * TYUIO,GHJKL: Controlling some parameters is difficult so this allows live feedback
  * Enter: Dumps live feedback data
  *
- * Usage of these 2 controls is basically in FightingAnimation, but now there's no use for them there, it should be redirected wherever needed.
+ * These controls exist to be used when working on Emote poses. It simplifies the process quite a bit :)
  *
  * Before using this code, look in PlayerControlAnimation for some notes
  *
@@ -46,16 +50,27 @@ public class Main {
         fis.read(data);
         fis.close();
         PMXFile pf = new PMXFile(data);
-        PMXTransformThreadPool pttp = new PMXTransformThreadPool(3);
+
+        BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+
+        PMXTransformThreadPool pttp = new PMXTransformThreadPool(3, Thread.currentThread());
         PMXModel[] pm = new PMXModel[1];
         PlayerControlAnimation[] pca=new PlayerControlAnimation[pm.length];
+        LibraryAnimation[] lib = new LibraryAnimation[pm.length];
+        // animation libraries are NOT a per-model thing
+        EmoteAnimationLibrary eal = new EmoteAnimationLibrary();
         for (int i=0;i<pm.length;i++) {
             pttp.keepAlive();
             /*
              * Animation graph diagram (ASCII)
-             * OverlayAnimation-----------------+
-             *  |        |                      |
-             *  | StrengthMultiplyAnimation FightingAnimation
+             * This is not how you need to implement it,
+             * but it's how I've implemented it as I've made this testbench
+             * If you want the ability to, say, turn off emotes, then put a StrengthMultiply inbetween
+             * the Overlay & LibraryAnimation modules.
+             *
+             * OverlayAnimation-----------------+----------------+
+             *  |        |                      |                |
+             *  | StrengthMultiplyAnimation FightingAnimation LibraryAnimation
              *  | ^      |                  ^
              *  | ^>WalkingAnimation        ^
              *  | ^                         ^
@@ -74,7 +89,12 @@ public class Main {
 
             pca[i] = new PlayerControlAnimation(wa, smaW, fa);
             pca[i].walkingFlag = true;
-            pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i]});
+
+            lib[i] = new LibraryAnimation();
+            lib[i].setCurrentPose(eal.getPose("idle"), false);
+            lib[i].transitionValue = 1.0f;
+
+            pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i], lib[i]});
             pttp.addModel(pm[i]);
         }
         int scrWidth=800,scrHeight=600;
@@ -241,24 +261,31 @@ public class Main {
             if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
                 pca[0].walkingFlag=false;
 
+            if (Keyboard.isKeyDown(Keyboard.KEY_T))
+                eal.debugPbt.X0 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_Y))
-                pca[0].fighting.DBG0 += deltaTime * 5.0f;
+                eal.debugPbt.Y0 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_U))
-                pca[0].fighting.DBG1 += deltaTime * 5.0f;
+                eal.debugPbt.Z0 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_I))
-                pca[0].fighting.DBG2 += deltaTime * 5.0f;
+                eal.debugPbt.X1 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_O))
-                pca[0].fighting.DBG3 += deltaTime * 5.0f;
+                eal.debugPbt.Y1 += deltaTime * 5.0f;
+            if (Keyboard.isKeyDown(Keyboard.KEY_G))
+                eal.debugPbt.X0 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_H))
-                pca[0].fighting.DBG0 -= deltaTime * 5.0f;
+                eal.debugPbt.Y0 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_J))
-                pca[0].fighting.DBG1 -= deltaTime * 5.0f;
+                eal.debugPbt.Z0 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_K))
-                pca[0].fighting.DBG2 -= deltaTime * 5.0f;
+                eal.debugPbt.X1 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_L))
-                pca[0].fighting.DBG3 -= deltaTime * 5.0f;
+                eal.debugPbt.Y1 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_RETURN))
-                System.out.println(pca[0].fighting.DBG0 + "," + pca[0].fighting.DBG1 + "," + pca[0].fighting.DBG2 + "," + pca[0].fighting.DBG3);
+                System.out.println(eal.debugPbt.X0 + "," + eal.debugPbt.Y0 + "," + eal.debugPbt.Z0 + "," + eal.debugPbt.X1 + "," + eal.debugPbt.Y1);
+            if (Keyboard.isKeyDown(Keyboard.KEY_Q)) {
+                lib[0].setCurrentPose(eal.getPose(consoleReader.readLine()), false);
+            }
 
             if (Mouse.isButtonDown(0)) {
                 if (!mb0l)

@@ -8,13 +8,13 @@ import uk.co.gamemanj.instrumentality.PoseBoneTransform;
 public class LibraryAnimation implements IAnimation {
     private IAnimation currentPose;
     private IAnimation lastPose;
-    public float transitionValue;
+    public float transitionValue, transitionSpeed = 4.0f;
 
     public void setCurrentPose(IAnimation ia, boolean skipAheadPrevious) {
         if (transitionValue >= 1.0f) {
             lastPose = currentPose;
         } else if (transitionValue <= 0.0f) {
-            lastPose = null;
+            // Do nothing, lastPose stays the same
         } else {
             if (skipAheadPrevious) {
                 lastPose = currentPose;
@@ -61,6 +61,8 @@ public class LibraryAnimation implements IAnimation {
 
     @Override
     public void update(double deltaTime) {
-
+        transitionValue += deltaTime * transitionSpeed;
+        if (transitionValue >= 1.0f)
+            transitionValue = 1.0f;
     }
 }
