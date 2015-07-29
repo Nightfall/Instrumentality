@@ -2,6 +2,7 @@ package uk.co.gamemanj.instrumentality.animations;
 
 import uk.co.gamemanj.instrumentality.PoseBoneTransform;
 import uk.co.gamemanj.instrumentality.animations.IAnimation;
+import uk.co.gamemanj.instrumentality.animations.libraries.EmoteAnimationLibrary;
 
 /**
  * Created on 24/07/15.
@@ -29,6 +30,11 @@ public class WalkingAnimation implements IAnimation {
             return getKneeTransform(false, atime);
         if (boneName.equalsIgnoreCase("ankle_L"))
             return getAnkleTransform(false, atime);
+        if (boneName.equalsIgnoreCase("L_shouler"))
+            return getShoulderTransform(false, atime);
+        if (boneName.equalsIgnoreCase("L_ellbow"))
+            return getElbowTransform(true, atime);
+
         float stime = atime + 0.50f;
         if (stime > 1.0f)
             stime -= 1.0f;
@@ -38,6 +44,11 @@ public class WalkingAnimation implements IAnimation {
             return getKneeTransform(true, stime);
         if (boneName.equalsIgnoreCase("ankle_R"))
             return getAnkleTransform(true, stime);
+        // These are an exception to the stime rule
+        if (boneName.equalsIgnoreCase("R_shouler"))
+            return getShoulderTransform(true, atime);
+        if (boneName.equalsIgnoreCase("R_ellbow"))
+            return getElbowTransform(true, atime);
         String[] wiggle = {
                 "head",
                 "neck",
@@ -78,10 +89,47 @@ public class WalkingAnimation implements IAnimation {
             if (wiggle[ai].equalsIgnoreCase(boneName)) {
                 PoseBoneTransform pbt = new PoseBoneTransform();
                 pbt.X1 = (float) Math.sin(wtime * (Math.PI * 2)) * amount[ai];
+                if (boneName.equalsIgnoreCase("spine00")) {
+                    pbt.Y0 = (float) Math.sin(wtime * Math.PI * (speed)) * (speed / 40.0f);
+                }
                 return pbt;
             }
         }
         return null;
+    }
+
+    private PoseBoneTransform getShoulderTransform(boolean b, float atime) {
+        PoseBoneTransform pbt = new PoseBoneTransform();
+        float t = (float) (atime * Math.PI * 2);
+        if (b)
+            t += Math.PI;
+        float ofs = 0.92f;
+        pbt.X0 = (float) (Math.sin(t) - ofs);
+        pbt.Y0 = 0.29f;
+        pbt.Z0 = -0.24f;
+        pbt.X0 *= 0.693;
+        if (b) {
+            pbt.X0 = -pbt.X0;
+            pbt.Y0 = -pbt.Y0;
+            pbt.Z0 = -pbt.Z0;
+        }
+        return pbt;
+    }
+
+    private PoseBoneTransform getElbowTransform(boolean b, float atime) {
+        PoseBoneTransform pbt = new PoseBoneTransform();
+        float t = (float) (atime * Math.PI * 2);
+        if (!b)
+            t += Math.PI;
+        pbt.Z0 = (float) (Math.sin(t)) + 1.0f;
+        pbt.X0 = (float) (Math.sin(t) * 2.0f);
+        pbt.Z0 *= -0.1f;
+        pbt.X0 *= -0.4f;
+        if (b) {
+            pbt.X0 = -pbt.X0;
+            pbt.Z0 = -pbt.Z0;
+        }
+        return pbt;
     }
 
     private PoseBoneTransform getKneeTransform(boolean LR, float shiftedTime) {
@@ -143,7 +191,7 @@ public class WalkingAnimation implements IAnimation {
     @Override
     public void update(double deltaTime) {
         time += deltaTime * speed;
-        wtime += deltaTime;
+        wtime += deltaTime * speed;
         while (time > 1.0f)
             time -= 1.0f;
     }

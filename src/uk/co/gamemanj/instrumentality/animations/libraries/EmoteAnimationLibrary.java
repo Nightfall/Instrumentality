@@ -7,14 +7,14 @@ import uk.co.gamemanj.instrumentality.animations.IAnimationLibrary;
 import uk.co.gamemanj.instrumentality.animations.PoseAnimation;
 
 /**
- * Vic: Keep the one-handed Gendo... or else!
+ * Emotes (includes her "idle" pose)
  * Created on 29/07/15.
  */
 public class EmoteAnimationLibrary implements IAnimationLibrary {
     /**
      * Special PBT modified from Main (Let's hope the code never caches a copy)
      */
-    public PoseBoneTransform debugPbt = new PoseBoneTransform();
+    public static PoseBoneTransform debugPbt = new PoseBoneTransform();
 
     public EmoteAnimationLibrary() {
     }
@@ -30,7 +30,7 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
             return pa;
         }
         // some things mean others depending on context, did you know?
-        if (poseName.equalsIgnoreCase("hai!") || poseName.equalsIgnoreCase("@one_butterflies_haven_keynsham_quiet")) {
+        if (poseName.equalsIgnoreCase("hai") || poseName.equalsIgnoreCase("@one_butterflies_haven_keynsham_quiet")) {
             PoseAnimation pa = new PoseAnimation();
             PoseBoneTransform pbt = new PoseBoneTransform();
             pbt.Z0 = -0.1f;
@@ -59,7 +59,7 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
             pa.hashMap.put("r_ellbow", pbt);
             return pa;
         }
-        if (poseName.equalsIgnoreCase("one_handed_gendo")) {
+        if (poseName.equalsIgnoreCase("gendo")) {
             PoseAnimation pa = new PoseAnimation();
             PoseBoneTransform pbt = new PoseBoneTransform();
             pbt.X0 = 1.12f;
@@ -72,7 +72,7 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
             pbt.Z0 = -1.49f;
             pbt.X1 = 2.72f;
             pbt.Y1 = 0.04f;
-            pa.hashMap.put("r_ellbow", pbt);
+            pa.hashMap.put("r_ellbow", debugPbt);
             pbt = new PoseBoneTransform();
             pbt.Z0 = -0.45f;
             pbt.X1 = 0.22f;
@@ -108,6 +108,6 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
 
     @Override
     public String[] getPoses() {
-        return new String[]{"idle", "hai!", "creepy_laugh", "one_handed_gendo"};
+        return new String[]{"idle", "hai", "creepy_laugh", "gendo"};
     }
 }

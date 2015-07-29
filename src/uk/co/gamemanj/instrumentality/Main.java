@@ -92,13 +92,12 @@ public class Main {
             pca[i].walkingFlag = true;
 
             lib[i] = new LibraryAnimation();
-            lib[i].setCurrentPose(eal.getPose("idle"), false);
             lib[i].transitionValue = 1.0f;
 
             pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i], lib[i]});
             pttp.addModel(pm[i]);
         }
-        int scrWidth=800,scrHeight=600;
+        int scrWidth = 1024, scrHeight = 768;
         float rotX = 90, posY = -1, zoom = 7.0f;
         boolean animate = true, eDownLast = false, rDownLast = false;
         boolean mb0l = false, mb1l = false;

@@ -20,8 +20,6 @@ public class FightingAnimation implements IAnimation {
 
         if (boneName.equalsIgnoreCase("L_shouler")) {
             PoseBoneTransform holdingPBT = new PoseBoneTransform();
-            holdingPBT.X0 = (float) Math.toRadians(30);
-            holdingPBT.Y0 = (float) Math.toRadians(20);
             PoseBoneTransform usagePBT = new PoseBoneTransform();
             usagePBT.X0 = (float) Math.toRadians(20);
             usagePBT.Y0 = (float) Math.toRadians(30);
@@ -34,7 +32,6 @@ public class FightingAnimation implements IAnimation {
         }
         if (boneName.equalsIgnoreCase("L_ellbow")) {
             PoseBoneTransform holdingPBT = new PoseBoneTransform();
-            holdingPBT.X0 = (float) Math.toRadians(30);
             PoseBoneTransform usagePBT = new PoseBoneTransform();
             usagePBT.X0 = (float) Math.toRadians(40);
             usagePBT.Z0 = (float) Math.toRadians(80);
