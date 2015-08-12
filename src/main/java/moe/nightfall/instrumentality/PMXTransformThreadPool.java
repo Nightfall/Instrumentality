@@ -1,12 +1,7 @@
 package moe.nightfall.instrumentality;
 
-import org.lwjgl.Sys;
-import org.lwjgl.util.vector.Matrix3f;
-import org.lwjgl.util.vector.Matrix4f;
-
 import java.nio.FloatBuffer;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 
 /**
  * Created on 26/07/15.
@@ -33,7 +28,8 @@ public class PMXTransformThreadPool {
 
     /**
      * Creates a threadpool.
-     * @param cpm Amount of threads to create.
+     *
+     * @param cpm     Amount of threads to create.
      * @param monitor If this thread dies, the threadpool assumes the program has died, and cleans up after itself.
      */
     public PMXTransformThreadPool(int cpm, Thread monitor) {
@@ -44,7 +40,7 @@ public class PMXTransformThreadPool {
             threads[i].stride = threads.length;
             threads[i].pttp = this;
             threads[i].lastUpdate = System.currentTimeMillis();
-            threads[i].monitorThread=monitor;
+            threads[i].monitorThread = monitor;
             threads[i].setPriority(Thread.MIN_PRIORITY);
             threads[i].start();
         }

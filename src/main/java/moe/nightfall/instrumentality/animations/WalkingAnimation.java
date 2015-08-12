@@ -1,8 +1,6 @@
 package moe.nightfall.instrumentality.animations;
 
 import moe.nightfall.instrumentality.PoseBoneTransform;
-import moe.nightfall.instrumentality.animations.IAnimation;
-import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 
 /**
  * Created on 24/07/15.
@@ -17,7 +15,7 @@ public class WalkingAnimation implements IAnimation {
     /**
      * Find a way to use this, it makes walking just that tad bit more realistic :)
      */
-    public float directionAdjustment=0.0f;
+    public float directionAdjustment = 0.0f;
 
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
@@ -70,12 +68,12 @@ public class WalkingAnimation implements IAnimation {
         float[] amount = {
                 0.01f,
                 0.01f,
-                -0.2f/2,
-                0.15f/2,
-                -0.25f/2,
-                0.2f/2,
-                -0.375f/2,
-                0.15f/2,
+                -0.2f / 2,
+                0.15f / 2,
+                -0.25f / 2,
+                0.2f / 2,
+                -0.375f / 2,
+                0.15f / 2,
                 0.02f,
                 0.02f,
                 0.02f,

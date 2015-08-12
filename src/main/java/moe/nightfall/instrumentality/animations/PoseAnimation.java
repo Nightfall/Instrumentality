@@ -1,8 +1,8 @@
 package moe.nightfall.instrumentality.animations;
 
-import java.util.HashMap;
-
 import moe.nightfall.instrumentality.PoseBoneTransform;
+
+import java.util.HashMap;
 
 /**
  * Created on 28/07/15.

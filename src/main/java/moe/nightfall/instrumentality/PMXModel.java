@@ -1,7 +1,6 @@
 package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.animations.IAnimation;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
@@ -10,7 +9,6 @@ import org.lwjgl.util.vector.Vector4f;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Allows animating a model file, and rendering using LWJGL.
@@ -40,19 +38,19 @@ public class PMXModel {
         theFile = pf;
         indexBuffer = new IntBuffer[pf.matData.length];
         cobaltIndexBuffer = new IntBuffer[pf.matData.length];
-        threadPool=pttp;
+        threadPool = pttp;
 
-        buffer_v=BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
-        buffer_n=BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
-        buffer_t=BufferUtils.createFloatBuffer(theFile.vertexData.length * 2);
+        buffer_v = BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
+        buffer_n = BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
+        buffer_t = BufferUtils.createFloatBuffer(theFile.vertexData.length * 2);
 
         int face = 0;
 
-        for(int i = 0; i < theFile.matData.length; i++) {
+        for (int i = 0; i < theFile.matData.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             indexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 3);
             cobaltIndexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 6);
-            for(int ind = 0; ind < mat.faceCount;ind++) {
+            for (int ind = 0; ind < mat.faceCount; ind++) {
                 cobaltIndexBuffer[i].put(theFile.faceData[face][0]);
                 cobaltIndexBuffer[i].put(theFile.faceData[face][1]);
 
@@ -68,7 +66,7 @@ public class PMXModel {
                 face++;
             }
         }
-        for(int vi = 0; vi < theFile.vertexData.length; vi++) {
+        for (int vi = 0; vi < theFile.vertexData.length; vi++) {
             PMXFile.PMXVertex ver = theFile.vertexData[vi];
             buffer_t.put(new float[]{ver.texU, ver.texV});
         }
@@ -78,11 +76,12 @@ public class PMXModel {
      * This used to be created in transformCore, then cached forever
      * now that's no longer needed, as the entire transform matrix is cached for the frame -
      * caching this is a waste of time now.
-     * @param bone The bone to get the IBS of
+     *
+     * @param bone        The bone to get the IBS of
      * @param translation Disable for normals
      * @return An IBS matrix
      */
-    public Matrix4f createIBS(PMXFile.PMXBone bone,boolean translation) {
+    public Matrix4f createIBS(PMXFile.PMXBone bone, boolean translation) {
         float dX = bone.connectionPosOfsX;
         float dY = bone.connectionPosOfsY;
         float dZ = bone.connectionPosOfsZ;
@@ -111,29 +110,29 @@ public class PMXModel {
         return intoBoneSpace;
     }
 
-    public Matrix4f getBoneMatrix(PMXFile.PMXBone bone,boolean translation) {
+    public Matrix4f getBoneMatrix(PMXFile.PMXBone bone, boolean translation) {
         PoseBoneTransform boneTransform = anim.getBoneTransform(compatibilityCheck(bone.globalName));
         Matrix4f i = new Matrix4f();
-        if (boneTransform!=null) {
+        if (boneTransform != null) {
             Matrix4f t = createIBS(bone, translation);
             Matrix4f.mul(t, i, i);
 
             Matrix4f bt = new Matrix4f();
-            boneTransform.apply(bt,translation);
+            boneTransform.apply(bt, translation);
             Matrix4f.mul(bt, i, i);
 
             t.invert();
             Matrix4f.mul(t, i, i);
         }
-        if (bone.parentBoneIndex!=-1)
-            Matrix4f.mul(getBoneMatrix(theFile.boneData[bone.parentBoneIndex],translation), i, i);
+        if (bone.parentBoneIndex != -1)
+            Matrix4f.mul(getBoneMatrix(theFile.boneData[bone.parentBoneIndex], translation), i, i);
         return i;
     }
 
     /**
      * Some models use different names for what are essentially the same bones.
      * Put checks here to find these.
-     *
+     * <p/>
      * Note that if animations don't work correctly with the new name of a bone,
      * it is better to put the compatibility in the affected animations
      * (so the values can be adjusted to compensate)
@@ -179,7 +178,7 @@ public class PMXModel {
             // If we're not transforming this bone, don't waste time
             if (boneTransform != null) {
                 Matrix4f boneMatrix = new Matrix4f();
-                boneTransform.apply(boneMatrix,!normal);
+                boneTransform.apply(boneMatrix, !normal);
                 // first off, bring into the current bone's space
                 Matrix4f intoBoneSpace = createIBS(bone, !normal);
 
@@ -205,9 +204,9 @@ public class PMXModel {
      * Make sure to enable GL_TEXTURE_2D before calling.
      *
      * @param textureBinder Binds a texture.
-     * @param cobalt undocumented feature
+     * @param cobalt        undocumented feature
      */
-    public void render(IMaterialBinder textureBinder,boolean cobalt) {
+    public void render(IMaterialBinder textureBinder, boolean cobalt) {
 
 //        threadPool.transformModel(this, buffer_v, buffer_n);
         buffer_v.rewind();

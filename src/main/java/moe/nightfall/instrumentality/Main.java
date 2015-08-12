@@ -4,9 +4,7 @@ import moe.nightfall.instrumentality.animations.*;
 import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 import moe.nightfall.instrumentality.shader.Shader;
 import moe.nightfall.instrumentality.shader.ShaderManager;
-
 import org.lwjgl.BufferUtils;
-import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -16,9 +14,11 @@ import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Vector3f;
 
 import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
@@ -35,26 +35,26 @@ import java.util.HashMap;
  * C(obalt)
  * Q: YOU NEED THE CONSOLE FOR THIS: Lists emotes. Type in the name to apply it.
  * Oh, and try to type it in 30 seconds, the threads may assume the program crashed otherwise
- *
+ * <p/>
  * NOTE: To use the following you need to actually modify the code in places
- *
+ * <p/>
  * TYUIO,GHJKL: Controlling some parameters is difficult so this allows live feedback
  * Enter: Dumps live feedback data
- *
+ * <p/>
  * These controls exist to be used when working on Emote poses. It simplifies the process quite a bit :)
- *
+ * <p/>
  * Before using this code, look in PlayerControlAnimation for some notes
- *
+ * <p/>
  * Created on 24/07/15.
  */
 public class Main {
-	
-	public static Shader shaderBoneTransform;
-	
+
+    public static Shader shaderBoneTransform;
+
     public static void main(String[] args) throws Exception {
-    	
-    	shaderBoneTransform = ShaderManager.createProgram("mdl/shaders/bone_transform.vert", null);
-   
+
+        shaderBoneTransform = ShaderManager.createProgram("mdl/shaders/bone_transform.vert", null);
+
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
         fis.read(data);
@@ -65,12 +65,12 @@ public class Main {
 
         PMXTransformThreadPool pttp = new PMXTransformThreadPool(3, Thread.currentThread());
         PMXModel[] pm = new PMXModel[1];
-        PlayerControlAnimation[] pca=new PlayerControlAnimation[pm.length];
+        PlayerControlAnimation[] pca = new PlayerControlAnimation[pm.length];
         LibraryAnimation[] lib = new LibraryAnimation[pm.length];
-        
+
         // animation libraries are NOT a per-model thing
         EmoteAnimationLibrary eal = new EmoteAnimationLibrary();
-        for (int i=0;i<pm.length;i++) {
+        for (int i = 0; i < pm.length; i++) {
             pttp.keepAlive();
             /*
              * Animation graph diagram (ASCII)
@@ -90,7 +90,7 @@ public class Main {
              * Note that PCA sends data to other animations for sub-tasks,
              * while doing direct control for others - see arrows for where it sends data to other animations.
              */
-            pm[i]=new PMXModel(pf, pttp);
+            pm[i] = new PMXModel(pf, pttp);
 
             WalkingAnimation wa = new WalkingAnimation();
             wa.time = i * 0.1f;
@@ -107,7 +107,7 @@ public class Main {
             pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i], lib[i]});
             pttp.addModel(pm[i]);
         }
-        
+
         int scrWidth = 1024, scrHeight = 768;
         float rotX = 90, posY = -1, zoom = 7.0f;
         boolean animate = true, eDownLast = false, rDownLast = false;
@@ -116,10 +116,10 @@ public class Main {
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
         Mouse.create();
-        
+
         // Loading shaders
         ShaderManager.loadShaders();
-        
+
         GL11.glViewport(0, 0, scrWidth, scrHeight);
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);
@@ -131,38 +131,38 @@ public class Main {
         GLU.gluPerspective(45, asp, 0.1f, 100);
         GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        long frameEndpoint=System.currentTimeMillis();
-        final HashMap<PMXFile.PMXMaterial, Integer> materialTextures=new HashMap<PMXFile.PMXMaterial, Integer>();
+        long frameEndpoint = System.currentTimeMillis();
+        final HashMap<PMXFile.PMXMaterial, Integer> materialTextures = new HashMap<PMXFile.PMXMaterial, Integer>();
         for (PMXFile.PMXMaterial mat : pf.matData) {
             int bTex = GL11.glGenTextures();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
 
             try {
                 BufferedImage bi = ImageIO.read(new File("mdl/" + mat.texTex.toLowerCase()));
-                int[] ib=new int[bi.getWidth()*bi.getHeight()];
+                int[] ib = new int[bi.getWidth() * bi.getHeight()];
                 bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth());
-                ByteBuffer inb=BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
-                for (int i=0;i<(bi.getWidth()*bi.getHeight());i++) {
-                    int c=ib[i];
-                    inb.put((byte)((c&0xFF0000)>>16));
-                    inb.put((byte)((c&0xFF00)>>8));
-                    inb.put((byte)(c&0xFF));
-                    inb.put((byte)((c&0xFF000000)>>24));
+                ByteBuffer inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
+                for (int i = 0; i < (bi.getWidth() * bi.getHeight()); i++) {
+                    int c = ib[i];
+                    inb.put((byte) ((c & 0xFF0000) >> 16));
+                    inb.put((byte) ((c & 0xFF00) >> 8));
+                    inb.put((byte) (c & 0xFF));
+                    inb.put((byte) ((c & 0xFF000000) >> 24));
                 }
                 inb.rewind();
-                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA,GL11.GL_UNSIGNED_BYTE,inb);
+                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, inb);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            materialTextures.put(mat,bTex);
+            materialTextures.put(mat, bTex);
         }
         Keyboard.create();
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
             pttp.keepAlive();
-            boolean cobalt=Keyboard.isKeyDown(Keyboard.KEY_C);
+            boolean cobalt = Keyboard.isKeyDown(Keyboard.KEY_C);
             if (cobalt) {
                 GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
             } else {
@@ -172,9 +172,9 @@ public class Main {
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
             GL11.glLoadIdentity();
 
-            long ll=System.currentTimeMillis();
-            ll&=8191;
-            float testTime=ll/(400.0f);
+            long ll = System.currentTimeMillis();
+            ll &= 8191;
+            float testTime = ll / (400.0f);
             GL11.glTranslated(0, posY, -zoom);
             GL11.glRotated(rotX, 0, 1, 0);
             GL11.glTranslated(0, 0, testTime);
@@ -184,15 +184,15 @@ public class Main {
 
             if (!cobalt)
                 GL11.glEnable(GL11.GL_TEXTURE_2D);
-            for (int i=0;i<pm.length;i++) {
+            for (int i = 0; i < pm.length; i++) {
                 GL11.glPushMatrix();
-                GL11.glTranslated(i*16,0,0);
+                GL11.glTranslated(i * 16, 0, 0);
                 pm[i].render(new IMaterialBinder() {
                     @Override
                     public void bindMaterial(PMXFile.PMXMaterial texture) {
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, materialTextures.get(texture));
                     }
-                },cobalt);
+                }, cobalt);
                 GL11.glPopMatrix();
             }
             GL11.glDisable(GL11.GL_TEXTURE_2D);
@@ -201,7 +201,7 @@ public class Main {
             if (cobalt)
                 GL11.glColor4d(0.0f, 0.2f, 1.0f, 1.0f);
             for (PMXFile.PMXBone bone : pf.boneData) {
-                for (int i=0;i<pm.length;i++) {
+                for (int i = 0; i < pm.length; i++) {
                     Vector3f v3f = pm[i].transformCore(bone, new Vector3f(bone.posX, bone.posY, bone.posZ), false);
                     if (bone.parentBoneIndex != -1) {
                         GL11.glLineWidth(1.0f);
@@ -227,10 +227,10 @@ public class Main {
             GL11.glEnable(GL11.GL_DEPTH_TEST);
             GL11.glBegin(GL11.GL_POINTS);
 
-            for (int i=-128;i<16;i++) {
-                GL11.glColor3f(0,0,0);
+            for (int i = -128; i < 16; i++) {
+                GL11.glColor3f(0, 0, 0);
                 GL11.glPointSize(4.0f);
-                GL11.glVertex3d(0,0,i/4.0d);
+                GL11.glVertex3d(0, 0, i / 4.0d);
             }
             GL11.glEnd();
 
@@ -238,27 +238,27 @@ public class Main {
             Keyboard.poll();
             Mouse.poll();
 
-            long currentTime=System.currentTimeMillis();
+            long currentTime = System.currentTimeMillis();
             // Frame start is frameEndpoint-20 (note that the delta does include the sleep)
-            int delta=(int)(currentTime-(frameEndpoint-30));
-            double deltaTime=delta/1000.0d;
+            int delta = (int) (currentTime - (frameEndpoint - 30));
+            double deltaTime = delta / 1000.0d;
 
             if (animate)
-                for (int i=0;i<pm.length;i++)
+                for (int i = 0; i < pm.length; i++)
                     pm[i].update(deltaTime);
 
             if (Keyboard.isKeyDown(Keyboard.KEY_A)) {
-                rotX-=deltaTime*45;
+                rotX -= deltaTime * 45;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_D)) {
-                rotX+=deltaTime*45;
+                rotX += deltaTime * 45;
             }
 
-            boolean eDown=Keyboard.isKeyDown(Keyboard.KEY_E);
+            boolean eDown = Keyboard.isKeyDown(Keyboard.KEY_E);
             if (eDown)
                 if (!eDownLast)
-                    animate=!animate;
-            eDownLast=eDown;
+                    animate = !animate;
+            eDownLast = eDown;
 
             boolean rDown = Keyboard.isKeyDown(Keyboard.KEY_R);
             if (rDown)
@@ -267,10 +267,10 @@ public class Main {
             rDownLast = rDown;
 
             if (Keyboard.isKeyDown(Keyboard.KEY_W)) {
-                posY+=deltaTime;
+                posY += deltaTime;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_S)) {
-                posY-=deltaTime;
+                posY -= deltaTime;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_F)) {
                 zoom += deltaTime;
@@ -279,16 +279,16 @@ public class Main {
                 zoom -= deltaTime;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT)) {
-                pca[0].sneakStateTarget=1;
+                pca[0].sneakStateTarget = 1;
             } else if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
-                pca[0].sneakStateTarget=-1;
+                pca[0].sneakStateTarget = -1;
             } else {
-                pca[0].sneakStateTarget=0;
+                pca[0].sneakStateTarget = 0;
             }
             if (Keyboard.isKeyDown(Keyboard.KEY_UP))
-                pca[0].walkingFlag=true;
+                pca[0].walkingFlag = true;
             if (Keyboard.isKeyDown(Keyboard.KEY_DOWN))
-                pca[0].walkingFlag=false;
+                pca[0].walkingFlag = false;
 
             if (Keyboard.isKeyDown(Keyboard.KEY_T))
                 eal.debugPbt.X0 += deltaTime * 5.0f;
@@ -333,17 +333,17 @@ public class Main {
                 mb1l = false;
             }
 
-            long v=frameEndpoint-currentTime;
-            if (v>1)
+            long v = frameEndpoint - currentTime;
+            if (v > 1)
                 Thread.sleep(v);
             Display.setTitle("GPMXAW: FrameTime " + (currentTime - frameStart) + "ms");
-            frameEndpoint=currentTime+30;
+            frameEndpoint = currentTime + 30;
 
-            float eyesX=(Mouse.getX()/(float)scrWidth)-0.5f;
-            float eyesY=(Mouse.getY()/(float)scrHeight)-0.5f;
+            float eyesX = (Mouse.getX() / (float) scrWidth) - 0.5f;
+            float eyesY = (Mouse.getY() / (float) scrHeight) - 0.5f;
             for (PlayerControlAnimation spca : pca) {
-                spca.lookLR=eyesX;
-                spca.lookUD=eyesY;
+                spca.lookLR = eyesX;
+                spca.lookUD = eyesY;
             }
         }
         pttp.killSwitch();

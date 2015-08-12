@@ -1,6 +1,5 @@
 package moe.nightfall.instrumentality.animations.libraries;
 
-import moe.nightfall.instrumentality.Main;
 import moe.nightfall.instrumentality.PoseBoneTransform;
 import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.animations.IAnimationLibrary;
