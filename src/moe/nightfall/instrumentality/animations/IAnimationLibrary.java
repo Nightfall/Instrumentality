@@ -1,4 +1,4 @@
-package uk.co.gamemanj.instrumentality.animations;
+package moe.nightfall.instrumentality.animations;
 
 /**
  * Introspectable animation libraries for usage in emote systems & such

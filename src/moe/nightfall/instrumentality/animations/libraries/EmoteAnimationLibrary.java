@@ -1,10 +1,10 @@
-package uk.co.gamemanj.instrumentality.animations.libraries;
+package moe.nightfall.instrumentality.animations.libraries;
 
-import uk.co.gamemanj.instrumentality.Main;
-import uk.co.gamemanj.instrumentality.PoseBoneTransform;
-import uk.co.gamemanj.instrumentality.animations.IAnimation;
-import uk.co.gamemanj.instrumentality.animations.IAnimationLibrary;
-import uk.co.gamemanj.instrumentality.animations.PoseAnimation;
+import moe.nightfall.instrumentality.Main;
+import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.animations.IAnimationLibrary;
+import moe.nightfall.instrumentality.animations.PoseAnimation;
 
 /**
  * Emotes (includes her "idle" pose)

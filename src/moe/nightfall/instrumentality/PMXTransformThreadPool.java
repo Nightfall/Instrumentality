@@ -1,4 +1,4 @@
-package uk.co.gamemanj.instrumentality;
+package moe.nightfall.instrumentality;
 
 import org.lwjgl.Sys;
 import org.lwjgl.util.vector.Matrix3f;

@@ -1,7 +1,8 @@
-package uk.co.gamemanj.instrumentality.animations;
+package moe.nightfall.instrumentality.animations;
+
+import moe.nightfall.instrumentality.PoseBoneTransform;
 
 import org.lwjgl.util.vector.Matrix4f;
-import uk.co.gamemanj.instrumentality.PoseBoneTransform;
 
 /**
  * Created on 24/07/15.

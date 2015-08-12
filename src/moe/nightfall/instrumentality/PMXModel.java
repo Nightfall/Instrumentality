@@ -1,11 +1,12 @@
-package uk.co.gamemanj.instrumentality;
+package moe.nightfall.instrumentality;
+
+import moe.nightfall.instrumentality.animations.IAnimation;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
-import uk.co.gamemanj.instrumentality.animations.IAnimation;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;

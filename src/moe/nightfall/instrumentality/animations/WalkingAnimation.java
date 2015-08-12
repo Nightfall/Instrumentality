@@ -1,8 +1,8 @@
-package uk.co.gamemanj.instrumentality.animations;
+package moe.nightfall.instrumentality.animations;
 
-import uk.co.gamemanj.instrumentality.PoseBoneTransform;
-import uk.co.gamemanj.instrumentality.animations.IAnimation;
-import uk.co.gamemanj.instrumentality.animations.libraries.EmoteAnimationLibrary;
+import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 
 /**
  * Created on 24/07/15.

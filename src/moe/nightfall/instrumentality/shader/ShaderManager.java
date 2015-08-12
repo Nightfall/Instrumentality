@@ -1,4 +1,4 @@
-package uk.co.gamemanj.instrumentality.shader;
+package moe.nightfall.instrumentality.shader;
 
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;

@@ -1,7 +1,7 @@
-package uk.co.gamemanj.instrumentality.animations;
+package moe.nightfall.instrumentality.animations;
 
-import uk.co.gamemanj.instrumentality.PoseBoneTransform;
-import uk.co.gamemanj.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.animations.IAnimation;
 
 /**
  * Adds the PBTs together.

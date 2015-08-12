@@ -1,4 +1,4 @@
-package uk.co.gamemanj.instrumentality.shader;
+package moe.nightfall.instrumentality.shader;
 
 public class Shader {
 	

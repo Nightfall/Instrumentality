@@ -1,4 +1,4 @@
-package uk.co.gamemanj.instrumentality;
+package moe.nightfall.instrumentality;
 
 /**
  * Created on 24/07/15.

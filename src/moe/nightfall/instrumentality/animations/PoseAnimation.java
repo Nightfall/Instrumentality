@@ -1,8 +1,8 @@
-package uk.co.gamemanj.instrumentality.animations;
-
-import uk.co.gamemanj.instrumentality.PoseBoneTransform;
+package moe.nightfall.instrumentality.animations;
 
 import java.util.HashMap;
+
+import moe.nightfall.instrumentality.PoseBoneTransform;
 
 /**
  * Created on 28/07/15.

@@ -1,4 +1,4 @@
-package uk.co.gamemanj.instrumentality;
+package moe.nightfall.instrumentality;
 
 import java.io.DataInputStream;
 import java.io.IOException;

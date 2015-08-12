@@ -1,5 +1,6 @@
 *.jar
-mdl
+mdl/*
+!mdl/shaders/
 out
 .idea
 *.log
@@ -10,3 +11,4 @@ out
 *.txt
 *.so
 .swp
+/bin/

@@ -1,4 +1,9 @@
-package uk.co.gamemanj.instrumentality;
+package moe.nightfall.instrumentality;
+
+import moe.nightfall.instrumentality.animations.*;
+import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
+import moe.nightfall.instrumentality.shader.Shader;
+import moe.nightfall.instrumentality.shader.ShaderManager;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.Sys;
@@ -9,11 +14,6 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Vector3f;
-
-import uk.co.gamemanj.instrumentality.animations.*;
-import uk.co.gamemanj.instrumentality.animations.libraries.EmoteAnimationLibrary;
-import uk.co.gamemanj.instrumentality.shader.Shader;
-import uk.co.gamemanj.instrumentality.shader.ShaderManager;
 
 import javax.imageio.ImageIO;
 
