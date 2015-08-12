@@ -7,6 +7,8 @@ out
 *.dll
 *.jar
 *.iml
+*.iws
+*.ipr
 *.class
 *.txt
 *.so
@@ -14,3 +16,5 @@ out
 /bin/
 .gradle
 build
+.project
+.classpath
