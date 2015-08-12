@@ -12,3 +12,5 @@ out
 *.so
 .swp
 /bin/
+.gradle
+build

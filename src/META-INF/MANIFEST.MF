@@ -1,4 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: lwjgl_util.jar lwjgl.jar jinput.jar lzma.jar
-Main-Class: uk.co.gamemanj.instrumentality.Main
-
