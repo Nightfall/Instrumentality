@@ -32,13 +32,10 @@ public class PMXModel {
     private final FloatBuffer buffer_n;
     private final FloatBuffer buffer_t;
 
-    public PMXTransformThreadPool threadPool;
-
-    public PMXModel(PMXFile pf, PMXTransformThreadPool pttp) {
+    public PMXModel(PMXFile pf) {
         theFile = pf;
         indexBuffer = new IntBuffer[pf.matData.length];
         cobaltIndexBuffer = new IntBuffer[pf.matData.length];
-        threadPool = pttp;
 
         buffer_v = BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
         buffer_n = BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
@@ -68,6 +65,8 @@ public class PMXModel {
         }
         for (int vi = 0; vi < theFile.vertexData.length; vi++) {
             PMXFile.PMXVertex ver = theFile.vertexData[vi];
+            buffer_v.put(new float[]{ver.posX, ver.posY, ver.posZ});
+            buffer_n.put(new float[]{ver.normalX, ver.normalY, ver.normalZ});
             buffer_t.put(new float[]{ver.texU, ver.texV});
         }
     }

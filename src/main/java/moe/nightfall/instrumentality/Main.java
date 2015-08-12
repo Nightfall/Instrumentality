@@ -63,7 +63,6 @@ public class Main {
 
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
 
-        PMXTransformThreadPool pttp = new PMXTransformThreadPool(3, Thread.currentThread());
         PMXModel[] pm = new PMXModel[1];
         PlayerControlAnimation[] pca = new PlayerControlAnimation[pm.length];
         LibraryAnimation[] lib = new LibraryAnimation[pm.length];
@@ -71,7 +70,6 @@ public class Main {
         // animation libraries are NOT a per-model thing
         EmoteAnimationLibrary eal = new EmoteAnimationLibrary();
         for (int i = 0; i < pm.length; i++) {
-            pttp.keepAlive();
             /*
              * Animation graph diagram (ASCII)
              * This is not how you need to implement it,
@@ -90,7 +88,7 @@ public class Main {
              * Note that PCA sends data to other animations for sub-tasks,
              * while doing direct control for others - see arrows for where it sends data to other animations.
              */
-            pm[i] = new PMXModel(pf, pttp);
+            pm[i] = new PMXModel(pf);
 
             WalkingAnimation wa = new WalkingAnimation();
             wa.time = i * 0.1f;
@@ -105,7 +103,6 @@ public class Main {
             lib[i].transitionValue = 1.0f;
 
             pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i], lib[i]});
-            pttp.addModel(pm[i]);
         }
 
         int scrWidth = 1024, scrHeight = 768;
@@ -161,7 +158,6 @@ public class Main {
         Keyboard.create();
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
-            pttp.keepAlive();
             boolean cobalt = Keyboard.isKeyDown(Keyboard.KEY_C);
             if (cobalt) {
                 GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
@@ -346,7 +342,6 @@ public class Main {
                 spca.lookUD = eyesY;
             }
         }
-        pttp.killSwitch();
         Display.destroy();
     }
 }
