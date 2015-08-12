@@ -1,12 +1,8 @@
 package uk.co.gamemanj.instrumentality;
 
-import org.lwjgl.Sys;
-import org.lwjgl.util.vector.Matrix;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
-
-import java.nio.FloatBuffer;
 
 /**
  * Created on 26/07/15.

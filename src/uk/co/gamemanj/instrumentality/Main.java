@@ -9,10 +9,14 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Vector3f;
+
 import uk.co.gamemanj.instrumentality.animations.*;
 import uk.co.gamemanj.instrumentality.animations.libraries.EmoteAnimationLibrary;
+import uk.co.gamemanj.instrumentality.shader.Shader;
+import uk.co.gamemanj.instrumentality.shader.ShaderManager;
 
 import javax.imageio.ImageIO;
+
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -44,8 +48,13 @@ import java.util.HashMap;
  * Created on 24/07/15.
  */
 public class Main {
+	
+	public static Shader shaderBoneTransform;
+	
     public static void main(String[] args) throws Exception {
-
+    	
+    	shaderBoneTransform = ShaderManager.createProgram("mdl/shaders/bone_transform.vert", null);
+   
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
         fis.read(data);
@@ -58,6 +67,7 @@ public class Main {
         PMXModel[] pm = new PMXModel[1];
         PlayerControlAnimation[] pca=new PlayerControlAnimation[pm.length];
         LibraryAnimation[] lib = new LibraryAnimation[pm.length];
+        
         // animation libraries are NOT a per-model thing
         EmoteAnimationLibrary eal = new EmoteAnimationLibrary();
         for (int i=0;i<pm.length;i++) {
@@ -97,6 +107,7 @@ public class Main {
             pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i], lib[i]});
             pttp.addModel(pm[i]);
         }
+        
         int scrWidth = 1024, scrHeight = 768;
         float rotX = 90, posY = -1, zoom = 7.0f;
         boolean animate = true, eDownLast = false, rDownLast = false;
@@ -105,6 +116,10 @@ public class Main {
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
         Mouse.create();
+        
+        // Loading shaders
+        ShaderManager.loadShaders();
+        
         GL11.glViewport(0, 0, scrWidth, scrHeight);
 
         GL11.glEnable(GL11.GL_DEPTH_TEST);

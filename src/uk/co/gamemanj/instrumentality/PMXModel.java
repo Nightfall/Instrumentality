@@ -208,7 +208,7 @@ public class PMXModel {
      */
     public void render(IMaterialBinder textureBinder,boolean cobalt) {
 
-        threadPool.transformModel(this, buffer_v, buffer_n);
+//        threadPool.transformModel(this, buffer_v, buffer_n);
         buffer_v.rewind();
         buffer_n.rewind();
         buffer_t.rewind();
