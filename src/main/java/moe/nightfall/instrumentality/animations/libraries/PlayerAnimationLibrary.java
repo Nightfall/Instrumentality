@@ -20,12 +20,12 @@ public class PlayerAnimationLibrary implements IAnimationLibrary {
         PoseBoneTransform pbt = new PoseBoneTransform();
         pbt.X0 = (float) Math.toRadians(20);
         pbt.Y0 = (float) Math.toRadians(-30);
-        pa.hashMap.put("r_shouler", pbt);
+        pa.hashMap.put("l_shouler", pbt);
         pbt=new PoseBoneTransform();
         // NOTES: l_shouler relative to r_shouler, X is not inversed, Y is. Z not checked.
         pbt.X0 = (float) Math.toRadians(20);
         pbt.Y0 = (float) Math.toRadians(30);
-        pa.hashMap.put("l_shouler", pbt);
+        pa.hashMap.put("r_shouler", pbt);
         return pa;
     }
     @Override
@@ -39,12 +39,12 @@ public class PlayerAnimationLibrary implements IAnimationLibrary {
             PoseBoneTransform pbt = new PoseBoneTransform();
             pbt.X0 = (float) Math.toRadians(20);
             pbt.Y0 = (float) Math.toRadians(30);
-            pa.hashMap.put("l_shouler", pbt);
+            pa.hashMap.put("r_shouler", pbt);
 
             pbt = new PoseBoneTransform();
             pbt.X0 = (float) Math.toRadians(40);
             pbt.Z0 = (float) Math.toRadians(80);
-            pa.hashMap.put("l_ellbow", pbt);
+            pa.hashMap.put("r_ellbow", pbt);
 
             return pa;
         }
@@ -54,14 +54,14 @@ public class PlayerAnimationLibrary implements IAnimationLibrary {
             pbt.X0 = (float) Math.toRadians(35.3f);
             pbt.Y0 = (float) Math.toRadians(-6f);
             pbt.Z0 = (float) Math.toRadians(-1.7f);
-            pa.hashMap.put("l_shouler", pbt);
+            pa.hashMap.put("r_shouler", pbt);
 
             pbt = new PoseBoneTransform();
             pbt.X0 = (float) Math.toRadians(43.5f);
             pbt.Y0 = (float) Math.toRadians(103);
             pbt.Z0 = (float) Math.toRadians(20);
             pbt.X1 = (float) Math.toRadians(-47.7f);
-            pa.hashMap.put("l_ellbow", pbt);
+            pa.hashMap.put("r_ellbow", pbt);
 
             return pa;
         }

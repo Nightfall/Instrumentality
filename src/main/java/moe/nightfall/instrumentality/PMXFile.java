@@ -76,7 +76,7 @@ public class PMXFile {
         pb.localName = getText(bb, textEncoding);
         pb.globalName = getText(bb, textEncoding);
         System.out.println(pb.globalName);
-        pb.posX = bb.getFloat();
+        pb.posX = -bb.getFloat();
         pb.posY = bb.getFloat();
         pb.posZ = bb.getFloat();
         pb.parentBoneIndex = getIndex(bb, boneIS);
@@ -98,7 +98,7 @@ public class PMXFile {
         if (pb.flagConnection) {
             pb.connectionIndex = getIndex(bb, boneIS);
         } else {
-            pb.connectionPosOfsX = bb.getFloat();
+            pb.connectionPosOfsX = -bb.getFloat();
             pb.connectionPosOfsY = bb.getFloat();
             pb.connectionPosOfsZ = bb.getFloat();
         }
@@ -107,11 +107,12 @@ public class PMXFile {
             pb.addRotationRate = bb.getFloat();
         }
         if (pb.flagFixedAxis) {
-            pb.fixedAxisX = bb.getFloat();
+            pb.fixedAxisX = -bb.getFloat();
             pb.fixedAxisY = bb.getFloat();
             pb.fixedAxisZ = bb.getFloat();
         }
         if (pb.flagLocalAxis) {
+            // TODO: What are these values, and do they need to be X-flipped
             pb.localAxisXX = bb.getFloat();
             pb.localAxisXY = bb.getFloat();
             pb.localAxisXZ = bb.getFloat();
@@ -189,10 +190,10 @@ public class PMXFile {
 
     private PMXVertex readVertex(ByteBuffer bb, int boneIS) throws IOException {
         PMXVertex pmxVertex = new PMXVertex();
-        pmxVertex.posX = bb.getFloat();
+        pmxVertex.posX = -bb.getFloat();
         pmxVertex.posY = bb.getFloat();
         pmxVertex.posZ = bb.getFloat();
-        pmxVertex.normalX = bb.getFloat();
+        pmxVertex.normalX = -bb.getFloat();
         pmxVertex.normalY = bb.getFloat();
         pmxVertex.normalZ = bb.getFloat();
         pmxVertex.texU = bb.getFloat();
@@ -221,13 +222,13 @@ public class PMXFile {
                 pmxVertex.boneIndices[0] = getIndex(bb, boneIS);
                 pmxVertex.boneIndices[1] = getIndex(bb, boneIS);
                 pmxVertex.boneWeights[0] = bb.getFloat();
-                pmxVertex.sdefCX = bb.getFloat();
+                pmxVertex.sdefCX = -bb.getFloat();
                 pmxVertex.sdefCY = bb.getFloat();
                 pmxVertex.sdefCZ = bb.getFloat();
-                pmxVertex.sdefR0X = bb.getFloat();
+                pmxVertex.sdefR0X = -bb.getFloat();
                 pmxVertex.sdefR0Y = bb.getFloat();
                 pmxVertex.sdefR0Z = bb.getFloat();
-                pmxVertex.sdefR1X = bb.getFloat();
+                pmxVertex.sdefR1X = -bb.getFloat();
                 pmxVertex.sdefR1Y = bb.getFloat();
                 pmxVertex.sdefR1Z = bb.getFloat();
                 break;

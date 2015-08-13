@@ -13,6 +13,23 @@ import moe.nightfall.instrumentality.PoseBoneTransform;
  * Created on 27/07/15.
  */
 public class PlayerControlAnimation implements IAnimation {
+
+    /*
+            "L_longhair_01",
+            "R_longhair_01",
+            "L_longhair_02",
+            "R_longhair_02",
+            "L_longhair_03",
+            "R_longhair_03",
+            -0.2f * wStrength,
+            0.15f * wStrength,
+            -0.25f * wStrength,
+            0.2f * wStrength,
+            -0.375f * wStrength,
+            0.15f * wStrength,
+
+    */
+
     /**
      * 1.0f and -1.0f are directly back-left, back-right. 0.0f is looking directly ahead.
      */
@@ -127,7 +144,7 @@ public class PlayerControlAnimation implements IAnimation {
             }
         }
         pbt.Y0 *= ((segment != 0) ? -0.25f : 1);
-        pbt.Y0 *= (b ? -2 : 2);
+        pbt.Y0 *= (b ? 2 : -2);
         return pbt;
     }
 
@@ -136,7 +153,7 @@ public class PlayerControlAnimation implements IAnimation {
         if (sneakState < 0)
             return null;
         pbt.Y0 = (0.5f) * sneakState;
-        if (b)
+        if (!b)
             pbt.Y0 = -pbt.Y0;
         return pbt;
     }
@@ -146,7 +163,7 @@ public class PlayerControlAnimation implements IAnimation {
         if (sneakState < 0)
             return null;
         pbt.Y0 = (-1.0f) * sneakState;
-        if (b)
+        if (!b)
             pbt.Y0 = -pbt.Y0;
         return pbt;
     }
@@ -156,7 +173,7 @@ public class PlayerControlAnimation implements IAnimation {
         if (sneakState < 0)
             return null;
         pbt.Y0 = (-0.5f) * sneakState;
-        if (b)
+        if (!b)
             pbt.Y0 = -pbt.Y0;
         return pbt;
     }

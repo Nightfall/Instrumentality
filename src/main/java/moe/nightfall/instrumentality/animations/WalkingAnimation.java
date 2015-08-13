@@ -1,6 +1,7 @@
 package moe.nightfall.instrumentality.animations;
 
 import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 
 /**
  * Created on 24/07/15.
@@ -50,12 +51,6 @@ public class WalkingAnimation implements IAnimation {
         String[] wiggle = {
                 "head",
                 "neck",
-                "L_longhair_01",
-                "R_longhair_01",
-                "L_longhair_02",
-                "R_longhair_02",
-                "L_longhair_03",
-                "R_longhair_03",
                 "spine00",
                 "spine01",
                 "hip",
@@ -68,12 +63,6 @@ public class WalkingAnimation implements IAnimation {
         float[] amount = {
                 0.01f,
                 0.01f,
-                -0.2f / 2,
-                0.15f / 2,
-                -0.25f / 2,
-                0.2f / 2,
-                -0.375f / 2,
-                0.15f / 2,
                 0.02f,
                 0.02f,
                 0.02f,
@@ -97,37 +86,44 @@ public class WalkingAnimation implements IAnimation {
     }
 
     private PoseBoneTransform getShoulderTransform(boolean b, float atime) {
-        PoseBoneTransform pbt = new PoseBoneTransform();
+        PoseBoneTransform interpA = new PoseBoneTransform(0.13499999f,0,0.71999985f,0.13999994f,0.26f);
+        PoseBoneTransform interpM = new PoseBoneTransform(0,0,0,0.11000006f,0.35000002f);
+        PoseBoneTransform interpB = new PoseBoneTransform(0,1.0400001f,0.06499989f,0.77999985f,-0.4150001f);
         float t = (float) (atime * Math.PI * 2);
         if (b)
             t += Math.PI;
-        float ofs = 0.92f;
-        pbt.X0 = (float) (Math.sin(t) - ofs);
-        pbt.Y0 = 0.29f;
-        pbt.Z0 = -0.24f;
-        pbt.X0 *= 0.693;
-        if (b) {
-            pbt.X0 = -pbt.X0;
-            pbt.Y0 = -pbt.Y0;
-            pbt.Z0 = -pbt.Z0;
+        t=(float)Math.sin(t);
+        if (t<0) {
+            PoseBoneTransform pbt=new PoseBoneTransform(interpA,interpM,t+1.0f);
+            if (b)
+                return flipShoulderPBT(pbt);
+            return pbt;
+        } else {
+            PoseBoneTransform pbt=new PoseBoneTransform(interpM,interpB,t);
+            if (b)
+                return flipShoulderPBT(pbt);
+            return pbt;
         }
-        return pbt;
+    }
+
+    private PoseBoneTransform flipShoulderPBT(PoseBoneTransform pbt) {
+        PoseBoneTransform rpbt=new PoseBoneTransform(pbt);
+        //rpbt.X0=-pbt.X0;
+        rpbt.Y0=-pbt.Y0;
+        rpbt.Z0=-pbt.Z0;
+        //rpbt.X1=-pbt.X1;
+        rpbt.Y1=-pbt.Y1;
+        return rpbt;
     }
 
     private PoseBoneTransform getElbowTransform(boolean b, float atime) {
-        PoseBoneTransform pbt = new PoseBoneTransform();
+        PoseBoneTransform interpA = new PoseBoneTransform(0.28999993f,-0.28000003f,-0.33f,0.56500053f,-0.089999996f);
+        PoseBoneTransform interpB = new PoseBoneTransform(0.0f,0.0f,0,0.23499939f,0.0f);
         float t = (float) (atime * Math.PI * 2);
-        if (!b)
+        if (b)
             t += Math.PI;
-        pbt.Z0 = (float) (Math.sin(t)) + 1.0f;
-        pbt.X0 = (float) (Math.sin(t) * 2.0f);
-        pbt.Z0 *= -0.1f;
-        pbt.X0 *= -0.4f;
-        if (b) {
-            pbt.X0 = -pbt.X0;
-            pbt.Z0 = -pbt.Z0;
-        }
-        return pbt;
+        PoseBoneTransform pbt=new PoseBoneTransform(interpA,interpB,(float)(Math.sin(t)+1.0f)/2.0f);
+        return null;
     }
 
     private PoseBoneTransform getKneeTransform(boolean LR, float shiftedTime) {
@@ -136,7 +132,7 @@ public class WalkingAnimation implements IAnimation {
 
         pbt.Y0 = (float) (Math.sin(shiftedTime * Math.PI) - 1.0f);
 
-        if (LR)
+        if (!LR)
             pbt.Y0 = -pbt.Y0;
 
         return pbt;
@@ -153,7 +149,7 @@ public class WalkingAnimation implements IAnimation {
         pbt.Y0 = (float) Math.sin(shiftedTime * (Math.PI * 2)) * sinMul;
         pbt.Y0 += 0.1f;
 
-        if (LR)
+        if (!LR)
             pbt.Y0 = -pbt.Y0;
 
         return pbt;
@@ -181,7 +177,7 @@ public class WalkingAnimation implements IAnimation {
             }
         }
         pbt.Y0 -= 0.4;
-        if (LR)
+        if (!LR)
             pbt.Y0 = -pbt.Y0;
         return pbt;
     }
