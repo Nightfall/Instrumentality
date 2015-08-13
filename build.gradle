@@ -1,0 +1,20 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+sourceCompatibility = 1.6
+
+jar {
+ manifest {
+  attributes 'Class-Path': 'lwjgl_util.jar lwjgl.jar jinput.jar lzma.jar'
+ }
+}
+
+repositories {
+ mavenCentral()
+}
+
+dependencies {
+ compile 'org.lwjgl.lwjgl:lwjgl:2.9.3'
+ compile 'org.lwjgl.lwjgl:lwjgl_util:2.9.3'
+}

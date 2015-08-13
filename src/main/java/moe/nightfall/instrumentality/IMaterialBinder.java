@@ -6,6 +6,7 @@ package moe.nightfall.instrumentality;
 public interface IMaterialBinder {
     /**
      * Binds all the non-trivial (shader & texture, but not colour) attributes of a material
+     *
      * @param texture
      */
     void bindMaterial(PMXFile.PMXMaterial texture);

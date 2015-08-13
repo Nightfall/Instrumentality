@@ -10,7 +10,8 @@ public class LibraryAnimation implements IAnimation {
     private IAnimation lastPose;
     public float transitionValue, transitionSpeed = 4.0f;
 
-    public void setCurrentPose(IAnimation ia, boolean skipAheadPrevious) {
+    public void setCurrentPose(IAnimation ia, float transitionTime, boolean skipAheadPrevious) {
+        transitionSpeed=1.0f/transitionTime;
         if (transitionValue >= 1.0f) {
             lastPose = currentPose;
         } else if (transitionValue <= 0.0f) {

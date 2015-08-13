@@ -1,14 +1,14 @@
 package moe.nightfall.instrumentality.animations;
 
-import java.util.HashMap;
-
 import moe.nightfall.instrumentality.PoseBoneTransform;
+
+import java.util.HashMap;
 
 /**
  * Created on 28/07/15.
  */
 public class PoseAnimation implements IAnimation {
-    public HashMap<String, PoseBoneTransform> hashMap = new HashMap<>();
+    public HashMap<String, PoseBoneTransform> hashMap = new HashMap<String, PoseBoneTransform>();
 
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
