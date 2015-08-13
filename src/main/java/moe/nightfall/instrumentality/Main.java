@@ -53,7 +53,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        shaderBoneTransform = ShaderManager.createProgram("mdl/shaders/bone_transform.vert", null);
+        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null);
 
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
