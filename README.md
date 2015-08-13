@@ -12,10 +12,17 @@ or 3 modules in one repository, after work on rendering by Vic is complete.
 
 3. The MC mod this will be used for in future (not at all built yet AFAIK -- gamemanj)
 
-LICENSE: TODO
+## Setup
 
-TODO LIST:
+1. Run `./gradlew idea` or `./gradlew eclipse`, depending on what you use
 
-License
+2. Copy native files into the working directory.
+   You can get these from the main ZIP supplied here (2.9.3):
+   `http://legacy.lwjgl.org/download.php`
 
-...
+3. Setup a run configuration pointing to the main class (moe.nightfall.instrumentality.Main)
+
+4. Run :)
+
+## LICENSE
+TODO
