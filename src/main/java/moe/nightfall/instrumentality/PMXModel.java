@@ -161,44 +161,6 @@ public class PMXModel {
     }
 
     /**
-     * Transform a vertex by a bone.
-     * By now, this has become "only for comparison to getBoneMatrix for testing",
-     * as getBoneMatrix does much the same job but does it by returning one matrix,
-     * which allows said matrix to be cached across the entire transform.
-     * If this ever doesn't match getBoneMatrix, either this is outdated due to something new,
-     * or getBoneMatrix has a bug in it.
-     */
-    public Vector3f transformCore(PMXFile.PMXBone bone, Vector3f vIn, boolean normal) {
-        if (anim == null)
-            return vIn; // Completely NOP if we're not animating.
-        Vector4f v4f = new Vector4f(vIn.x, vIn.y, vIn.z, 1);
-        while (bone != null) {
-            PoseBoneTransform boneTransform = anim.getBoneTransform(bone.globalName);
-            // If we're not transforming this bone, don't waste time
-            if (boneTransform != null) {
-                Matrix4f boneMatrix = new Matrix4f();
-                boneTransform.apply(boneMatrix, !normal);
-                // first off, bring into the current bone's space
-                Matrix4f intoBoneSpace = createIBS(bone, !normal);
-
-                // Now go into bone space, transform, then leave
-                Vector4f inBoneSpace = Matrix4f.transform(intoBoneSpace, v4f, null);
-                inBoneSpace = Matrix4f.transform(boneMatrix, inBoneSpace, null);
-                Matrix4f leaveBoneSpace = new Matrix4f();
-                Matrix4f.invert(intoBoneSpace, leaveBoneSpace);
-                Matrix4f.transform(leaveBoneSpace, inBoneSpace, v4f);
-            }
-
-            if (bone.parentBoneIndex == -1) {
-                bone = null;
-            } else {
-                bone = theFile.boneData[bone.parentBoneIndex];
-            }
-        }
-        return new Vector3f(v4f.x, v4f.y, v4f.z);
-    }
-
-    /**
      * Renders this model, with a given set of textures.
      * Make sure to enable GL_TEXTURE_2D before calling.
      *

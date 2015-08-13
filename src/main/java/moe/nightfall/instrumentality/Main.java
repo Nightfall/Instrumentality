@@ -12,7 +12,9 @@ import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
+import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -151,6 +153,7 @@ public class Main {
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
             } catch (Exception e) {
+                System.out.println(mat.texTex);
                 throw new RuntimeException(e);
             }
             materialTextures.put(mat, bTex);
@@ -198,7 +201,7 @@ public class Main {
                 GL11.glColor4d(0.0f, 0.2f, 1.0f, 1.0f);
             for (PMXFile.PMXBone bone : pf.boneData) {
                 for (int i = 0; i < pm.length; i++) {
-                    Vector3f v3f = pm[i].transformCore(bone, new Vector3f(bone.posX, bone.posY, bone.posZ), false);
+                    Vector4f v3f=Matrix4f.transform(pm[i].getBoneMatrix(bone, true),new Vector4f(bone.posX,bone.posY,bone.posZ,1),null);
                     if (bone.parentBoneIndex != -1) {
                         GL11.glLineWidth(1.0f);
                         GL11.glBegin(GL11.GL_LINES);
@@ -207,7 +210,8 @@ public class Main {
                         GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
                         if (!cobalt)
                             GL11.glColor3d(0, 1, 0);
-                        Vector3f v3f2 = pm[i].transformCore(pf.boneData[bone.parentBoneIndex], new Vector3f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ), false);
+                        Vector4f v3f2=new Vector4f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ, 1);
+                        v3f2 = Matrix4f.transform(pm[i].getBoneMatrix(pf.boneData[bone.parentBoneIndex], true), v3f2, null);
                         GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
                         GL11.glEnd();
                     }
