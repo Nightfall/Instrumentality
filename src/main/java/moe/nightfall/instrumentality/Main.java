@@ -2,6 +2,7 @@ package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.animations.*;
 import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
+import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary;
 import moe.nightfall.instrumentality.shader.Shader;
 import moe.nightfall.instrumentality.shader.ShaderManager;
 import org.lwjgl.BufferUtils;
@@ -34,7 +35,6 @@ import java.util.HashMap;
  * Ctrl: Sprint
  * C(obalt)
  * Q: YOU NEED THE CONSOLE FOR THIS: Lists emotes. Type in the name to apply it.
- * Oh, and try to type it in 30 seconds, the threads may assume the program crashed otherwise
  * <p/>
  * NOTE: To use the following you need to actually modify the code in places
  * <p/>
@@ -68,7 +68,9 @@ public class Main {
         LibraryAnimation[] lib = new LibraryAnimation[pm.length];
 
         // animation libraries are NOT a per-model thing
-        EmoteAnimationLibrary eal = new EmoteAnimationLibrary();
+        EmoteAnimationLibrary ial_e = new EmoteAnimationLibrary();
+        PlayerAnimationLibrary ial_p = new PlayerAnimationLibrary();
+        IAnimationLibrary[] animLibs = new IAnimationLibrary[] {ial_e,ial_p};
         for (int i = 0; i < pm.length; i++) {
             /*
              * Animation graph diagram (ASCII)
@@ -77,13 +79,13 @@ public class Main {
              * If you want the ability to, say, turn off emotes, then put a StrengthMultiply inbetween
              * the Overlay & LibraryAnimation modules.
              *
-             * OverlayAnimation-----------------+----------------+
-             *  |        |                      |                |
-             *  | StrengthMultiplyAnimation FightingAnimation LibraryAnimation
-             *  | ^      |                  ^
-             *  | ^>WalkingAnimation        ^
-             *  | ^                         ^
-             * PlayerControlAnimation>>>>>>>^
+             * OverlayAnimation-----------------+
+             *  |        |                      |
+             *  | StrengthMultiplyAnimation LibraryAnimation
+             *  | ^      |
+             *  | ^>WalkingAnimation
+             *  | ^
+             * PlayerControlAnimation
              *
              * Note that PCA sends data to other animations for sub-tasks,
              * while doing direct control for others - see arrows for where it sends data to other animations.
@@ -94,22 +96,20 @@ public class Main {
             wa.time = i * 0.1f;
             StrengthMultiplyAnimation smaW = new StrengthMultiplyAnimation(wa);
 
-            FightingAnimation fa = new FightingAnimation();
-
-            pca[i] = new PlayerControlAnimation(wa, smaW, fa);
+            pca[i] = new PlayerControlAnimation(wa, smaW);
             pca[i].walkingFlag = true;
 
             lib[i] = new LibraryAnimation();
             lib[i].transitionValue = 1.0f;
+            lib[i].setCurrentPose(PlayerAnimationLibrary.createIdlePoseAnimation(),1f,true);
 
-            pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, fa, pca[i], lib[i]});
+            pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, pca[i], lib[i]});
         }
 
         int scrWidth = 1024, scrHeight = 768;
         float rotX = 90, posY = -1, zoom = 7.0f;
         boolean animate = true, eDownLast = false, rDownLast = false;
-        boolean mb0l = false, mb1l = false;
-        Display.setTitle("Gamemanj PMX Animation Workbench");
+        Display.setTitle("Instrumentality: PMX Animation Workbench");
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
         Mouse.create();
@@ -287,52 +287,42 @@ public class Main {
                 pca[0].walkingFlag = false;
 
             if (Keyboard.isKeyDown(Keyboard.KEY_T))
-                eal.debugPbt.X0 += deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.X0 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_Y))
-                eal.debugPbt.Y0 += deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.Y0 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_U))
-                eal.debugPbt.Z0 += deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.Z0 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_I))
-                eal.debugPbt.X1 += deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.X1 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_O))
-                eal.debugPbt.Y1 += deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.Y1 += deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_G))
-                eal.debugPbt.X0 -= deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.X0 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_H))
-                eal.debugPbt.Y0 -= deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.Y0 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_J))
-                eal.debugPbt.Z0 -= deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.Z0 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_K))
-                eal.debugPbt.X1 -= deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.X1 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_L))
-                eal.debugPbt.Y1 -= deltaTime * 5.0f;
+                EmoteAnimationLibrary.debugPbt.Y1 -= deltaTime * 5.0f;
             if (Keyboard.isKeyDown(Keyboard.KEY_RETURN))
-                System.out.println(eal.debugPbt.X0 + "," + eal.debugPbt.Y0 + "," + eal.debugPbt.Z0 + "," + eal.debugPbt.X1 + "," + eal.debugPbt.Y1);
+                System.out.println(EmoteAnimationLibrary.debugPbt.X0 + "," + EmoteAnimationLibrary.debugPbt.Y0 + "," + EmoteAnimationLibrary.debugPbt.Z0 + "," + EmoteAnimationLibrary.debugPbt.X1 + "," + EmoteAnimationLibrary.debugPbt.Y1);
             if (Keyboard.isKeyDown(Keyboard.KEY_Q)) {
-                lib[0].setCurrentPose(eal.getPose(consoleReader.readLine()), false);
-            }
-
-            if (Mouse.isButtonDown(0)) {
-                if (!mb0l)
-                    pca[0].fightingStateTarget = 1.0f;
-                mb0l = true;
-            } else {
-                mb0l = false;
-            }
-            if (Mouse.isButtonDown(1)) {
-                if (!mb1l)
-                    pca[0].fightingStateTarget = -1.0f;
-                mb1l = true;
-            } else {
-                if (mb1l)
-                    pca[0].fightingStateTarget = 0.0f;
-                mb1l = false;
+                String text=consoleReader.readLine();
+                for (IAnimationLibrary ial : animLibs) {
+                    IAnimation ia=ial.getPose(text);
+                    if (ia!=null) {
+                        lib[0].setCurrentPose(ia, 8.0f, false);
+                        break;
+                    }
+                }
             }
 
             long v = frameEndpoint - currentTime;
             if (v > 1)
                 Thread.sleep(v);
-            Display.setTitle("GPMXAW: FrameTime " + (currentTime - frameStart) + "ms");
+            Display.setTitle("I-PMXAW: FrameTime " + (currentTime - frameStart) + "ms");
             frameEndpoint = currentTime + 30;
 
             float eyesX = (Mouse.getX() / (float) scrWidth) - 0.5f;

@@ -29,14 +29,6 @@ public class PlayerControlAnimation implements IAnimation {
     public float sneakState = 0;
 
     /**
-     * Set to 1.0f for fighting/placing/using,-1.0f for blocking.
-     * Note that fightingStateTarget is automatically set to 0.0f after fightingState(fightingStrengthControl) reaches 1.0f.
-     * This allows you to simply set fightingStateTarget to 1.0f every time an "action" happens-
-     * the rest is automated by the animation system.
-     */
-    public float fightingStateTarget = 0;
-
-    /**
      * Used for transitioning to/from the walking animation.
      */
     public boolean walkingFlag = false;
@@ -52,12 +44,9 @@ public class PlayerControlAnimation implements IAnimation {
      */
     public StrengthMultiplyAnimation walkingStrengthControl;
 
-    public FightingAnimation fighting;
-
-    public PlayerControlAnimation(WalkingAnimation wa, StrengthMultiplyAnimation wastr, FightingAnimation fa) {
+    public PlayerControlAnimation(WalkingAnimation wa, StrengthMultiplyAnimation wastr) {
         walking = wa;
         walkingStrengthControl = wastr;
-        fighting = fa;
     }
 
     @Override
@@ -215,24 +204,6 @@ public class PlayerControlAnimation implements IAnimation {
                 walkingStrengthControl.mulAmount = 0;
                 walking.time = 0;
             }
-        }
-        if (fighting.aPos < fightingStateTarget) {
-            fighting.aPos += deltaTime * 8.0f;
-        } else if (fighting.aPos > fightingStateTarget) {
-            fighting.aPos -= deltaTime * 8.0f;
-        }
-        if (fighting.aPos > -0.1f)
-            if (fighting.aPos < 0.1f)
-                if (fightingStateTarget > -0.1f)
-                    if (fightingStateTarget < 0.1f)
-                        fighting.aPos = fightingStateTarget;
-
-        if (fighting.aPos <= -1.0f) {
-            fighting.aPos = -1.0f;
-        }
-        if (fighting.aPos >= 1.0f) {
-            fighting.aPos = 1.0f;
-            fightingStateTarget = 0;
         }
     }
 }

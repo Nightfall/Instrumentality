@@ -20,16 +20,9 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
 
     @Override
     public IAnimation getPose(String poseName) {
-        if (poseName.equalsIgnoreCase("idle")) {
-            PoseAnimation pa = new PoseAnimation();
-            PoseBoneTransform pbt = new PoseBoneTransform();
-            pbt.X0 = (float) Math.toRadians(20);
-            pbt.Y0 = (float) Math.toRadians(-30);
-            pa.hashMap.put("r_shouler", pbt);
-            return pa;
-        }
+
         if (poseName.equalsIgnoreCase("hai")) {
-            PoseAnimation pa = new PoseAnimation();
+            PoseAnimation pa = PlayerAnimationLibrary.createIdlePoseAnimation();
             PoseBoneTransform pbt = new PoseBoneTransform();
             pbt.Z0 = -0.1f;
             pbt.X1 = -0.54f;
@@ -44,7 +37,7 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
         // This pose was actually developed during work on the attempt at a gendo...
         // Also: I think upperclass shock?
         if (poseName.equalsIgnoreCase("creepy_laugh")) {
-            PoseAnimation pa = new PoseAnimation();
+            PoseAnimation pa = PlayerAnimationLibrary.createIdlePoseAnimation();
             PoseBoneTransform pbt = new PoseBoneTransform();
             pbt.X0 = (float) Math.toRadians(20);
             pbt.Y0 = (float) Math.toRadians(-30);
@@ -62,6 +55,6 @@ public class EmoteAnimationLibrary implements IAnimationLibrary {
 
     @Override
     public String[] getPoses() {
-        return new String[]{"idle", "hai", "creepy_laugh"};
+        return new String[]{"hai", "creepy_laugh"};
     }
 }
