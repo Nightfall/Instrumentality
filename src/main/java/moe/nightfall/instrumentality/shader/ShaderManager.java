@@ -51,34 +51,34 @@ public class ShaderManager {
         int vertShader = 0, fragShader = 0;
         try {
             if (shader.vertexShader != null)
-                vertShader = createShader(shader.vertexShader, ARBVertexShader.GL_VERTEX_SHADER_ARB);
+                vertShader = createShader(shader.vertexShader, GL20.GL_VERTEX_SHADER);
             if (shader.fragmentShader != null)
-                fragShader = createShader(shader.fragmentShader, ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
+                fragShader = createShader(shader.fragmentShader, GL20.GL_FRAGMENT_SHADER);
         } catch (Exception exc) {
             exc.printStackTrace();
             return 0;
         }
 
-        int program = ARBShaderObjects.glCreateProgramObjectARB();
+        int program = GL20.glCreateProgram();
         if (program == 0)
             return 0;
 
         if (vertShader != 0)
-            ARBShaderObjects.glAttachObjectARB(program, vertShader);
+            GL20.glAttachShader(program, vertShader);
         if (fragShader != 0)
-            ARBShaderObjects.glAttachObjectARB(program, fragShader);
+            GL20.glAttachShader(program, fragShader);
 
-        ARBShaderObjects.glLinkProgramARB(program);
-        if (ARBShaderObjects.glGetObjectParameteriARB(program, ARBShaderObjects.GL_OBJECT_LINK_STATUS_ARB) == GL11.GL_FALSE) {
-            System.err.println(ARBShaderObjects.glGetInfoLogARB(program, ARBShaderObjects.glGetObjectParameteriARB(program,
-                    ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB)));
+        GL20.glLinkProgram(program);
+        if (GL20.glGetProgrami(program, GL20.GL_LINK_STATUS) == GL11.GL_FALSE) {
+            System.err.println(GL20.glGetProgramInfoLog(program, GL20.glGetProgrami(program,
+                    GL20.GL_INFO_LOG_LENGTH)));
             return 0;
         }
 
-        ARBShaderObjects.glValidateProgramARB(program);
-        if (ARBShaderObjects.glGetObjectParameteriARB(program, ARBShaderObjects.GL_OBJECT_VALIDATE_STATUS_ARB) == GL11.GL_FALSE) {
-            System.err.println(ARBShaderObjects.glGetInfoLogARB(program, ARBShaderObjects.glGetObjectParameteriARB(program,
-                    ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB)));
+        GL20.glValidateProgram(program);
+        if (GL20.glGetProgrami(program, GL20.GL_VALIDATE_STATUS) == GL11.GL_FALSE) {
+            System.err.println(GL20.glGetProgramInfoLog(program, GL20.glGetProgrami(program,
+                    GL20.GL_INFO_LOG_LENGTH)));
             return 0;
         }
 
@@ -88,7 +88,7 @@ public class ShaderManager {
     private static int createShader(String filename, int shaderType) throws Exception {
         int shader = 0;
         try {
-            shader = ARBShaderObjects.glCreateShaderObjectARB(shaderType);
+            shader = GL20.glCreateShader(shaderType);
             if (shader == 0)
                 return 0;
 
@@ -97,43 +97,35 @@ public class ShaderManager {
             fin.read(data);
             fin.close();
 
-            ARBShaderObjects.glShaderSourceARB(shader, new String(data));
-            ARBShaderObjects.glCompileShaderARB(shader);
+            GL20.glShaderSource(shader, new String(data));
+            GL20.glCompileShader(shader);
 
-            if (ARBShaderObjects.glGetObjectParameteriARB(shader, ARBShaderObjects.GL_OBJECT_COMPILE_STATUS_ARB) == GL11.GL_FALSE)
+            if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE)
                 throw new RuntimeException("Error creating shader: "
-                        + ARBShaderObjects.glGetInfoLogARB(shader, ARBShaderObjects.glGetObjectParameteriARB(shader,
-                        ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB)));
+                        + GL20.glGetShaderInfoLog(shader, GL20.glGetShaderi(shader,
+                        GL20.GL_INFO_LOG_LENGTH)));
 
             return shader;
 
         } catch (Exception exc) {
-            ARBShaderObjects.glDeleteObjectARB(shader);
+            GL20.glDeleteShader(shader);
             throw exc;
         }
     }
 
     public static void printErrorLog(Shader shader) {
         IntBuffer intBuffer = BufferUtils.createIntBuffer(1);
-        ARBShaderObjects.glGetObjectParameterARB(shader.getProgram(), ARBShaderObjects.GL_OBJECT_INFO_LOG_LENGTH_ARB, intBuffer);
+        GL20.glGetProgram(shader.getProgram(), GL20.GL_INFO_LOG_LENGTH, intBuffer);
 
         int length = intBuffer.get();
         if (length > 1) {
             ByteBuffer infoLog = BufferUtils.createByteBuffer(length);
             intBuffer.flip();
-            ARBShaderObjects.glGetInfoLogARB(shader.getProgram(), intBuffer, infoLog);
+            GL20.glGetProgramInfoLog(shader.getProgram(), intBuffer, infoLog);
             byte[] infoBytes = new byte[length];
             infoLog.get(infoBytes);
             String out = new String(infoBytes);
             System.err.println("Shader info log:\n" + out);
         }
-    }
-
-    public static void bindShader(Shader shader) {
-        ARBShaderObjects.glUseProgramObjectARB(shader.getProgram());
-    }
-
-    public static void releaseShader() {
-        ARBShaderObjects.glUseProgramObjectARB(0);
     }
 }
