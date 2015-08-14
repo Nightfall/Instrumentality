@@ -81,10 +81,14 @@ public class PMXModel {
      * @return An IBS matrix
      */
     public Matrix4f createIBS(PMXFile.PMXBone bone, boolean translation) {
+
+        // work out what we're supposed to be connected to
         float dX = bone.connectionPosOfsX;
         float dY = bone.connectionPosOfsY;
         float dZ = bone.connectionPosOfsZ;
+        // We're connected to another bone?
         if (bone.flagConnection) {
+            // If it's -1, assume some reasonable defaults
             if (bone.connectionIndex == -1) {
                 dX = 0;
                 dY = 1;
@@ -95,11 +99,18 @@ public class PMXModel {
                 dZ = theFile.boneData[bone.connectionIndex].posZ - bone.posZ;
             }
         }
+        // now work out how far that is so the later maths works correctly
         double magnitude = Math.sqrt((dX * dX) + (dY * dY) + (dZ * dZ));
+        // work out our direction...
+        // Note: There was a forum post. It contained the maths that I translated to this code.
+        // I have no idea how it would handle dX==0. It could involve explosions.
+        // *looks at the IK bones that aren't around*
+        // Oh. Wait. Those did dX==0, didn't they...
         float t = (float) Math.atan(dY / dX);
         float p = (float) Math.acos(dZ / magnitude);
         Matrix4f intoBoneSpace = new Matrix4f();
 
+        // Attempt to rotate us into the bone's "space"
         intoBoneSpace.rotate(t, new Vector3f(0, 0, 1));
         intoBoneSpace.rotate(p, new Vector3f(1, 0, 0));
 
@@ -110,9 +121,11 @@ public class PMXModel {
     }
 
     public Matrix4f getBoneMatrix(PMXFile.PMXBone bone, boolean translation) {
+        // Simple enough: get what the bone wants us to transform it by...
         PoseBoneTransform boneTransform = anim.getBoneTransform(compatibilityCheck(bone.globalName));
         Matrix4f i = new Matrix4f();
         if (boneTransform != null) {
+            // Go into bone-space, apply the transform, then leave.
             Matrix4f t = createIBS(bone, translation);
             Matrix4f.mul(t, i, i);
 
@@ -123,6 +136,7 @@ public class PMXModel {
             t.invert();
             Matrix4f.mul(t, i, i);
         }
+        // If there's a parent, run through this again with that...
         if (bone.parentBoneIndex != -1)
             Matrix4f.mul(getBoneMatrix(theFile.boneData[bone.parentBoneIndex], translation), i, i);
         return i;

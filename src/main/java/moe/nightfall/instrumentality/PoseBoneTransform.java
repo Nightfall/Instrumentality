@@ -4,6 +4,7 @@ import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 
 /**
+ * I'd replace half of this with a quaternion if I wasn't afraid it wouldn't interpolate.
  * Created on 24/07/15.
  */
 public class PoseBoneTransform {
