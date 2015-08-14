@@ -23,6 +23,3 @@ or 3 modules in one repository, after work on rendering by Vic is complete.
 3. Setup a run configuration pointing to the main class (moe.nightfall.instrumentality.Main)
 
 4. Run :)
-
-## LICENSE
-TODO
