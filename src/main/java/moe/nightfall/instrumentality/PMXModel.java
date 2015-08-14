@@ -13,14 +13,19 @@
 package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.shader.Shader;
 import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * Allows animating a model file, and rendering using LWJGL.
@@ -37,49 +42,178 @@ public class PMXModel {
      */
     public IAnimation anim;
 
-    private final IntBuffer[] indexBuffer;
-    private final IntBuffer[] cobaltIndexBuffer;
+    private final LinkedList<FaceGroup>[] groups;
 
-    private final FloatBuffer buffer_v;
-    private final FloatBuffer buffer_n;
-    private final FloatBuffer buffer_t;
+    private class FaceGroup {
+        final HashSet<PMXFile.PMXBone> boneSet=new HashSet<PMXFile.PMXBone>();
 
-    public PMXModel(PMXFile pf) {
+        // Buffers for compiling
+        final LinkedList<PMXFile.PMXVertex> vertexList=new LinkedList<PMXFile.PMXVertex>();
+
+        // Buffers for rendering
+        FloatBuffer vertexBuffer;
+        FloatBuffer normalBuffer;
+        FloatBuffer uvBuffer;
+
+        // vec4, note that "1.0" is not a valid weight! This is compiled on load, and doesn't change.
+        // For the pose buffer, look at the uniforms :)
+        FloatBuffer bonesBuffer;
+        // vec3
+        FloatBuffer tangentBuffer;
+    }
+
+    public PMXModel(PMXFile pf, int maxGroupSize) {
         theFile = pf;
-        indexBuffer = new IntBuffer[pf.matData.length];
-        cobaltIndexBuffer = new IntBuffer[pf.matData.length];
-
-        buffer_v = BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
-        buffer_n = BufferUtils.createFloatBuffer(theFile.vertexData.length * 3);
-        buffer_t = BufferUtils.createFloatBuffer(theFile.vertexData.length * 2);
+        groups=new LinkedList[pf.matData.length];
 
         int face = 0;
 
         for (int i = 0; i < theFile.matData.length; i++) {
+            groups[i]=new LinkedList<FaceGroup>();
             PMXFile.PMXMaterial mat = theFile.matData[i];
-            indexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 3);
-            cobaltIndexBuffer[i] = BufferUtils.createIntBuffer(mat.faceCount * 6);
             for (int ind = 0; ind < mat.faceCount; ind++) {
-                cobaltIndexBuffer[i].put(theFile.faceData[face][0]);
-                cobaltIndexBuffer[i].put(theFile.faceData[face][1]);
+                PMXFile.PMXVertex vA=theFile.vertexData[theFile.faceData[face][0]];
+                PMXFile.PMXVertex vB=theFile.vertexData[theFile.faceData[face][1]];
+                PMXFile.PMXVertex vC=theFile.vertexData[theFile.faceData[face][2]];
 
-                cobaltIndexBuffer[i].put(theFile.faceData[face][1]);
-                cobaltIndexBuffer[i].put(theFile.faceData[face][2]);
+                // Work out which bones are needed.
 
-                cobaltIndexBuffer[i].put(theFile.faceData[face][2]);
-                cobaltIndexBuffer[i].put(theFile.faceData[face][0]);
+                int wA=weightVertices(vA.weightType);
+                int wB=weightVertices(vB.weightType);
+                int wC=weightVertices(vC.weightType);
+                HashSet<PMXFile.PMXBone> usedBones=new HashSet<PMXFile.PMXBone>();
+                for (int i2=0;i2<wA;i2++)
+                    usedBones.add(theFile.boneData[vA.boneIndices[i2]]);
+                for (int i2=0;i2<wB;i2++)
+                    usedBones.add(theFile.boneData[vB.boneIndices[i2]]);
+                for (int i2=0;i2<wC;i2++)
+                    usedBones.add(theFile.boneData[vC.boneIndices[i2]]);
 
-                indexBuffer[i].put(theFile.faceData[face][0]);
-                indexBuffer[i].put(theFile.faceData[face][1]);
-                indexBuffer[i].put(theFile.faceData[face][2]);
+                // Ok, now for each group, check how many bones are missing (if none are missing we can break)
+
+                FaceGroup target=null;
+                FaceGroup bestBoneAdd=null;
+                HashSet<PMXFile.PMXBone> bestBoneAddRequired=null;
+                HashSet<PMXFile.PMXBone> bbarWork=new HashSet<PMXFile.PMXBone>();
+                for (FaceGroup fg : groups[i]) {
+                    // If the group can contain it, we don't need to do any more.
+                    if (fg.boneSet.containsAll(usedBones)) {
+                        target=fg;
+                        break;
+                    } else {
+                        // Otherwise, check what is missing...
+                        bbarWork.clear();
+                        for (PMXFile.PMXBone pb : usedBones)
+                            if (!fg.boneSet.contains(pb))
+                                bbarWork.add(pb);
+                        if (bbarWork.size()+fg.boneSet.size()>maxGroupSize)
+                            continue; // If it won't fit, don't do it.
+                        if (bestBoneAddRequired==null) {
+                            bestBoneAdd=fg;
+                            bestBoneAddRequired=bbarWork;
+                            bbarWork=new HashSet<PMXFile.PMXBone>();
+                        } else {
+                            // If less is missing here than in what we're planning to put it in,
+                            // this this is a better choice
+                            if (bestBoneAddRequired.size()>bbarWork.size()) {
+                                bestBoneAdd=fg;
+                                bestBoneAddRequired=bbarWork;
+                                bbarWork=new HashSet<PMXFile.PMXBone>();
+                            }
+                        }
+                    }
+                }
+                if (target==null) {
+                    if (bestBoneAdd == null) {
+                        // there are no groups we can add to, create a new group
+                        // We're not doing the "can it fit" check here, if it can't fit your model is broken/weird
+                        if (usedBones.size()>maxGroupSize) {
+                            System.err.println("WARNING! maxGroupSize of " + maxGroupSize + " is too small for a face which relies on " + usedBones.size() + " bones!");
+                        } else {
+                            target = new FaceGroup();
+                            target.boneSet.addAll(usedBones);
+                            groups[i].add(target);
+                        }
+                    } else {
+                        // Well, this is simple :)
+                        bestBoneAdd.boneSet.addAll(bestBoneAddRequired);
+                        target=bestBoneAdd;
+                    }
+                }
+
+                if (target!=null) {
+                    // Add the vertices to wherever we want to put them
+                    // (the facegroup needs to be complete before we start actually writing buffers)
+                    target.vertexList.add(vA);
+                    target.vertexList.add(vB);
+                    target.vertexList.add(vC);
+                } else {
+                    System.err.println("Faces have been skipped!!! Display artifacting will result.");
+                }
                 face++;
             }
+            System.out.println(groups[i].size()+" facegroups for shading on material "+i);
+            // since this set is complete, we can set up the buffers now
+            for (FaceGroup fg : groups[i]) {
+                fg.bonesBuffer=BufferUtils.createFloatBuffer(fg.vertexList.size()*4);
+                fg.vertexBuffer=BufferUtils.createFloatBuffer(fg.vertexList.size()*3);
+                fg.normalBuffer=BufferUtils.createFloatBuffer(fg.vertexList.size()*3);
+                fg.tangentBuffer=BufferUtils.createFloatBuffer(fg.vertexList.size()*3);
+                fg.uvBuffer=BufferUtils.createFloatBuffer(fg.vertexList.size()*2);
+                for (PMXFile.PMXVertex vt : fg.vertexList) {
+                    fg.bonesBuffer.put(createBoneData(fg, vt));
+                    fg.vertexBuffer.put(vt.posX);
+                    fg.vertexBuffer.put(vt.posY);
+                    fg.vertexBuffer.put(vt.posZ);
+                    fg.normalBuffer.put(vt.normalX);
+                    fg.normalBuffer.put(vt.normalY);
+                    fg.normalBuffer.put(vt.normalZ);
+                    fg.tangentBuffer.put(0);
+                    fg.tangentBuffer.put(0);
+                    fg.tangentBuffer.put(0);
+                    fg.uvBuffer.put(vt.texU);
+                    fg.uvBuffer.put(vt.texV);
+                }
+                fg.bonesBuffer.rewind();
+                fg.vertexBuffer.rewind();
+                fg.normalBuffer.rewind();
+                fg.tangentBuffer.rewind();
+                fg.uvBuffer.rewind();
+            }
         }
-        for (int vi = 0; vi < theFile.vertexData.length; vi++) {
-            PMXFile.PMXVertex ver = theFile.vertexData[vi];
-            buffer_v.put(new float[]{ver.posX, ver.posY, ver.posZ});
-            buffer_n.put(new float[]{ver.normalX, ver.normalY, ver.normalZ});
-            buffer_t.put(new float[]{ver.texU, ver.texV});
+    }
+
+    private int weightVertices(int weightType) {
+        if (weightType==0)
+            return 1;
+        if (weightType==1)
+            return 2;
+        if (weightType==2)
+            return 4;
+        return 0;
+    }
+
+    private float[] createBoneData(FaceGroup fg, PMXFile.PMXVertex v) {
+        switch (v.weightType) {
+            case 0:
+                // we can't actually have "1" as a weight :)
+                return new float[]{v.boneIndices[0]+0.5f,v.boneIndices[0]+0.5f,0,0};
+            case 1:
+                if (v.boneWeights[0]<0)
+                    System.err.println("Weird (<) BDEF2 weight detected: "+v.boneWeights[0]);
+                if (v.boneWeights[0]>1)
+                    System.err.println("Weird (>) BDEF2 weight detected: "+v.boneWeights[0]);
+                if (v.boneWeights[0]<=0)
+                    return new float[]{v.boneIndices[1]+0.5f,v.boneIndices[1]+0.5f,0,0};
+                if (v.boneWeights[0]>=1)
+                    return new float[]{v.boneIndices[0]+0.5f,v.boneIndices[0]+0.5f,0,0};
+                return new float[]{v.boneIndices[0]+v.boneWeights[0],v.boneIndices[1]+1.0f-v.boneWeights[0],0,0};
+            case 2:
+                return new float[]{v.boneIndices[0]+v.boneWeights[0],v.boneIndices[1]+v.boneWeights[1],v.boneIndices[2]+v.boneWeights[2],v.boneIndices[3]+v.boneWeights[3]};
+            default:
+                // Never fail silently... but considering this is a mod people will want to use, don't be a drama queen
+                System.err.println("Unknown weight time " + v.weightType + " - assuming basic 1-bone");
+                return new float[]{v.boneIndices[0]+0.5f,v.boneIndices[0]+0.5f,0,0};
         }
     }
 
@@ -191,45 +325,23 @@ public class PMXModel {
      * Make sure to enable GL_TEXTURE_2D before calling.
      *
      * @param textureBinder Binds a texture.
-     * @param cobalt        undocumented feature
      */
-    public void render(IMaterialBinder textureBinder, boolean cobalt) {
-
-//        threadPool.transformModel(this, buffer_v, buffer_n);
-        buffer_v.rewind();
-        buffer_n.rewind();
-        buffer_t.rewind();
-        for (int pass = 0; pass < (cobalt ? 5 : 1); pass++) {
-            for (int i = 0; i < theFile.matData.length; i++) {
-                cobaltIndexBuffer[i].rewind();
-                indexBuffer[i].rewind();
-                PMXFile.PMXMaterial mat = theFile.matData[i];
-                textureBinder.bindMaterial(mat);
-                if (cobalt) {
-                    float mul = new float[]{
-                            0.1f,
-                            0.2f,
-                            0.55f,
-                            0.75f,
-                            1.0f
-                    }[pass];
-                    GL11.glLineWidth(5 - pass);
-                    //GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
-                    GL11.glColor4d(0.0f, 0.1f + (0.1f * mul), 0.4f + (0.6f * mul), 1.0f);
-                } else {
-                    GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
-                }
+    public void render(IMaterialBinder textureBinder, Shader s) {
+        int oldProgram=GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+        for (int i=0;i<groups.length;i++) {
+            PMXFile.PMXMaterial mat = theFile.matData[i];
+            textureBinder.bindMaterial(mat);
+            for (FaceGroup fg : groups[i]) {
+                // Adjust uniforms
+                // Then render this chunk of the model.
+                GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
-                GL11.glVertexPointer(3, 0, buffer_v);
-                GL11.glTexCoordPointer(2, 0, buffer_t);
-                GL11.glNormalPointer(0, buffer_n);
-                if (cobalt) {
-                    GL11.glDrawElements(GL11.GL_LINES, cobaltIndexBuffer[i]);
-                } else {
-                    GL11.glDrawElements(GL11.GL_TRIANGLES, indexBuffer[i]);
-                }
+                GL11.glVertexPointer(3, 0, fg.vertexBuffer);
+                GL11.glTexCoordPointer(2, 0, fg.uvBuffer);
+                GL11.glNormalPointer(0, fg.normalBuffer);
+                GL11.glDrawArrays(GL11.GL_TRIANGLES,0,fg.vertexList.size());
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
@@ -241,5 +353,4 @@ public class PMXModel {
         if (anim != null)
             anim.update(v);
     }
-
 }
