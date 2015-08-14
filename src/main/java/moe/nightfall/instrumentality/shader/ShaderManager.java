@@ -18,8 +18,12 @@ import org.lwjgl.opengl.*;
 import java.io.FileInputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * See http://lwjgl.org/wiki/index.php?title=GLSL_Shaders_with_LWJGL
@@ -51,12 +55,11 @@ public class ShaderManager {
         int vertShader = 0, fragShader = 0;
         try {
             if (shader.vertexShader != null)
-                vertShader = createShader(shader.vertexShader, ARBVertexShader.GL_VERTEX_SHADER_ARB);
+                vertShader = createShader(shader.variables, shader.vertexShader, ARBVertexShader.GL_VERTEX_SHADER_ARB);
             if (shader.fragmentShader != null)
-                fragShader = createShader(shader.fragmentShader, ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
+                fragShader = createShader(shader.variables, shader.fragmentShader, ARBFragmentShader.GL_FRAGMENT_SHADER_ARB);
         } catch (Exception exc) {
-            exc.printStackTrace();
-            return 0;
+            throw new RuntimeException(exc);
         }
 
         int program = ARBShaderObjects.glCreateProgramObjectARB();
@@ -85,7 +88,7 @@ public class ShaderManager {
         return program;
     }
 
-    private static int createShader(String filename, int shaderType) throws Exception {
+    private static int createShader(Map<String, Object> variables, String filename, int shaderType) throws Exception {
         int shader = 0;
         try {
             shader = ARBShaderObjects.glCreateShaderObjectARB(shaderType);
@@ -96,8 +99,23 @@ public class ShaderManager {
             byte[] data = new byte[fin.available()];
             fin.read(data);
             fin.close();
+            
+            String program = new String(data);
+            Matcher matcher = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*\\$\\{").matcher(program);
+            while (matcher.find()) {
+            	int start = matcher.start();
+            	int end = program.indexOf("}", matcher.end());
+            	if (start == -1 || end == -1) 
+            		throw new Exception("Invalid string replacement sequence found in shader \"" + filename + "\"");
+            	String variable = program.substring(start + 2, end);
+            	if (!variables.containsKey(variable)) 
+            		throw new Exception("Coundn't find replacement for variable \"" + variable + "\" in shader \"" + filename + "\"");
+            	program = program.substring(0, start) + variables.get(variable) + program.substring(end + 1, program.length());
+            }
+            // TODO Proper escape sequences?
+            program = program.replaceAll("\\$\\{", "\\${");
 
-            ARBShaderObjects.glShaderSourceARB(shader, new String(data));
+            ARBShaderObjects.glShaderSourceARB(shader, program);
             ARBShaderObjects.glCompileShaderARB(shader);
 
             if (ARBShaderObjects.glGetObjectParameteriARB(shader, ARBShaderObjects.GL_OBJECT_COMPILE_STATUS_ARB) == GL11.GL_FALSE)

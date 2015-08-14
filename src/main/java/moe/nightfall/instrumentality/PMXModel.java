@@ -13,6 +13,8 @@
 package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.shader.ShaderManager;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Matrix4f;
@@ -195,12 +197,14 @@ public class PMXModel {
      */
     public void render(IMaterialBinder textureBinder, boolean cobalt) {
 
-//        threadPool.transformModel(this, buffer_v, buffer_n);
         buffer_v.rewind();
         buffer_n.rewind();
         buffer_t.rewind();
         for (int pass = 0; pass < (cobalt ? 5 : 1); pass++) {
             for (int i = 0; i < theFile.matData.length; i++) {
+            	
+            	ShaderManager.bindShader(Main.shaderBoneTransform);
+            	
                 cobaltIndexBuffer[i].rewind();
                 indexBuffer[i].rewind();
                 PMXFile.PMXMaterial mat = theFile.matData[i];
@@ -233,6 +237,8 @@ public class PMXModel {
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
+                
+                ShaderManager.releaseShader();
             }
         }
     }
