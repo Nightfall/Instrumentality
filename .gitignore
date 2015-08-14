@@ -1,8 +1,10 @@
 *
 !/src/*
 !/gradle/*
+!/shaders/*
 !build.gradle
 !FORMAT.md
+!LICENSE.md
 !README.md
 !gradlew
 !gradlew.bat

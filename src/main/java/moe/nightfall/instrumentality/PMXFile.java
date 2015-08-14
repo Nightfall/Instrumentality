@@ -1,3 +1,15 @@
+/*
+ * Copyright (c) 2015, Nightfall Group
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package moe.nightfall.instrumentality;
 
 import java.io.IOException;
@@ -76,7 +88,7 @@ public class PMXFile {
         pb.localName = getText(bb, textEncoding);
         pb.globalName = getText(bb, textEncoding);
         System.out.println(pb.globalName);
-        pb.posX = bb.getFloat();
+        pb.posX = -bb.getFloat();
         pb.posY = bb.getFloat();
         pb.posZ = bb.getFloat();
         pb.parentBoneIndex = getIndex(bb, boneIS);
@@ -98,7 +110,7 @@ public class PMXFile {
         if (pb.flagConnection) {
             pb.connectionIndex = getIndex(bb, boneIS);
         } else {
-            pb.connectionPosOfsX = bb.getFloat();
+            pb.connectionPosOfsX = -bb.getFloat();
             pb.connectionPosOfsY = bb.getFloat();
             pb.connectionPosOfsZ = bb.getFloat();
         }
@@ -107,11 +119,12 @@ public class PMXFile {
             pb.addRotationRate = bb.getFloat();
         }
         if (pb.flagFixedAxis) {
-            pb.fixedAxisX = bb.getFloat();
+            pb.fixedAxisX = -bb.getFloat();
             pb.fixedAxisY = bb.getFloat();
             pb.fixedAxisZ = bb.getFloat();
         }
         if (pb.flagLocalAxis) {
+            // TODO: What are these values, and do they need to be X-flipped
             pb.localAxisXX = bb.getFloat();
             pb.localAxisXY = bb.getFloat();
             pb.localAxisXZ = bb.getFloat();
@@ -189,10 +202,10 @@ public class PMXFile {
 
     private PMXVertex readVertex(ByteBuffer bb, int boneIS) throws IOException {
         PMXVertex pmxVertex = new PMXVertex();
-        pmxVertex.posX = bb.getFloat();
+        pmxVertex.posX = -bb.getFloat();
         pmxVertex.posY = bb.getFloat();
         pmxVertex.posZ = bb.getFloat();
-        pmxVertex.normalX = bb.getFloat();
+        pmxVertex.normalX = -bb.getFloat();
         pmxVertex.normalY = bb.getFloat();
         pmxVertex.normalZ = bb.getFloat();
         pmxVertex.texU = bb.getFloat();
@@ -221,13 +234,13 @@ public class PMXFile {
                 pmxVertex.boneIndices[0] = getIndex(bb, boneIS);
                 pmxVertex.boneIndices[1] = getIndex(bb, boneIS);
                 pmxVertex.boneWeights[0] = bb.getFloat();
-                pmxVertex.sdefCX = bb.getFloat();
+                pmxVertex.sdefCX = -bb.getFloat();
                 pmxVertex.sdefCY = bb.getFloat();
                 pmxVertex.sdefCZ = bb.getFloat();
-                pmxVertex.sdefR0X = bb.getFloat();
+                pmxVertex.sdefR0X = -bb.getFloat();
                 pmxVertex.sdefR0Y = bb.getFloat();
                 pmxVertex.sdefR0Z = bb.getFloat();
-                pmxVertex.sdefR1X = bb.getFloat();
+                pmxVertex.sdefR1X = -bb.getFloat();
                 pmxVertex.sdefR1Y = bb.getFloat();
                 pmxVertex.sdefR1Z = bb.getFloat();
                 break;
