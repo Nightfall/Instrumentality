@@ -85,9 +85,8 @@ public class PoseBoneTransform {
         Y1=v4;
     }
 
-    public void apply(Matrix4f boneMatrix, boolean translate) {
-        if (translate)
-            boneMatrix.translate(new Vector3f(TX0, TY0, TZ0));
+    public void apply(Matrix4f boneMatrix) {
+        boneMatrix.translate(new Vector3f(TX0, TY0, TZ0));
 
         boneMatrix.rotate(X0, new Vector3f(1, 0, 0));
         boneMatrix.rotate(Y0, new Vector3f(0, 1, 0));

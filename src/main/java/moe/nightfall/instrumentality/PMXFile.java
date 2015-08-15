@@ -62,7 +62,7 @@ public class PMXFile {
         globalComment = getText(bb, textEncoding);
         vertexData = new PMXVertex[bb.getInt()];
         for (int i = 0; i < vertexData.length; i++)
-            vertexData[i] = readVertex(bb, boneIS);
+            vertexData[i] = readVertex(i, bb, boneIS);
         int faceVData = bb.getInt();
         if (faceVData % 3 != 0)
             throw new IOException("Invalid facecount, must be multiple of 3");
@@ -77,14 +77,14 @@ public class PMXFile {
             texData[i] = getText(bb, textEncoding);
         matData = new PMXMaterial[bb.getInt()];
         for (int i = 0; i < matData.length; i++)
-            matData[i] = readMaterial(bb, textEncoding, textureIS, texData);
+            matData[i] = readMaterial(i, bb, textEncoding, textureIS, texData);
         boneData = new PMXBone[bb.getInt()];
         for (int i = 0; i < boneData.length; i++)
-            boneData[i] = readBone(bb, textEncoding, boneIS);
+            boneData[i] = readBone(i, bb, textEncoding, boneIS);
     }
 
-    private PMXBone readBone(ByteBuffer bb, int textEncoding, int boneIS) throws IOException {
-        PMXBone pb = new PMXBone();
+    private PMXBone readBone(int id, ByteBuffer bb, int textEncoding, int boneIS) throws IOException {
+        PMXBone pb = new PMXBone(id);
         pb.localName = getText(bb, textEncoding);
         pb.globalName = getText(bb, textEncoding);
         System.out.println(pb.globalName);
@@ -154,8 +154,8 @@ public class PMXFile {
         return pb;
     }
 
-    private PMXMaterial readMaterial(ByteBuffer bb, int textEncoding, int textureIS, String[] tex) throws IOException {
-        PMXMaterial pm = new PMXMaterial();
+    private PMXMaterial readMaterial(int id, ByteBuffer bb, int textEncoding, int textureIS, String[] tex) throws IOException {
+        PMXMaterial pm = new PMXMaterial(id);
         pm.localName = getText(bb, textEncoding);
         pm.globalName = getText(bb, textEncoding);
         pm.diffR = bb.getFloat();
@@ -200,8 +200,8 @@ public class PMXFile {
         return pm;
     }
 
-    private PMXVertex readVertex(ByteBuffer bb, int boneIS) throws IOException {
-        PMXVertex pmxVertex = new PMXVertex();
+    private PMXVertex readVertex(int id, ByteBuffer bb, int boneIS) throws IOException {
+        PMXVertex pmxVertex = new PMXVertex(id);
         pmxVertex.posX = -bb.getFloat();
         pmxVertex.posY = bb.getFloat();
         pmxVertex.posZ = bb.getFloat();
@@ -277,6 +277,12 @@ public class PMXFile {
     }
 
     public static class PMXVertex {
+        // Self-identifier for convenience
+        public final int vxId;
+
+        public PMXVertex(int vId) {
+            vxId = vId;
+        }
         public float posX, posY, posZ;
         public float normalX, normalY, normalZ;
         public float texU, texV;
@@ -290,6 +296,12 @@ public class PMXFile {
     }
 
     public static class PMXMaterial {
+        // Self-identifier for convenience
+        public final int matId;
+
+        public PMXMaterial(int mId) {
+            matId = mId;
+        }
         public String localName, globalName;
         public float diffR, diffG, diffB, diffA;
         public float specR, specG, specB;
@@ -307,6 +319,12 @@ public class PMXFile {
     }
 
     public class PMXBone {
+        // Self-identifier for convenience
+        public final int boneId;
+
+        public PMXBone(int bId) {
+            boneId = bId;
+        }
         public String localName, globalName;
         public float posX, posY, posZ;
         public int parentBoneIndex;

@@ -81,8 +81,9 @@ public class PMXTransformThread extends Thread {
         matrix4fTs = new Matrix4f[model.pmxModel.theFile.boneData.length];
         matrix4fNTs = new Matrix4f[model.pmxModel.theFile.boneData.length];
         for (int i = 0; i < model.pmxModel.theFile.boneData.length; i++) {
-            matrix4fTs[i] = model.pmxModel.getBoneMatrix(model.pmxModel.theFile.boneData[i], true);
-            matrix4fNTs[i] = model.pmxModel.getBoneMatrix(model.pmxModel.theFile.boneData[i], false);
+            matrix4fTs[i] = model.pmxModel.getBoneMatrix(model.pmxModel.theFile.boneData[i]);
+            // TODO : FIXME
+            matrix4fNTs[i] = model.pmxModel.getBoneMatrix(model.pmxModel.theFile.boneData[i]);
         }
         for (int i = 0; i < model.pmxModel.theFile.vertexData.length; i++) {
             PMXFile.PMXVertex mat = model.pmxModel.theFile.vertexData[i];

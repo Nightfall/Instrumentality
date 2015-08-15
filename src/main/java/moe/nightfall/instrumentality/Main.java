@@ -23,6 +23,7 @@ import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.Util;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
@@ -78,7 +79,7 @@ public class Main {
 
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
 
-        PMXModel[] pm = new PMXModel[1];
+        PMXModel[] pm = new PMXModel[80];
         PlayerControlAnimation[] pca = new PlayerControlAnimation[pm.length];
         LibraryAnimation[] lib = new LibraryAnimation[pm.length];
 
@@ -152,8 +153,11 @@ public class Main {
             int bTex = GL11.glGenTextures();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
 
+            String str = mat.texTex;
+            if (str == null)
+                str = "defTex.png";
             try {
-                BufferedImage bi = ImageIO.read(new File("mdl/" + mat.texTex.toLowerCase()));
+                BufferedImage bi = ImageIO.read(new File("mdl/" + str.toLowerCase()));
                 int[] ib = new int[bi.getWidth() * bi.getHeight()];
                 bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth());
                 ByteBuffer inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
@@ -169,7 +173,7 @@ public class Main {
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
             } catch (Exception e) {
-                System.out.println(mat.texTex);
+                System.out.println(str);
                 throw new RuntimeException(e);
             }
             materialTextures.put(mat, bTex);
@@ -208,8 +212,7 @@ public class Main {
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
             for (PMXFile.PMXBone bone : pf.boneData) {
-                for (int i = 0; i < pm.length; i++) {
-                    Vector4f v3f=Matrix4f.transform(pm[i].getBoneMatrix(bone, true),new Vector4f(bone.posX,bone.posY,bone.posZ,1),null);
+                Vector4f v3f = Matrix4f.transform(pm[0].getBoneMatrix(bone), new Vector4f(bone.posX, bone.posY, bone.posZ, 1), null);
                     if (bone.parentBoneIndex != -1) {
                         GL11.glLineWidth(1.0f);
                         GL11.glBegin(GL11.GL_LINES);
@@ -217,7 +220,7 @@ public class Main {
                         GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
                         GL11.glColor3d(0, 1, 0);
                         Vector4f v3f2=new Vector4f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ, 1);
-                        v3f2 = Matrix4f.transform(pm[i].getBoneMatrix(pf.boneData[bone.parentBoneIndex], true), v3f2, null);
+                        v3f2 = Matrix4f.transform(pm[0].getBoneMatrix(pf.boneData[bone.parentBoneIndex]), v3f2, null);
                         GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
                         GL11.glEnd();
                     }
@@ -226,18 +229,10 @@ public class Main {
                     GL11.glColor3d(0, 0, 1);
                     GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
                     GL11.glEnd();
-                }
             }
-            GL11.glPopMatrix();
             GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glBegin(GL11.GL_POINTS);
 
-            for (int i = -128; i < 16; i++) {
-                GL11.glColor3f(0, 0, 0);
-                GL11.glPointSize(4.0f);
-                GL11.glVertex3d(0, 0, i / 4.0d);
-            }
-            GL11.glEnd();
+            GL11.glPopMatrix();
 
             Display.update();
             Keyboard.poll();
