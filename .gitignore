@@ -3,6 +3,7 @@
 !/gradle/*
 !/shaders/*
 !build.gradle
+!gradle.properties
 !FORMAT.md
 !LICENSE.md
 !README.md
