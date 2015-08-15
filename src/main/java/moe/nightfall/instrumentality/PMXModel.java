@@ -39,6 +39,9 @@ public class PMXModel {
      * Animation. Can be changed at any time.
      */
     public IAnimation anim;
+    
+    /** Height of the model, determinated by the highest vertex */
+    public final float height;
 
     private final LinkedList<FaceGroup>[] groups;
 
@@ -62,9 +65,10 @@ public class PMXModel {
 
     public PMXModel(PMXFile pf, int maxGroupSize) {
         theFile = pf;
-        groups=new LinkedList[pf.matData.length];
-
+        groups = new LinkedList[pf.matData.length];
+        
         int face = 0;
+        float height = 0;
 
         for (int i = 0; i < theFile.matData.length; i++) {
             groups[i]=new LinkedList<FaceGroup>();
@@ -125,7 +129,7 @@ public class PMXModel {
                     if (bestBoneAdd == null) {
                         // there are no groups we can add to, create a new group
                         // We're not doing the "can it fit" check here, if it can't fit your model is broken/weird
-                        if (usedBones.size()>maxGroupSize) {
+                        if (usedBones.size() > maxGroupSize) {
                             System.err.println("WARNING! maxGroupSize of " + maxGroupSize + " is too small for a face which relies on " + usedBones.size() + " bones!");
                         } else {
                             target = new FaceGroup();
@@ -162,6 +166,7 @@ public class PMXModel {
                     fg.bonesBuffer.put(createBoneData(fg, vt));
                     fg.vertexBuffer.put(vt.posX);
                     fg.vertexBuffer.put(vt.posY);
+                    height = vt.posY > height ? vt.posY : height;
                     fg.vertexBuffer.put(vt.posZ);
                     fg.normalBuffer.put(vt.normalX);
                     fg.normalBuffer.put(vt.normalY);
@@ -179,6 +184,7 @@ public class PMXModel {
                 fg.uvBuffer.rewind();
             }
         }
+        this.height = height;
     }
 
     private int weightVertices(int weightType) {
@@ -324,9 +330,10 @@ public class PMXModel {
      *
      * @param textureBinder Binds a texture.
      */
+    // TODO this should not take a shader as argument
     public void render(IMaterialBinder textureBinder, Shader s) {
-        int oldProgram=GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
-        GL20.glUseProgram(s.getProgram());
+//        int oldProgram=GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+//        GL20.glUseProgram(s.getProgram());
         for (int i=0;i<groups.length;i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             textureBinder.bindMaterial(mat);
@@ -346,7 +353,7 @@ public class PMXModel {
                 GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
             }
         }
-        GL20.glUseProgram(oldProgram);
+//        GL20.glUseProgram(oldProgram);
     }
 
     public void update(double v) {
