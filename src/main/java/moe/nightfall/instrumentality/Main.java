@@ -106,7 +106,7 @@ public class Main {
              */
 
             // The minimum for error-free display of the Miku model is 4.
-            pm[i] = new PMXModel(pf,8);
+            pm[i] = new PMXModel(pf,12);
 
             WalkingAnimation wa = new WalkingAnimation();
             wa.time = i * 0.1f;
