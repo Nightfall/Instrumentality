@@ -18,7 +18,7 @@
  */
 attribute vec4 Bones; 
 attribute vec3 Tangent; 
-uniform mat4 Pose[12];
+uniform mat4 Pose[${groupSize}];
 varying vec3 T,B,N; 
  
 void main(void) { 

@@ -67,7 +67,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null).set("groupSize", 20);
+        int groupSize=12;
+        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null).set("groupSize", groupSize);
 
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
@@ -106,7 +107,8 @@ public class Main {
              */
 
             // The minimum for error-free display of the Miku model is 4.
-            pm[i] = new PMXModel(pf,12);
+            // The minimum for error-free display of any model is 12.
+            pm[i] = new PMXModel(pf,groupSize);
 
             WalkingAnimation wa = new WalkingAnimation();
             wa.time = i * 0.1f;
