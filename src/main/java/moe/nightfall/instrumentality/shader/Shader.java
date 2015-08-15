@@ -12,6 +12,9 @@
  */
 package moe.nightfall.instrumentality.shader;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * A shader.
  * A holder for the GL program ID.
@@ -21,7 +24,8 @@ public class Shader {
     int program;
     final String vertexShader;
     final String fragmentShader;
-
+    final Map<String, Object> variables = new HashMap<String, Object>();
+    
     Shader(String vertexShader, String fragmentShader) {
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
@@ -29,5 +33,10 @@ public class Shader {
 
     public int getProgram() {
         return program;
+    }
+    
+    public Shader set(String variable, Object obj) {
+    	variables.put(variable, obj);
+    	return this;
     }
 }

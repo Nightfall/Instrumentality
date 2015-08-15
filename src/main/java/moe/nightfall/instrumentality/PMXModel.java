@@ -14,16 +14,14 @@ package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.shader.Shader;
+import moe.nightfall.instrumentality.shader.ShaderManager;
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.ARBShaderObjects;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
-import org.lwjgl.util.vector.Vector4f;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -328,6 +326,7 @@ public class PMXModel {
      */
     public void render(IMaterialBinder textureBinder, Shader s) {
         int oldProgram=GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
+        GL20.glUseProgram(s.getProgram());
         for (int i=0;i<groups.length;i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             textureBinder.bindMaterial(mat);
@@ -341,12 +340,13 @@ public class PMXModel {
                 GL11.glVertexPointer(3, 0, fg.vertexBuffer);
                 GL11.glTexCoordPointer(2, 0, fg.uvBuffer);
                 GL11.glNormalPointer(0, fg.normalBuffer);
-                GL11.glDrawArrays(GL11.GL_TRIANGLES,0,fg.vertexList.size());
+                GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, fg.vertexList.size());
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
             }
         }
+        GL20.glUseProgram(oldProgram);
     }
 
     public void update(double v) {

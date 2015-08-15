@@ -67,7 +67,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null);
+        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null).set("groupSize", 20);
 
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
