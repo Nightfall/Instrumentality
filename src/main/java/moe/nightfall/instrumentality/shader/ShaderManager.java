@@ -16,6 +16,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.*;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.HashMap;
@@ -95,10 +96,10 @@ public class ShaderManager {
             if (shader == 0)
                 return 0;
 
-            FileInputStream fin = new FileInputStream(filename);
-            byte[] data = new byte[fin.available()];
-            fin.read(data);
-            fin.close();
+            InputStream in = ShaderManager.class.getResourceAsStream(filename);
+            byte[] data = new byte[in.available()];
+            in.read(data);
+            in.close();
             
             String program = new String(data);
             Matcher matcher = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*\\$\\{").matcher(program);
