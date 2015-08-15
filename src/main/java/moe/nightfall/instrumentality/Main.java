@@ -67,7 +67,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null).set("groupSize", 20);
+        int groupSize=12;
+        shaderBoneTransform = ShaderManager.createProgram("shaders/bone_transform.vert", null).set("groupSize", groupSize);
 
         FileInputStream fis = new FileInputStream("mdl/mdl.pmx");
         byte[] data = new byte[fis.available()];
@@ -104,7 +105,10 @@ public class Main {
              * Note that PCA sends data to other animations for sub-tasks,
              * while doing direct control for others - see arrows for where it sends data to other animations.
              */
-            pm[i] = new PMXModel(pf);
+
+            // The minimum for error-free display of the Miku model is 4.
+            // The minimum for error-free display of any model is 12.
+            pm[i] = new PMXModel(pf,groupSize);
 
             WalkingAnimation wa = new WalkingAnimation();
             wa.time = i * 0.1f;
@@ -120,7 +124,7 @@ public class Main {
             pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, pca[i], lib[i]});
         }
 
-        int scrWidth = 1024, scrHeight = 768;
+        int scrWidth = 800, scrHeight = 600;
         float rotX = 90, posY = -1, zoom = 7.0f;
         boolean animate = true, eDownLast = false, rDownLast = false;
         Display.setTitle("Instrumentality: PMX Animation Workbench");
@@ -173,12 +177,7 @@ public class Main {
         Keyboard.create();
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
-            boolean cobalt = Keyboard.isKeyDown(Keyboard.KEY_C);
-            if (cobalt) {
-                GL11.glClearColor(0.0f, 0.1f, 0.4f, 1.0f);
-            } else {
-                GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-            }
+            GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             GL11.glClearDepth(1.0f);
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
             GL11.glLoadIdentity();
@@ -193,8 +192,7 @@ public class Main {
             GL11.glTranslated(0, 0, -testTime);
             GL11.glScaled(0.2d, 0.2d, 0.2d);
 
-            if (!cobalt)
-                GL11.glEnable(GL11.GL_TEXTURE_2D);
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
             for (int i = 0; i < pm.length; i++) {
                 GL11.glPushMatrix();
                 GL11.glTranslated(i * 16, 0, 0);
@@ -203,25 +201,21 @@ public class Main {
                     public void bindMaterial(PMXFile.PMXMaterial texture) {
                         GL11.glBindTexture(GL11.GL_TEXTURE_2D, materialTextures.get(texture));
                     }
-                }, cobalt);
+                }, shaderBoneTransform);
                 GL11.glPopMatrix();
             }
             GL11.glDisable(GL11.GL_TEXTURE_2D);
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
-            if (cobalt)
-                GL11.glColor4d(0.0f, 0.2f, 1.0f, 1.0f);
             for (PMXFile.PMXBone bone : pf.boneData) {
                 for (int i = 0; i < pm.length; i++) {
                     Vector4f v3f=Matrix4f.transform(pm[i].getBoneMatrix(bone, true),new Vector4f(bone.posX,bone.posY,bone.posZ,1),null);
                     if (bone.parentBoneIndex != -1) {
                         GL11.glLineWidth(1.0f);
                         GL11.glBegin(GL11.GL_LINES);
-                        if (!cobalt)
-                            GL11.glColor3d(1, 0, 0);
+                        GL11.glColor3d(1, 0, 0);
                         GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
-                        if (!cobalt)
-                            GL11.glColor3d(0, 1, 0);
+                        GL11.glColor3d(0, 1, 0);
                         Vector4f v3f2=new Vector4f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ, 1);
                         v3f2 = Matrix4f.transform(pm[i].getBoneMatrix(pf.boneData[bone.parentBoneIndex], true), v3f2, null);
                         GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
@@ -229,8 +223,7 @@ public class Main {
                     }
                     GL11.glPointSize(4);
                     GL11.glBegin(GL11.GL_POINTS);
-                    if (!cobalt)
-                        GL11.glColor3d(0, 0, 1);
+                    GL11.glColor3d(0, 0, 1);
                     GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
                     GL11.glEnd();
                 }
