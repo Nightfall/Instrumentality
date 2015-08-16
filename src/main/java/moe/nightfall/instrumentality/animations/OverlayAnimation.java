@@ -21,7 +21,7 @@ import moe.nightfall.instrumentality.PoseBoneTransform;
 public class OverlayAnimation implements IAnimation {
     public IAnimation[] subAnimations;
 
-    public OverlayAnimation(IAnimation[] subAnimations) {
+    public OverlayAnimation(IAnimation... subAnimations) {
         this.subAnimations = subAnimations;
     }
 
