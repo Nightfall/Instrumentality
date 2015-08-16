@@ -78,4 +78,8 @@ public class LibraryAnimation implements IAnimation {
         if (transitionValue >= 1.0f)
             transitionValue = 1.0f;
     }
+
+    public IAnimation getTarget() {
+        return currentPose;
+    }
 }

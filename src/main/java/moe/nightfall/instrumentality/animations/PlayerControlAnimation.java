@@ -52,7 +52,34 @@ public class PlayerControlAnimation implements IAnimation {
     public float lookUD = 0.1f;
 
     /**
-     * Set to 1.0f for sneaking,-1.0f for sprinting
+     * Miku's hair position.
+     */
+    public float hairSway = 0.5f;
+
+    /**
+     * Miku's hair velocity.
+     * This is not directly modified by the head movement, instead it changes hairSway.
+     */
+    public float hairSwayVel = 0.0f;
+
+    /**
+     * Used to work out how much Miku has rotated
+     */
+    public float lastTotalRotation = 0.0f;
+
+    /**
+     * Used to work out hair sway :)
+     * Can be any value, the system will normalize to a 0 to PI*2 value, and then finally to a difference.
+     */
+    public float bodyRotation = 0.0f;
+
+    /**
+     * Used to work out how much Miku's head has rotated
+     */
+    public float lastLRValue = 0.0f;
+
+    /**
+     * Set to 1.0f for sneaking,-1.0f for flying
      */
     public float sneakStateTarget = 0;
     public float sneakState = 0;
@@ -151,19 +178,26 @@ public class PlayerControlAnimation implements IAnimation {
                     pbt.Y0 *= -6.0f;
                 if (lookUD < 0.226f)
                     pbt.Y0 *= 0.8f;
-            } else {
-
             }
         }
-        pbt.Y0 *= ((segment != 0) ? -0.25f : 1);
-        pbt.Y0 *= (b ? 2 : -2);
+        pbt.Y0 *= ((segment != 0) ? -0.50f : 2);
+        pbt.Y0 *= (b ? 1 : -1);
+        pbt.X0 = hairSway / 2.0f;
+        pbt.X0 *= ((segment != 0) ? 1 : 2);
+        if (hairSway > 0) {
+            pbt.X0 *= (b ? 0.7f : -1);
+        } else {
+            pbt.X0 *= (b ? 1 : -0.7f);
+        }
         return pbt;
     }
 
     private PoseBoneTransform getLegTransform(boolean b) {
         PoseBoneTransform pbt = new PoseBoneTransform();
-        if (sneakState < 0)
-            return null;
+        if (sneakState < 0) {
+            pbt.X0 = 0.2f * -sneakState;
+            return pbt;
+        }
         pbt.Y0 = (0.5f) * sneakState;
         if (!b)
             pbt.Y0 = -pbt.Y0;
@@ -215,18 +249,11 @@ public class PlayerControlAnimation implements IAnimation {
                     if (sneakStateTarget < 0.1f)
                         sneakState = sneakStateTarget;
 
-        float speedTarget = (-sneakState) + 1.5f;
-        if (walking.speed < speedTarget)
-            walking.speed += deltaTime * 8.0f;
-        if (walking.speed > speedTarget)
-            walking.speed -= deltaTime * 8.0f;
-        if (walking.speed > speedTarget - 0.1f)
-            if (walking.speed < speedTarget + 0.1f)
-                walking.speed = speedTarget;
         if (walkingFlag) {
             walkingStrengthControl.mulAmount += deltaTime * 8.0f;
-            if (walkingStrengthControl.mulAmount > 1)
-                walkingStrengthControl.mulAmount = 1;
+            float limit = sneakState < 0 ? 0.1f : 1.0f;
+            if (walkingStrengthControl.mulAmount > limit)
+                walkingStrengthControl.mulAmount = limit;
         } else {
             walkingStrengthControl.mulAmount -= deltaTime * 8.0f;
             if (walkingStrengthControl.mulAmount < 0) {
@@ -234,5 +261,44 @@ public class PlayerControlAnimation implements IAnimation {
                 walking.time = 0;
             }
         }
+        // Time to calculate Miku's "hair physics"
+        hairSwayVel += (float) ((-hairSway) * deltaTime * 4.0f);
+        hairSway += hairSwayVel * deltaTime * 4.0f;
+        hairSwayVel -= hairSwayVel * (deltaTime / 1.0f);
+        float bRotation = bodyRotation;
+        // Normalize between 0 and PI*2
+        while (bRotation < 0)
+            bRotation += Math.PI * 2;
+        while (bRotation > (Math.PI * 2))
+            bRotation -= Math.PI * 2;
+        float distRotation = angleDist(bRotation, lastTotalRotation);
+        lastTotalRotation = bRotation;
+
+        distRotation /= 4.0f;
+        float lrValue = (lookLR * 1.2f);
+        distRotation += lrValue - lastLRValue;
+        lastLRValue = lrValue;
+        hairSwayVel += distRotation * 2.0f;
+    }
+
+    private float angleDist(float totalRotation, float lastTotalRotation) {
+        float a = totalRotation - lastTotalRotation;
+        float b;
+        if (totalRotation < lastTotalRotation) {
+            // given a TR of 0.20, a LTR of 0.80 and a L of 1:
+            // TR+(1-LTR)=0.40
+            b = -adSpecial(totalRotation, lastTotalRotation);
+        } else {
+            // given a LTR of 0.20, a TR of 0.80 and a L of 1:
+            // LTR+(1-TR)=0.80
+            b = adSpecial(lastTotalRotation, totalRotation);
+        }
+        if (Math.abs(a) > Math.abs(b))
+            return b;
+        return a;
+    }
+
+    private float adSpecial(float lower, float upper) {
+        return (float) (lower + ((Math.PI * 2) - upper));
     }
 }

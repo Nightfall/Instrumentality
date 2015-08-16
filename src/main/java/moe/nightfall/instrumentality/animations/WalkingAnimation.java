@@ -21,7 +21,7 @@ import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 public class WalkingAnimation implements IAnimation {
     public float time = 0, wtime = 0;
     /**
-     * Controlled by PlayerControlAnimation, for sneaking.
+     * Controlled by MC
      */
     public float speed = 1.0f;
 

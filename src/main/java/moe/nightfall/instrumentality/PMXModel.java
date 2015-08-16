@@ -35,11 +35,18 @@ import java.util.LinkedList;
  *         Created on 24/07/15.
  */
 public class PMXModel {
+
     public final PMXFile theFile;
+
     /**
      * Animation. Can be changed at any time.
      */
     public IAnimation anim;
+
+    /**
+     * Height of the model, determinated by the highest vertex
+     */
+    public final float height;
 
     private final LinkedList<FaceGroup>[] groups;
     private final Matrix4f[] boneCache;
@@ -74,6 +81,7 @@ public class PMXModel {
         boneCache = new Matrix4f[pf.boneData.length];
 
         int face = 0;
+        float height = 0;
 
         for (int i = 0; i < theFile.matData.length; i++) {
             groups[i] = new LinkedList<FaceGroup>();
@@ -82,6 +90,9 @@ public class PMXModel {
                 PMXFile.PMXVertex vA = theFile.vertexData[theFile.faceData[face][0]];
                 PMXFile.PMXVertex vB = theFile.vertexData[theFile.faceData[face][1]];
                 PMXFile.PMXVertex vC = theFile.vertexData[theFile.faceData[face][2]];
+                height = vA.posY > height ? vA.posY : height;
+                height = vB.posY > height ? vB.posY : height;
+                height = vC.posY > height ? vC.posY : height;
 
                 // Work out which bones are needed.
 
@@ -171,6 +182,7 @@ public class PMXModel {
             }
             System.out.println(groups[i].size() + " facegroups for shading on material " + i);
         }
+        this.height = height;
     }
 
     private int weightVertices(int weightType) {
