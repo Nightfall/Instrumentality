@@ -220,7 +220,6 @@ public class PMXModel {
     }
 
     /**
-     *
      * @param intoBoneSpace The matrix to apply to
      * @param bone          The bone to get the IBS of
      */
@@ -290,7 +289,7 @@ public class PMXModel {
         // If there's a parent, run through this again with that...
         if (bone.parentBoneIndex != -1)
             Matrix4f.mul(getBoneMatrix(theFile.boneData[bone.parentBoneIndex]), i, i);
-        return boneCache[bone.boneId]=i;
+        return boneCache[bone.boneId] = i;
     }
 
     /**

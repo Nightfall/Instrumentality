@@ -78,11 +78,11 @@ public class PoseBoneTransform {
     }
 
     public PoseBoneTransform(float v, float v1, float v2, float v3, float v4) {
-        X0=v;
-        Y0=v1;
-        Z0=v2;
-        X1=v3;
-        Y1=v4;
+        X0 = v;
+        Y0 = v1;
+        Z0 = v2;
+        X1 = v3;
+        Y1 = v4;
     }
 
     public void apply(Matrix4f boneMatrix) {

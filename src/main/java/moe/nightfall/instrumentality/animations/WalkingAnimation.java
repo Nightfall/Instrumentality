@@ -13,7 +13,6 @@
 package moe.nightfall.instrumentality.animations;
 
 import moe.nightfall.instrumentality.PoseBoneTransform;
-import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 
 /**
  * Created on 24/07/15.
@@ -98,20 +97,20 @@ public class WalkingAnimation implements IAnimation {
     }
 
     private PoseBoneTransform getShoulderTransform(boolean b, float atime) {
-        PoseBoneTransform interpA = new PoseBoneTransform(0.13499999f,0,0.71999985f,0.13999994f,0.26f);
-        PoseBoneTransform interpM = new PoseBoneTransform(0,0,0,0.11000006f,0.35000002f);
-        PoseBoneTransform interpB = new PoseBoneTransform(0,1.0400001f,0.06499989f,0.77999985f,-0.4150001f);
+        PoseBoneTransform interpA = new PoseBoneTransform(0.13499999f, 0, 0.71999985f, 0.13999994f, 0.26f);
+        PoseBoneTransform interpM = new PoseBoneTransform(0, 0, 0, 0.11000006f, 0.35000002f);
+        PoseBoneTransform interpB = new PoseBoneTransform(0, 1.0400001f, 0.06499989f, 0.77999985f, -0.4150001f);
         float t = (float) (atime * Math.PI * 2);
         if (b)
             t += Math.PI;
-        t=(float)Math.sin(t);
-        if (t<0) {
-            PoseBoneTransform pbt=new PoseBoneTransform(interpA,interpM,t+1.0f);
+        t = (float) Math.sin(t);
+        if (t < 0) {
+            PoseBoneTransform pbt = new PoseBoneTransform(interpA, interpM, t + 1.0f);
             if (b)
                 return flipShoulderPBT(pbt);
             return pbt;
         } else {
-            PoseBoneTransform pbt=new PoseBoneTransform(interpM,interpB,t);
+            PoseBoneTransform pbt = new PoseBoneTransform(interpM, interpB, t);
             if (b)
                 return flipShoulderPBT(pbt);
             return pbt;
@@ -119,22 +118,22 @@ public class WalkingAnimation implements IAnimation {
     }
 
     private PoseBoneTransform flipShoulderPBT(PoseBoneTransform pbt) {
-        PoseBoneTransform rpbt=new PoseBoneTransform(pbt);
+        PoseBoneTransform rpbt = new PoseBoneTransform(pbt);
         //rpbt.X0=-pbt.X0;
-        rpbt.Y0=-pbt.Y0;
-        rpbt.Z0=-pbt.Z0;
+        rpbt.Y0 = -pbt.Y0;
+        rpbt.Z0 = -pbt.Z0;
         //rpbt.X1=-pbt.X1;
-        rpbt.Y1=-pbt.Y1;
+        rpbt.Y1 = -pbt.Y1;
         return rpbt;
     }
 
     private PoseBoneTransform getElbowTransform(boolean b, float atime) {
-        PoseBoneTransform interpA = new PoseBoneTransform(0.28999993f,-0.28000003f,-0.33f,0.56500053f,-0.089999996f);
-        PoseBoneTransform interpB = new PoseBoneTransform(0.0f,0.0f,0,0.23499939f,0.0f);
+        PoseBoneTransform interpA = new PoseBoneTransform(0.28999993f, -0.28000003f, -0.33f, 0.56500053f, -0.089999996f);
+        PoseBoneTransform interpB = new PoseBoneTransform(0.0f, 0.0f, 0, 0.23499939f, 0.0f);
         float t = (float) (atime * Math.PI * 2);
         if (b)
             t += Math.PI;
-        PoseBoneTransform pbt=new PoseBoneTransform(interpA,interpB,(float)(Math.sin(t)+1.0f)/2.0f);
+        PoseBoneTransform pbt = new PoseBoneTransform(interpA, interpB, (float) (Math.sin(t) + 1.0f) / 2.0f);
         return null;
     }
 

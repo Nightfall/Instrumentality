@@ -13,13 +13,12 @@
 package moe.nightfall.instrumentality.shader;
 
 import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL20;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -100,18 +99,18 @@ public class ShaderManager {
             byte[] data = new byte[in.available()];
             in.read(data);
             in.close();
-            
+
             String program = new String(data);
             Matcher matcher = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*\\$\\{").matcher(program);
             while (matcher.find()) {
-            	int start = matcher.start();
-            	int end = program.indexOf("}", matcher.end());
-            	if (start == -1 || end == -1) 
-            		throw new Exception("Invalid string replacement sequence found in shader \"" + filename + "\"");
-            	String variable = program.substring(start + 2, end);
-            	if (!variables.containsKey(variable)) 
-            		throw new Exception("Coundn't find replacement for variable \"" + variable + "\" in shader \"" + filename + "\"");
-            	program = program.substring(0, start) + variables.get(variable) + program.substring(end + 1, program.length());
+                int start = matcher.start();
+                int end = program.indexOf("}", matcher.end());
+                if (start == -1 || end == -1)
+                    throw new Exception("Invalid string replacement sequence found in shader \"" + filename + "\"");
+                String variable = program.substring(start + 2, end);
+                if (!variables.containsKey(variable))
+                    throw new Exception("Coundn't find replacement for variable \"" + variable + "\" in shader \"" + filename + "\"");
+                program = program.substring(0, start) + variables.get(variable) + program.substring(end + 1, program.length());
             }
             // TODO Proper escape sequences?
             program = program.replaceAll("\\$\\{", "\\${");

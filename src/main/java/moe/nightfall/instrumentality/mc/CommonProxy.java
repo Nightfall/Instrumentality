@@ -12,8 +12,8 @@
  */
 package moe.nightfall.instrumentality.mc;
 
-import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.FMLCommonHandler;
+import net.minecraftforge.common.MinecraftForge;
 
 public class CommonProxy {
     public void preInit() {

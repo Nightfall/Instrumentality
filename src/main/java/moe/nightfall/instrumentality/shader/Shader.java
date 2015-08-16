@@ -25,7 +25,7 @@ public class Shader {
     final String vertexShader;
     final String fragmentShader;
     final Map<String, Object> variables = new HashMap<String, Object>();
-    
+
     Shader(String vertexShader, String fragmentShader) {
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
@@ -34,9 +34,9 @@ public class Shader {
     public int getProgram() {
         return program;
     }
-    
+
     public Shader set(String variable, Object obj) {
-    	variables.put(variable, obj);
-    	return this;
+        variables.put(variable, obj);
+        return this;
     }
 }

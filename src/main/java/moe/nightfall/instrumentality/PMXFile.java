@@ -283,6 +283,7 @@ public class PMXFile {
         public PMXVertex(int vId) {
             vxId = vId;
         }
+
         public float posX, posY, posZ;
         public float normalX, normalY, normalZ;
         public float texU, texV;
@@ -302,6 +303,7 @@ public class PMXFile {
         public PMXMaterial(int mId) {
             matId = mId;
         }
+
         public String localName, globalName;
         public float diffR, diffG, diffB, diffA;
         public float specR, specG, specB;
@@ -325,6 +327,7 @@ public class PMXFile {
         public PMXBone(int bId) {
             boneId = bId;
         }
+
         public String localName, globalName;
         public float posX, posY, posZ;
         public int parentBoneIndex;
