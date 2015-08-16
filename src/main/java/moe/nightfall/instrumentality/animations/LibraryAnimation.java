@@ -23,7 +23,7 @@ public class LibraryAnimation implements IAnimation {
     public float transitionValue, transitionSpeed = 4.0f;
 
     public void setCurrentPose(IAnimation ia, float transitionTime, boolean skipAheadPrevious) {
-        transitionSpeed=1.0f/transitionTime;
+        transitionSpeed = 1.0f / transitionTime;
         if (transitionValue >= 1.0f) {
             lastPose = currentPose;
         } else if (transitionValue <= 0.0f) {
@@ -77,5 +77,9 @@ public class LibraryAnimation implements IAnimation {
         transitionValue += deltaTime * transitionSpeed;
         if (transitionValue >= 1.0f)
             transitionValue = 1.0f;
+    }
+
+    public IAnimation getTarget() {
+        return currentPose;
     }
 }

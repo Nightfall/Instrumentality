@@ -17,7 +17,6 @@ import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary;
 import moe.nightfall.instrumentality.shader.Shader;
 import moe.nightfall.instrumentality.shader.ShaderManager;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -26,16 +25,13 @@ import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector3f;
 import org.lwjgl.util.vector.Vector4f;
 
 import javax.imageio.ImageIO;
-
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -65,55 +61,55 @@ import java.util.HashMap;
  * Created on 24/07/15.
  */
 public class Main {
-	
-	public static String baseDir = "mdl/";
+
+    public static String baseDir = "mdl/";
 
     public static Shader shaderBoneTransform;
-    
+
     public static PMXFile pf;
-    
+
     public static PMXModel[] pm;
     public static PlayerControlAnimation[] pca;
     public static LibraryAnimation[] lib;
-    
+
     public static IAnimationLibrary[] animLibs;
     public static EmoteAnimationLibrary ial_e;
     public static PlayerAnimationLibrary ial_p;
-    
+
     public static final HashMap<PMXFile.PMXMaterial, Integer> materialTextures = new HashMap<PMXFile.PMXMaterial, Integer>();
-    
+
     public static void setup() throws Exception {
-    	loadModel();
-    	loadShaders();
-    	loadTextures();
+        loadModel();
+        loadShaders();
+        loadTextures();
     }
-    
+
     public static void loadShaders() {
         ShaderManager.loadShaders();
     }
-    
+
     public static void loadModel() throws Exception {
-    	 // TODO Move
-    	 int groupSize = 12;
-         shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert", null).set("groupSize", groupSize);
+        // TODO Move
+        int groupSize = 12;
+        shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert", null).set("groupSize", groupSize);
 
-         FileInputStream fis = new FileInputStream(baseDir + "mdl.pmx");
-         byte[] data = new byte[fis.available()];
-         fis.read(data);
-         fis.close();
-         pf = new PMXFile(data);
+        FileInputStream fis = new FileInputStream(baseDir + "mdl.pmx");
+        byte[] data = new byte[fis.available()];
+        fis.read(data);
+        fis.close();
+        pf = new PMXFile(data);
 
-         // TODO Proper model loader
-         pm = new PMXModel[1];
-         pca = new PlayerControlAnimation[pm.length];
-         lib = new LibraryAnimation[pm.length];
+        // TODO Proper model loader
+        pm = new PMXModel[1];
+        pca = new PlayerControlAnimation[pm.length];
+        lib = new LibraryAnimation[pm.length];
 
-         // animation libraries are NOT a per-model thing
-         ial_e = new EmoteAnimationLibrary();
-         ial_p = new PlayerAnimationLibrary();
-         animLibs = new IAnimationLibrary[] {ial_e, ial_p};
-         
-         for (int i = 0; i < pm.length; i++) {
+        // animation libraries are NOT a per-model thing
+        ial_e = new EmoteAnimationLibrary();
+        ial_p = new PlayerAnimationLibrary();
+        animLibs = new IAnimationLibrary[]{ial_e, ial_p};
+
+        for (int i = 0; i < pm.length; i++) {
              /*
               * Animation graph diagram (ASCII)
               * This is not how you need to implement it,
@@ -133,30 +129,33 @@ public class Main {
               * while doing direct control for others - see arrows for where it sends data to other animations.
               */
 
-             // The minimum for error-free display of the Miku model is 4.
-             // The minimum for error-free display of any model is 12.
-             pm[i] = new PMXModel(pf, groupSize);
+            // The minimum for error-free display of the Miku model is 4.
+            // The minimum for error-free display of any model is 12.
+            pm[i] = new PMXModel(pf, groupSize);
 
-             WalkingAnimation wa = new WalkingAnimation();
-             wa.time = i * 0.1f;
-             StrengthMultiplyAnimation smaW = new StrengthMultiplyAnimation(wa);
+            WalkingAnimation wa = new WalkingAnimation();
+            wa.time = i * 0.1f;
+            StrengthMultiplyAnimation smaW = new StrengthMultiplyAnimation(wa);
 
-             pca[i] = new PlayerControlAnimation(wa, smaW);
-             pca[i].walkingFlag = true;
+            pca[i] = new PlayerControlAnimation(wa, smaW);
+            pca[i].walkingFlag = true;
 
-             lib[i] = new LibraryAnimation();
-             lib[i].transitionValue = 1.0f;
-             lib[i].setCurrentPose(PlayerAnimationLibrary.createIdlePoseAnimation(),1f,true);
+            lib[i] = new LibraryAnimation();
+            lib[i].transitionValue = 1.0f;
+            lib[i].setCurrentPose(PlayerAnimationLibrary.createIdlePoseAnimation(), 1f, true);
 
-             pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, pca[i], lib[i]});
-         }
+            pm[i].anim = new OverlayAnimation(new IAnimation[]{smaW, pca[i], lib[i]});
+        }
     }
-    
+
     public static void loadTextures() {
         for (PMXFile.PMXMaterial mat : pf.matData) {
             int bTex = GL11.glGenTextures();
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
 
+            String str = mat.texTex;
+            if (str == null)
+                str = "defTex.png";
             try {
                 BufferedImage bi = ImageIO.read(new File(baseDir + mat.texTex.toLowerCase()));
                 int[] ib = new int[bi.getWidth() * bi.getHeight()];
@@ -174,7 +173,7 @@ public class Main {
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
             } catch (Exception e) {
-                System.out.println(mat.texTex);
+                System.out.println(str);
                 throw new RuntimeException(e);
             }
             materialTextures.put(mat, bTex);
@@ -182,7 +181,7 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-    	
+
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
 
         int scrWidth = 800, scrHeight = 600;
@@ -192,7 +191,7 @@ public class Main {
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
         Display.create();
         Mouse.create();
-        
+
         setup();
 
         GL11.glViewport(0, 0, scrWidth, scrHeight);
@@ -207,7 +206,7 @@ public class Main {
         GL11.glHint(GL11.GL_PERSPECTIVE_CORRECTION_HINT, GL11.GL_NICEST);
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         long frameEndpoint = System.currentTimeMillis();
-        
+
         Keyboard.create();
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
@@ -241,40 +240,30 @@ public class Main {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
 
             GL11.glDisable(GL11.GL_DEPTH_TEST);
-            
+
             // TODO Bone frame, should move over to PMXModel for debugging
             for (PMXFile.PMXBone bone : pf.boneData) {
-                for (int i = 0; i < pm.length; i++) {
-                    Vector4f v3f=Matrix4f.transform(pm[i].getBoneMatrix(bone, true),new Vector4f(bone.posX,bone.posY,bone.posZ,1),null);
-                    if (bone.parentBoneIndex != -1) {
-                        GL11.glLineWidth(1.0f);
-                        GL11.glBegin(GL11.GL_LINES);
-                        GL11.glColor3d(1, 0, 0);
-                        GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
-                        GL11.glColor3d(0, 1, 0);
-                        Vector4f v3f2=new Vector4f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ, 1);
-                        v3f2 = Matrix4f.transform(pm[i].getBoneMatrix(pf.boneData[bone.parentBoneIndex], true), v3f2, null);
-                        GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
-                        GL11.glEnd();
-                    }
-                    GL11.glPointSize(4);
-                    GL11.glBegin(GL11.GL_POINTS);
-                    GL11.glColor3d(0, 0, 1);
+                Vector4f v3f = Matrix4f.transform(pm[0].getBoneMatrix(bone), new Vector4f(bone.posX, bone.posY, bone.posZ, 1), null);
+                if (bone.parentBoneIndex != -1) {
+                    GL11.glLineWidth(1.0f);
+                    GL11.glBegin(GL11.GL_LINES);
+                    GL11.glColor3d(1, 0, 0);
                     GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
+                    GL11.glColor3d(0, 1, 0);
+                    Vector4f v3f2 = new Vector4f(pf.boneData[bone.parentBoneIndex].posX, pf.boneData[bone.parentBoneIndex].posY, pf.boneData[bone.parentBoneIndex].posZ, 1);
+                    v3f2 = Matrix4f.transform(pm[0].getBoneMatrix(pf.boneData[bone.parentBoneIndex]), v3f2, null);
+                    GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
                     GL11.glEnd();
                 }
+                GL11.glPointSize(4);
+                GL11.glBegin(GL11.GL_POINTS);
+                GL11.glColor3d(0, 0, 1);
+                GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
+                GL11.glEnd();
             }
-            
-            GL11.glPopMatrix();
             GL11.glEnable(GL11.GL_DEPTH_TEST);
-            GL11.glBegin(GL11.GL_POINTS);
 
-            for (int i = -128; i < 16; i++) {
-                GL11.glColor3f(0, 0, 0);
-                GL11.glPointSize(4.0f);
-                GL11.glVertex3d(0, 0, i / 4.0d);
-            }
-            GL11.glEnd();
+            GL11.glPopMatrix();
 
             Display.update();
             Keyboard.poll();
@@ -357,8 +346,8 @@ public class Main {
             if (Keyboard.isKeyDown(Keyboard.KEY_Q)) {
                 String text = consoleReader.readLine();
                 for (IAnimationLibrary ial : animLibs) {
-                    IAnimation ia=ial.getPose(text);
-                    if (ia!=null) {
+                    IAnimation ia = ial.getPose(text);
+                    if (ia != null) {
                         lib[0].setCurrentPose(ia, 8.0f, false);
                         break;
                     }

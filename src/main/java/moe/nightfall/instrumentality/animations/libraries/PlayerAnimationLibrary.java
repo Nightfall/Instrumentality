@@ -33,13 +33,14 @@ public class PlayerAnimationLibrary implements IAnimationLibrary {
         pbt.X0 = (float) Math.toRadians(20);
         pbt.Y0 = (float) Math.toRadians(-30);
         pa.hashMap.put("l_shouler", pbt);
-        pbt=new PoseBoneTransform();
+        pbt = new PoseBoneTransform();
         // NOTES: l_shouler relative to r_shouler, X is not inversed, Y is. Z not checked.
         pbt.X0 = (float) Math.toRadians(20);
         pbt.Y0 = (float) Math.toRadians(30);
         pa.hashMap.put("r_shouler", pbt);
         return pa;
     }
+
     @Override
     public IAnimation getPose(String poseName) {
         if (poseName.equalsIgnoreCase("idle")) {
@@ -82,6 +83,6 @@ public class PlayerAnimationLibrary implements IAnimationLibrary {
 
     @Override
     public String[] getPoses() {
-        return new String[] {"idle","use","block"};
+        return new String[]{"idle", "use", "block"};
     }
 }
