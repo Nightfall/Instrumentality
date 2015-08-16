@@ -91,7 +91,7 @@ public class Main {
     public static void loadModel() throws Exception {
         // TODO Move
         int groupSize = 12;
-        shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert", null).set("groupSize", groupSize);
+        shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert", "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize);
 
         FileInputStream fis = new FileInputStream(baseDir + "mdl.pmx");
         byte[] data = new byte[fis.available()];
