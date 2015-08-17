@@ -233,21 +233,25 @@ public class PlayerControlAnimation implements IAnimation {
 
     @Override
     public void update(double deltaTime) {
+        double sChange = deltaTime * 8.0f;
+        if (sneakStateTarget == 0) {
+            if (sneakState < 0)
+                if (sneakState + sChange > 0)
+                    sneakState = 0;
+            if (sneakState > 0)
+                if (sneakState - sChange < 0)
+                    sneakState = 0;
+        }
+
         if (sneakState < sneakStateTarget) {
-            sneakState += deltaTime * 8.0f;
+            sneakState += sChange;
         } else if (sneakState > sneakStateTarget) {
-            sneakState -= deltaTime * 8.0f;
+            sneakState -= sChange;
         }
         if (sneakState < -1.0f)
             sneakState = -1.0f;
         if (sneakState > 1.0f)
             sneakState = 1.0f;
-
-        if (sneakState > -0.1f)
-            if (sneakState < 0.1f)
-                if (sneakStateTarget > -0.1f)
-                    if (sneakStateTarget < 0.1f)
-                        sneakState = sneakStateTarget;
 
         if (walkingFlag) {
             walkingStrengthControl.mulAmount += deltaTime * 8.0f;
