@@ -24,11 +24,6 @@ public class WalkingAnimation implements IAnimation {
      */
     public float speed = 1.0f;
 
-    /**
-     * Find a way to use this, it makes walking just that tad bit more realistic :)
-     */
-    public float directionAdjustment = 0.0f;
-
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
         float atime = time + 0.65f;
@@ -104,13 +99,14 @@ public class WalkingAnimation implements IAnimation {
         if (b)
             t += Math.PI;
         t = (float) Math.sin(t);
+        float strength = speed;
         if (t < 0) {
-            PoseBoneTransform pbt = new PoseBoneTransform(interpA, interpM, t + 1.0f);
+            PoseBoneTransform pbt = new PoseBoneTransform(interpM, interpA, -t * strength);
             if (b)
                 return flipShoulderPBT(pbt);
             return pbt;
         } else {
-            PoseBoneTransform pbt = new PoseBoneTransform(interpM, interpB, t);
+            PoseBoneTransform pbt = new PoseBoneTransform(interpM, interpB, t * strength);
             if (b)
                 return flipShoulderPBT(pbt);
             return pbt;
@@ -139,8 +135,6 @@ public class WalkingAnimation implements IAnimation {
 
     private PoseBoneTransform getKneeTransform(boolean LR, float shiftedTime) {
         PoseBoneTransform pbt = new PoseBoneTransform();
-        pbt.Z0 = directionAdjustment / 3.0f;
-
         pbt.Y0 = (float) (Math.sin(shiftedTime * Math.PI) - 1.0f);
 
         if (!LR)
@@ -151,8 +145,6 @@ public class WalkingAnimation implements IAnimation {
 
     private PoseBoneTransform getLegTransform(boolean LR, float shiftedTime) {
         PoseBoneTransform pbt = new PoseBoneTransform();
-        pbt.Z0 = directionAdjustment / 3.0f;
-
         float sinMul = 0.25f;
         if (shiftedTime > 0.5f) {
             sinMul = 0.125f;
@@ -168,8 +160,6 @@ public class WalkingAnimation implements IAnimation {
 
     private PoseBoneTransform getAnkleTransform(boolean LR, float shiftedTime) {
         PoseBoneTransform pbt = new PoseBoneTransform();
-        pbt.Z0 = directionAdjustment / 3.0f;
-
         float lB = 0.5f;
         if (shiftedTime > 0.5f) {
             lB -= shiftedTime - 0.5f;

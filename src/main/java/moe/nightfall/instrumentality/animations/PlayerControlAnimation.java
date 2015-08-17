@@ -52,6 +52,11 @@ public class PlayerControlAnimation implements IAnimation {
     public float lookUD = 0.1f;
 
     /**
+     * Look dir relative to bodyRotation
+     */
+    public float lookDir;
+
+    /**
      * Miku's hair position.
      */
     public float hairSway = 0.5f;
@@ -83,6 +88,11 @@ public class PlayerControlAnimation implements IAnimation {
      */
     public float sneakStateTarget = 0;
     public float sneakState = 0;
+
+    /**
+     * This is used so Miku's feet don't magically turn along with her body.
+     */
+    public float directionAdjustment = 0.0f;
 
     /**
      * Used for transitioning to/from the walking animation.
@@ -137,13 +147,15 @@ public class PlayerControlAnimation implements IAnimation {
         if (boneName.equalsIgnoreCase("ankle_R"))
             return getAnkleTransform(true);
         if (boneName.equalsIgnoreCase("root")) {
+            PoseBoneTransform pbt = new PoseBoneTransform();
+            pbt.Z0 = directionAdjustment / 2.0f;
             if (sneakState > 0) {
-                PoseBoneTransform pbt = new PoseBoneTransform();
                 double bob = 0.3f + (Math.sin((walking.time) * Math.PI * 4) * 0.5f);
                 bob *= walkingStrengthControl.mulAmount;
                 pbt.TZ0 = ((-sneakState) * (1.2f + (float) bob));
                 return pbt;
             }
+            return pbt;
         }
         if (boneName.equalsIgnoreCase("L_longhair_01"))
             return getLonghairTransform(false, 0);
@@ -196,6 +208,7 @@ public class PlayerControlAnimation implements IAnimation {
         PoseBoneTransform pbt = new PoseBoneTransform();
         if (sneakState < 0) {
             pbt.X0 = 0.2f * -sneakState;
+            pbt.Z0 = directionAdjustment / 6.0f;
             return pbt;
         }
         pbt.Y0 = (0.5f) * sneakState;
@@ -206,8 +219,9 @@ public class PlayerControlAnimation implements IAnimation {
 
     private PoseBoneTransform getKneeTransform(boolean b) {
         PoseBoneTransform pbt = new PoseBoneTransform();
+        pbt.Z0 = directionAdjustment / 6.0f;
         if (sneakState < 0)
-            return null;
+            return pbt;
         pbt.Y0 = (-1.0f) * sneakState;
         if (!b)
             pbt.Y0 = -pbt.Y0;
@@ -216,8 +230,9 @@ public class PlayerControlAnimation implements IAnimation {
 
     private PoseBoneTransform getAnkleTransform(boolean b) {
         PoseBoneTransform pbt = new PoseBoneTransform();
+        pbt.Z0 = directionAdjustment / 6.0f;
         if (sneakState < 0)
-            return null;
+            return pbt;
         pbt.Y0 = (-0.5f) * sneakState;
         if (!b)
             pbt.Y0 = -pbt.Y0;
@@ -278,11 +293,30 @@ public class PlayerControlAnimation implements IAnimation {
         float distRotation = angleDist(bRotation, lastTotalRotation);
         lastTotalRotation = bRotation;
 
-        distRotation /= 4.0f;
         float lrValue = (lookLR * 1.2f);
-        distRotation += lrValue - lastLRValue;
+        hairSwayVel += (distRotation / 2.0f) + ((lrValue - lastLRValue) * 2);
         lastLRValue = lrValue;
-        hairSwayVel += distRotation * 2.0f;
+
+        directionAdjustment += distRotation * 1.0f;
+        while (directionAdjustment < -Math.PI)
+            directionAdjustment += Math.PI * 2;
+        while (directionAdjustment > Math.PI)
+            directionAdjustment -= Math.PI * 2;
+
+        if (walkingFlag || (sneakState < 0)) {
+            float waChange = (float) (Math.PI);
+            if (directionAdjustment < 0) {
+                directionAdjustment += waChange;
+                if (directionAdjustment > 0)
+                    directionAdjustment = 0;
+            } else {
+                directionAdjustment -= waChange;
+                if (directionAdjustment < 0)
+                    directionAdjustment = 0;
+            }
+        }
+
+        lookLR = (float) ((lookDir - bodyRotation) / (Math.PI * 2));
     }
 
     private float angleDist(float totalRotation, float lastTotalRotation) {
