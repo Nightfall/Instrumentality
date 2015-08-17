@@ -326,8 +326,6 @@ public class PlayerControlAnimation implements IAnimation {
 
         float finalRot = (-bRotation) + directionAdjustment;
 
-        System.out.println(lookDir + "," + finalRot);
-
         finalRot = lookDir + finalRot;
 
         while (finalRot < -Math.PI)
