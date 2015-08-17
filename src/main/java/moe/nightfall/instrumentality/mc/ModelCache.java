@@ -52,7 +52,7 @@ public class ModelCache {
     }
 
     public static PlayerModel getModel(EntityPlayer player) {
-        int div = player.hashCode() & 0xFF00 >> 4;
+        int div = player.hashCode() & 0xFF00 >> 8;
         LinkedList<ModelCacheEntry> dll = cacheDivisions[div];
         if (dll == null)
             cacheDivisions[div] = dll = new LinkedList<ModelCacheEntry>();
