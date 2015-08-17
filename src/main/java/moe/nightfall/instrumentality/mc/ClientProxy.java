@@ -12,55 +12,54 @@
  */
 package moe.nightfall.instrumentality.mc;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent;
 import moe.nightfall.instrumentality.Main;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.RenderPlayerEvent;
-import cpw.mods.fml.common.eventhandler.EventPriority;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.TickEvent;
 
 public class ClientProxy extends CommonProxy {
 
-	@Override
-	public void preInit() {
-		super.preInit();
+    @Override
+    public void preInit() {
+        super.preInit();
 
-		try {
-			Main.setup();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            Main.setup();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	private double interpolate(double last, double current, float partialTicks) {
-		return last + (current - last) * partialTicks;
-	}
+    private double interpolate(double last, double current, float partialTicks) {
+        return last + (current - last) * partialTicks;
+    }
 
-	@SubscribeEvent
-	public void onTickRender(TickEvent.RenderTickEvent rte) {
-		// TODO Has to tick every model in vicinity
-		if (rte.phase == TickEvent.Phase.START)
-			Main.pm[0].update(rte.renderTickTime / 20F);
-	}
+    @SubscribeEvent
+    public void onTickRender(TickEvent.RenderTickEvent rte) {
+        if (rte.phase == TickEvent.Phase.START)
+            ModelCache.update(rte.renderTickTime / 20F);
+    }
 
-	@SubscribeEvent(priority = EventPriority.HIGHEST)
-	public void onPlayerRender(RenderPlayerEvent.Pre event) {
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void onPlayerRender(RenderPlayerEvent.Pre event) {
 
-		EntityPlayer player = event.entityPlayer;
+        EntityPlayer player = event.entityPlayer;
 
-		double x = interpolate(player.lastTickPosX, player.posX, event.partialRenderTick);
-		double y = interpolate(player.lastTickPosY, player.posY, event.partialRenderTick);
-		double z = interpolate(player.lastTickPosZ, player.posZ, event.partialRenderTick);
+        double x = interpolate(player.lastTickPosX, player.posX, event.partialRenderTick);
+        double y = interpolate(player.lastTickPosY, player.posY, event.partialRenderTick);
+        double z = interpolate(player.lastTickPosZ, player.posZ, event.partialRenderTick);
 
-		x -= RenderManager.renderPosX;
-		y -= RenderManager.renderPosY;
-		z -= RenderManager.renderPosZ;
+        x -= RenderManager.renderPosX;
+        y -= RenderManager.renderPosY;
+        z -= RenderManager.renderPosZ;
 
-		PlayerModel model = ModelCache.getModel(player);
-		model.apply(player, event.partialRenderTick);
-		model.render(player, x, y, z, event.partialRenderTick);
+        PlayerModel model = ModelCache.getModel(player);
+        model.apply(player, event.partialRenderTick);
+        model.render(player, x, y, z, event.partialRenderTick);
 
-		event.setCanceled(true);
-	}
+        event.setCanceled(true);
+    }
 }

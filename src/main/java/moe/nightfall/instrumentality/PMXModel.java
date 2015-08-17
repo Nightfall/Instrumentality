@@ -53,7 +53,6 @@ public class PMXModel {
 
     private static final int VBO_DATASIZE = 15;
 
-
     private class FaceGroup {
         // Used while creating the FaceGroup, this is discarded after the group is compiled
         final HashSet<PMXFile.PMXBone> boneSet = new HashSet<PMXFile.PMXBone>();
@@ -72,6 +71,13 @@ public class PMXModel {
             if (res == -1)
                 throw new RuntimeException("Bone is being relied on that does not exist within this group.");
             return res;
+        }
+
+        public void cleanupGL() {
+            if (vboIndex != 0) {
+                vboIndex = 0;
+                GL15.glDeleteBuffers(vboIndex);
+            }
         }
     }
 
@@ -401,8 +407,15 @@ public class PMXModel {
         GL20.glUseProgram(oldProgram);
     }
 
+    public void cleanupGL() {
+        for (LinkedList<FaceGroup> lfg : groups)
+            for (FaceGroup fg : lfg)
+                fg.cleanupGL();
+    }
+
     public void update(double v) {
         if (anim != null)
             anim.update(v);
     }
+
 }
