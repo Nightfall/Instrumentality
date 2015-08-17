@@ -148,7 +148,7 @@ public class PlayerControlAnimation implements IAnimation {
             return getAnkleTransform(true);
         if (boneName.equalsIgnoreCase("root")) {
             PoseBoneTransform pbt = new PoseBoneTransform();
-            pbt.Z0 = directionAdjustment / 2.0f;
+            pbt.Z0 = directionAdjustment;
             if (sneakState > 0) {
                 double bob = 0.3f + (Math.sin((walking.time) * Math.PI * 4) * 0.5f);
                 bob *= walkingStrengthControl.mulAmount;
@@ -208,7 +208,6 @@ public class PlayerControlAnimation implements IAnimation {
         PoseBoneTransform pbt = new PoseBoneTransform();
         if (sneakState < 0) {
             pbt.X0 = 0.2f * -sneakState;
-            pbt.Z0 = directionAdjustment / 6.0f;
             return pbt;
         }
         pbt.Y0 = (0.5f) * sneakState;
@@ -219,7 +218,6 @@ public class PlayerControlAnimation implements IAnimation {
 
     private PoseBoneTransform getKneeTransform(boolean b) {
         PoseBoneTransform pbt = new PoseBoneTransform();
-        pbt.Z0 = directionAdjustment / 6.0f;
         if (sneakState < 0)
             return pbt;
         pbt.Y0 = (-1.0f) * sneakState;
@@ -230,7 +228,6 @@ public class PlayerControlAnimation implements IAnimation {
 
     private PoseBoneTransform getAnkleTransform(boolean b) {
         PoseBoneTransform pbt = new PoseBoneTransform();
-        pbt.Z0 = directionAdjustment / 6.0f;
         if (sneakState < 0)
             return pbt;
         pbt.Y0 = (-0.5f) * sneakState;
@@ -284,6 +281,16 @@ public class PlayerControlAnimation implements IAnimation {
         hairSwayVel += (float) ((-hairSway) * deltaTime * 4.0f);
         hairSway += hairSwayVel * deltaTime * 4.0f;
         hairSwayVel -= hairSwayVel * (deltaTime / 1.0f);
+
+        /*
+         * Documentation on what this does:
+         * bodyRotation is where MC wants root to be facing(and where Vic's code right now makes us face)
+         * directionAdjustment is basically "how much are we working against bodyRotation".
+         * hairSwayVel is adjusted with the data we get, though that needs to be changed to use bodyRotation+directionAdjustment+lookDir
+         * lookLR is the final look value
+         * lookDir is the input look value
+         */
+
         float bRotation = bodyRotation;
         // Normalize between 0 and PI*2
         while (bRotation < 0)
@@ -293,30 +300,46 @@ public class PlayerControlAnimation implements IAnimation {
         float distRotation = angleDist(bRotation, lastTotalRotation);
         lastTotalRotation = bRotation;
 
-        float lrValue = (lookLR * 1.2f);
-        hairSwayVel += (distRotation / 2.0f) + ((lrValue - lastLRValue) * 2);
-        lastLRValue = lrValue;
-
-        directionAdjustment += distRotation * 1.0f;
+        directionAdjustment += distRotation;
         while (directionAdjustment < -Math.PI)
             directionAdjustment += Math.PI * 2;
         while (directionAdjustment > Math.PI)
             directionAdjustment -= Math.PI * 2;
 
+        float daTarget = (-lookDir) + bRotation;
+        while (daTarget < -Math.PI)
+            daTarget += Math.PI * 2;
+        while (daTarget > Math.PI)
+            daTarget -= Math.PI * 2;
         if (walkingFlag || (sneakState < 0)) {
-            float waChange = (float) (Math.PI);
-            if (directionAdjustment < 0) {
+            float waChange = (float) (Math.PI * deltaTime);
+            if (directionAdjustment < daTarget) {
                 directionAdjustment += waChange;
-                if (directionAdjustment > 0)
-                    directionAdjustment = 0;
+                if (directionAdjustment > daTarget)
+                    directionAdjustment = daTarget;
             } else {
                 directionAdjustment -= waChange;
-                if (directionAdjustment < 0)
-                    directionAdjustment = 0;
+                if (directionAdjustment < daTarget)
+                    directionAdjustment = daTarget;
             }
         }
 
-        lookLR = (float) ((lookDir - bodyRotation) / (Math.PI * 2));
+        float finalRot = (-bRotation) + directionAdjustment;
+
+        System.out.println(lookDir + "," + finalRot);
+
+        finalRot = lookDir + finalRot;
+
+        while (finalRot < -Math.PI)
+            finalRot += Math.PI * 2;
+        while (finalRot > Math.PI)
+            finalRot -= Math.PI * 2;
+
+        lookLR = (float) (-finalRot / (Math.PI * 2));
+
+        float lrValue = (lookLR * 1.2f);
+        hairSwayVel += (distRotation / 2.0f) + ((lrValue - lastLRValue) * 2);
+        lastLRValue = lrValue;
     }
 
     private float angleDist(float totalRotation, float lastTotalRotation) {

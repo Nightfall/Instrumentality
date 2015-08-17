@@ -89,7 +89,7 @@ public class PlayerModel {
         double rotBody = interpolate(player.prevRenderYawOffset, player.renderYawOffset, partialTick);
 
         // The interpolated values act a bit weird
-        pcanim.lookDir = (float) Math.toRadians(player.renderYawOffset - player.rotationYaw);
+        pcanim.lookDir = (float) Math.toRadians(player.rotationYawHead);
         pcanim.lookUD = (float) (-pitch / 140.0f);
         pcanim.bodyRotation = (float) Math.toRadians(rotBody);
         pcanim.sneakStateTarget = player.isSneaking() ? 1.0f : 0.0f;
