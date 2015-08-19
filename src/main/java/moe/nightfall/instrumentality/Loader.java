@@ -27,7 +27,7 @@ public class Loader {
 
     // This is the current model name for the player.
     // To be notified when this changes, put yourself on the list below :)
-    public static String currentFile = "mdl/";
+    public static String currentFile = "miku";
     public static LinkedList<Runnable> currentFileListeners = new LinkedList<Runnable>();
 
     public static Shader shaderBoneTransform;

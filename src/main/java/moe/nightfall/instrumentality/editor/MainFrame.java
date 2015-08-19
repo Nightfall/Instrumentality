@@ -31,21 +31,13 @@ public class MainFrame extends EditElement {
     PMXInstance workModel;
 
     public MainFrame() {
-        try {
-            workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
-            workModel.anim = Loader.animLibs[1].getPose("idle");
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
+        workModel.anim = Loader.animLibs[1].getPose("idle");
         Loader.currentFileListeners.add(new Runnable() {
             @Override
             public void run() {
                 workModel.cleanupGL();
-                try {
-                    workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
-                } catch (IOException ioe) {
-                    throw new RuntimeException(ioe);
-                }
+                workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
             }
         });
         examplePanel.setSize(160, 100);

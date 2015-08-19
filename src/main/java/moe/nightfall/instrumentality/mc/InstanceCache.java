@@ -76,12 +76,8 @@ public final class InstanceCache {
         // Try to create a new value
         ModelCacheEntry nm = new ModelCacheEntry();
         nm.playerRef = new WeakReference<EntityPlayer>(player);
-        try {
-            // Assuming the model being used is the local player's model.
-            nm.value = new PlayerInstance(ModelCache.getLocal(Loader.currentFile));
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+        // Assuming the model being used is the local player's model.
+        nm.value = new PlayerInstance(ModelCache.getLocal(Loader.currentFile));
         dll.add(nm);
         return nm.value;
     }
