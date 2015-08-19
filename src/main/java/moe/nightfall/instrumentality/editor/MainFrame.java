@@ -31,18 +31,27 @@ public class MainFrame extends EditElement {
     PMXInstance workModel;
 
     public MainFrame() {
-        workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
-        workModel.anim = Loader.animLibs[1].getPose("idle");
+        setModel(Loader.currentFile);
         Loader.currentFileListeners.add(new Runnable() {
             @Override
             public void run() {
-                workModel.cleanupGL();
-                workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
+                setModel(Loader.currentFile);
             }
         });
         examplePanel.setSize(160, 100);
         examplePanel.posX = 8;
         examplePanel.posY = 8;
+    }
+
+    public void setModel(String modelName) {
+        if (workModel != null) {
+            workModel.cleanupGL();
+            workModel = null;
+        }
+        if (modelName == null)
+            return;
+        workModel = new PMXInstance(ModelCache.getLocal(modelName));
+        workModel.anim = Loader.animLibs[1].getPose("idle");
     }
 
     @Override
@@ -64,7 +73,8 @@ public class MainFrame extends EditElement {
         GL11.glScaled(0.1f, 0.1f, 0.1f);
         GL11.glRotated(Math.toDegrees((System.currentTimeMillis() % 6282) / 1000.0d), 0, 1, 0);
         GL11.glDisable(GL11.GL_CULL_FACE);
-        workModel.render(Loader.shaderBoneTransform);
+        if (workModel != null)
+            workModel.render(Loader.shaderBoneTransform);
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glPopMatrix();
         GL11.glMatrixMode(GL11.GL_PROJECTION);

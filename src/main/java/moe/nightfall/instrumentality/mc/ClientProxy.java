@@ -75,6 +75,8 @@ public class ClientProxy extends CommonProxy {
         z -= RenderManager.renderPosZ;
 
         PlayerInstance model = InstanceCache.getModel(player);
+        if (model == null)
+            return; // this means we don't do any "special stuff"
         model.apply(player, event.partialRenderTick);
         model.render(player, x, y, z, event.partialRenderTick);
 

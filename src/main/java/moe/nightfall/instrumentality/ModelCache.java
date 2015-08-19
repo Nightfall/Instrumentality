@@ -89,7 +89,7 @@ public final class ModelCache {
     }
 
     private static PMXModel getInternal(IPMXFilenameLocator locator, String name) throws IOException {
-        PMXModel pm = new PMXModel(new PMXFile(locator.getData("mdl.pmx")), 12);
+        PMXModel pm = new PMXModel(new PMXFile(locator.getData("mdl.pmx")), Loader.groupSize);
         loadTextures(pm, locator);
         localModels.put(name.toLowerCase(), pm);
         return pm;
@@ -101,6 +101,10 @@ public final class ModelCache {
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
 
             String str = mat.texTex.toLowerCase();
+            // It's dumb, but this is the only place arbitrary pathnames can be entered into that we'll accept.
+            // So we have to security-check it. Please, fix this if there is a problem.
+            if (str.contains("..") || str.contains(":"))
+                throw new IOException("Potentially security-threatening string found");
             if (str == null)
                 continue;
             try {

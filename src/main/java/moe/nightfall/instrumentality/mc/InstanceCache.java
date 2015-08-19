@@ -12,10 +12,7 @@
  */
 package moe.nightfall.instrumentality.mc;
 
-import moe.nightfall.instrumentality.Loader;
-import moe.nightfall.instrumentality.Main;
-import moe.nightfall.instrumentality.ModelCache;
-import moe.nightfall.instrumentality.PMXInstance;
+import moe.nightfall.instrumentality.*;
 import net.minecraft.entity.player.EntityPlayer;
 
 import java.io.IOException;
@@ -66,18 +63,27 @@ public final class InstanceCache {
             cacheDivisions[div] = dll = new LinkedList<ModelCacheEntry>();
         // Try to find the value
         for (ModelCacheEntry mce : dll)
-            if (mce.playerRef.get() == player)
+            if (mce.playerRef.get() == player) {
+                // TODO: Does this model value match what the current state of the playermodel is supposed to be?
+                //       Note that the "current state of the playermodel" is about as vaguely defined as you can get...
+                //       Perhaps consider moving to making model creation an explicit thing
                 return mce.value;
-        // TODO: Put a reference to the model(not the instance) in player's extended attributes, look for it here
+            }
         //       If none is found then use the ordinary MC model
         //       The idea is, that when a user changes model,
         //       the new model gets set in the ext. attributes and shows up here.
         //       Loading is done in whatever code finds out about the model change or wherever. Not here.
         // Try to create a new value
+        // Assuming the model being used is the local player's model.
+        String lcf = Loader.currentFile;
+        if (lcf == null)
+            return null;
+        PMXModel pm = ModelCache.getLocal(lcf);
+        if (pm == null)
+            return null;
         ModelCacheEntry nm = new ModelCacheEntry();
         nm.playerRef = new WeakReference<EntityPlayer>(player);
-        // Assuming the model being used is the local player's model.
-        nm.value = new PlayerInstance(ModelCache.getLocal(Loader.currentFile));
+        nm.value = new PlayerInstance(pm);
         dll.add(nm);
         return nm.value;
     }
