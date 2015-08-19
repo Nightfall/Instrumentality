@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created on 26/07/15.
  */
 public class PMXTransformThreadPool {
-    public ConcurrentHashMap<PMXModel, PMXTransformingModel> modelSet = new ConcurrentHashMap<PMXModel, PMXTransformingModel>();
+    public ConcurrentHashMap<PMXInstance, PMXTransformingModel> modelSet = new ConcurrentHashMap<PMXInstance, PMXTransformingModel>();
     public PMXTransformThread[] threads;
 
     /**
@@ -58,7 +58,7 @@ public class PMXTransformThreadPool {
         }
     }
 
-    public void addModel(PMXModel pm) {
+    public void addModel(PMXInstance pm) {
         PMXTransformingModel ptm = new PMXTransformingModel();
         ptm.pmxModel = pm;
         ptm.vertexBuffer = new float[pm.theFile.vertexData.length * 3];
@@ -74,7 +74,7 @@ public class PMXTransformThreadPool {
      * @param vertexArray
      * @param normalArray
      */
-    public void transformModel(PMXModel model, FloatBuffer vertexArray, FloatBuffer normalArray) {
+    public void transformModel(PMXInstance model, FloatBuffer vertexArray, FloatBuffer normalArray) {
         PMXTransformingModel ptm = modelSet.get(model);
         vertexArray.put(ptm.vertexBuffer);
         normalArray.put(ptm.normalBuffer);
@@ -85,7 +85,7 @@ public class PMXTransformThreadPool {
     public class PMXTransformingModel implements Comparable<PMXTransformingModel> {
         public float[] vertexBuffer;
         public float[] normalBuffer;
-        public PMXModel pmxModel;
+        public PMXInstance pmxModel;
         public long lastUpdateTime;
 
         @Override

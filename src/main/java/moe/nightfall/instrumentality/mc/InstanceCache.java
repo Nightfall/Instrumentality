@@ -12,9 +12,13 @@
  */
 package moe.nightfall.instrumentality.mc;
 
+import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.Main;
+import moe.nightfall.instrumentality.ModelCache;
+import moe.nightfall.instrumentality.PMXInstance;
 import net.minecraft.entity.player.EntityPlayer;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -23,7 +27,11 @@ import java.util.LinkedList;
  * A not-thread-safe implementation of a sort-of hashmap, for one specific purpose:
  * We need to know when players are deallocated from memory so we can delete their VBOs.
  */
-public class ModelCache {
+public final class InstanceCache {
+
+    private InstanceCache() {
+
+    }
 
     private static LinkedList<ModelCacheEntry> cacheDivisions[] = new LinkedList[0x100];
 
@@ -51,7 +59,7 @@ public class ModelCache {
         }
     }
 
-    public static PlayerModel getModel(EntityPlayer player) {
+    public static PlayerInstance getModel(EntityPlayer player) {
         int div = player.hashCode() & 0xFF00 >> 8;
         LinkedList<ModelCacheEntry> dll = cacheDivisions[div];
         if (dll == null)
@@ -60,16 +68,26 @@ public class ModelCache {
         for (ModelCacheEntry mce : dll)
             if (mce.playerRef.get() == player)
                 return mce.value;
+        // TODO: Put a reference to the model(not the instance) in player's extended attributes, look for it here
+        //       If none is found then use the ordinary MC model
+        //       The idea is, that when a user changes model,
+        //       the new model gets set in the ext. attributes and shows up here.
+        //       Loading is done in whatever code finds out about the model change or wherever. Not here.
         // Try to create a new value
         ModelCacheEntry nm = new ModelCacheEntry();
         nm.playerRef = new WeakReference<EntityPlayer>(player);
-        nm.value = new PlayerModel(Main.pf, 12);
+        try {
+            // Assuming the model being used is the local player's model.
+            nm.value = new PlayerInstance(ModelCache.getLocal(Loader.currentFile));
+        } catch (IOException ioe) {
+            throw new RuntimeException(ioe);
+        }
         dll.add(nm);
         return nm.value;
     }
 
     private static class ModelCacheEntry {
-        PlayerModel value;
+        PlayerInstance value;
         WeakReference<EntityPlayer> playerRef;
     }
 }

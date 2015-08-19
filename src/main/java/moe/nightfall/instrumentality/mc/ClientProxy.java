@@ -12,24 +12,42 @@
  */
 package moe.nightfall.instrumentality.mc;
 
+import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.Main;
+import moe.nightfall.instrumentality.mc.gui.EditorHostGui;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import org.lwjgl.input.Keyboard;
 
 public class ClientProxy extends CommonProxy {
+
+    public static KeyBinding editorBinding;
 
     @Override
     public void preInit() {
         super.preInit();
-
+        editorBinding = new KeyBinding("key.mmc_editor", Keyboard.KEY_EQUALS, "key.categories.mikumikucraft");
+        ClientRegistry.registerKeyBinding(editorBinding);
         try {
-            Main.setup();
+            Loader.setup();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @SubscribeEvent
+    public void onKeyInput(InputEvent.KeyInputEvent event) {
+        if (editorBinding.isPressed()) {
+            Minecraft mc = Minecraft.getMinecraft();
+            mc.displayGuiScreen(new EditorHostGui());
         }
     }
 
@@ -40,7 +58,7 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public void onTickRender(TickEvent.RenderTickEvent rte) {
         if (rte.phase == TickEvent.Phase.START)
-            ModelCache.update(rte.renderTickTime / 20F);
+            InstanceCache.update(rte.renderTickTime / 20F);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -56,7 +74,7 @@ public class ClientProxy extends CommonProxy {
         y -= RenderManager.renderPosY;
         z -= RenderManager.renderPosZ;
 
-        PlayerModel model = ModelCache.getModel(player);
+        PlayerInstance model = InstanceCache.getModel(player);
         model.apply(player, event.partialRenderTick);
         model.render(player, x, y, z, event.partialRenderTick);
 

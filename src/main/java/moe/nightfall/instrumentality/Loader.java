@@ -12,6 +12,47 @@
  */
 package moe.nightfall.instrumentality;
 
+import moe.nightfall.instrumentality.animations.IAnimationLibrary;
+import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
+import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary;
+import moe.nightfall.instrumentality.shader.Shader;
+import moe.nightfall.instrumentality.shader.ShaderManager;
+
+import java.util.LinkedList;
+
 public class Loader {
+
+    // TODO Move
+    public static final int groupSize = 12;
+
+    // This is the current model name for the player.
+    // To be notified when this changes, put yourself on the list below :)
+    public static String currentFile = "mdl/";
+    public static LinkedList<Runnable> currentFileListeners = new LinkedList<Runnable>();
+
+    public static Shader shaderBoneTransform;
+
+    public static IAnimationLibrary[] animLibs;
+    public static EmoteAnimationLibrary ial_e;
+    public static PlayerAnimationLibrary ial_p;
+
+    public static void setup() throws Exception {
+        loadModel();
+        loadShaders();
+    }
+
+    public static void loadShaders() {
+        ShaderManager.loadShaders();
+    }
+
+    public static void loadModel() throws Exception {
+        shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert",
+                "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize);
+
+        // animation libraries are NOT a per-model thing
+        ial_e = new EmoteAnimationLibrary();
+        ial_p = new PlayerAnimationLibrary();
+        animLibs = new IAnimationLibrary[]{ial_e, ial_p};
+    }
 
 }

@@ -12,45 +12,40 @@
  */
 package moe.nightfall.instrumentality.mc;
 
-import moe.nightfall.instrumentality.IMaterialBinder;
-import moe.nightfall.instrumentality.Main;
-import moe.nightfall.instrumentality.PMXFile;
-import moe.nightfall.instrumentality.PMXModel;
+import moe.nightfall.instrumentality.*;
 import moe.nightfall.instrumentality.animations.*;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;
 
-public class PlayerModel {
+public class PlayerInstance {
 
-    public final PMXFile file;
-    public final PMXModel pmxModel;
+    public final PMXInstance pmxInst;
 
     public final LibraryAnimation libanim;
     public final PlayerControlAnimation pcanim;
 
     private IAnimation useAnimation, idleAnimation;
 
-    public PlayerModel(PMXFile file, int groupSize) {
-        this.file = file;
-        this.pmxModel = new PMXModel(file, groupSize);
+    public PlayerInstance(PMXModel file) {
+        pmxInst = new PMXInstance(file);
 
-        this.libanim = new LibraryAnimation();
-        this.libanim.transitionValue = 1F;
+        libanim = new LibraryAnimation();
+        libanim.transitionValue = 1F;
 
         WalkingAnimation wa = new WalkingAnimation();
         StrengthMultiplyAnimation smaW = new StrengthMultiplyAnimation(wa);
 
-        this.pcanim = new PlayerControlAnimation(wa, smaW);
-        this.pcanim.walkingFlag = true;
+        pcanim = new PlayerControlAnimation(wa, smaW);
+        pcanim.walkingFlag = true;
 
-        this.pmxModel.anim = new OverlayAnimation(smaW, this.pcanim, this.libanim);
+        pmxInst.anim = new OverlayAnimation(smaW, this.pcanim, this.libanim);
 
-        this.useAnimation = Main.animLibs[1].getPose("use");
-        this.idleAnimation = Main.animLibs[1].getPose("idle");
+        useAnimation = Loader.animLibs[1].getPose("use");
+        idleAnimation = Loader.animLibs[1].getPose("idle");
     }
 
     public void update(double v) {
-        pmxModel.update(v);
+        pmxInst.update(v);
     }
 
     private double interpolate(double last, double current, float partialTicks) {
@@ -61,7 +56,7 @@ public class PlayerModel {
 
         // TODO: make this per-model somehow.
         float adjustFactor = player.isSneaking() ? 0.1f : 0.05f;
-        float scale = 1F / (pmxModel.height / player.height);
+        float scale = 1F / (pmxInst.theModel.height / player.height);
 
         double rotBody = interpolate(player.prevRenderYawOffset, player.renderYawOffset, partialTick);
 
@@ -72,12 +67,7 @@ public class PlayerModel {
         // I fixed the triangle order, but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE);
 
-        pmxModel.render(new IMaterialBinder() {
-            @Override
-            public void bindMaterial(PMXFile.PMXMaterial texture) {
-                GL11.glBindTexture(GL11.GL_TEXTURE_2D, Main.materialTextures.get(texture));
-            }
-        }, Main.shaderBoneTransform);
+        pmxInst.render(Loader.shaderBoneTransform);
 
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glPopMatrix();
@@ -114,6 +104,6 @@ public class PlayerModel {
     }
 
     public void cleanupGL() {
-        pmxModel.cleanupGL();
+        pmxInst.cleanupGL();
     }
 }
