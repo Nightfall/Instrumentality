@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.editor;
 
-import moe.nightfall.instrumentality.Main;
-import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL11;
 
 import java.util.LinkedList;

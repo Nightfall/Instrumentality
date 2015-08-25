@@ -12,7 +12,9 @@
  */
 package moe.nightfall.instrumentality.mc;
 
-import moe.nightfall.instrumentality.*;
+import moe.nightfall.instrumentality.Loader;
+import moe.nightfall.instrumentality.PMXInstance;
+import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.*;
 import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.opengl.GL11;

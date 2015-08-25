@@ -15,7 +15,6 @@ package moe.nightfall.instrumentality;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.IEditorHost;
 import moe.nightfall.instrumentality.editor.ModelChooserElement;
-import moe.nightfall.instrumentality.editor.ModelElement;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;

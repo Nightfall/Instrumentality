@@ -15,7 +15,6 @@ package moe.nightfall.instrumentality.mc.gui;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.IEditorHost;
 import moe.nightfall.instrumentality.editor.ModelChooserElement;
-import moe.nightfall.instrumentality.editor.ModelElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import org.lwjgl.opengl.Display;

@@ -13,13 +13,10 @@
 package moe.nightfall.instrumentality;
 
 import com.google.common.hash.Hashing;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 

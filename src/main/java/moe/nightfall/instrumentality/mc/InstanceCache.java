@@ -12,10 +12,10 @@
  */
 package moe.nightfall.instrumentality.mc;
 
-import moe.nightfall.instrumentality.*;
+import moe.nightfall.instrumentality.Loader;
+import moe.nightfall.instrumentality.PMXModel;
 import net.minecraft.entity.player.EntityPlayer;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
