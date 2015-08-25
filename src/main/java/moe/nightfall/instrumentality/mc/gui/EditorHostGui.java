@@ -14,10 +14,11 @@ package moe.nightfall.instrumentality.mc.gui;
 
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.IEditorHost;
-import moe.nightfall.instrumentality.editor.MainFrame;
+import moe.nightfall.instrumentality.editor.ModelChooserElement;
+import moe.nightfall.instrumentality.editor.ModelElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.OpenGlHelper;
+import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -32,21 +33,31 @@ public class EditorHostGui extends GuiScreen implements IEditorHost {
 
     @Override
     public void initGui() {
-        changePanel(new MainFrame());
+        changePanel(new ModelChooserElement());
     }
 
     @Override
     public void setWorldAndResolution(Minecraft p_146280_1_, int p_146280_2_, int p_146280_3_) {
         super.setWorldAndResolution(p_146280_1_, p_146280_2_, p_146280_3_);
-        hostedElement.setSize(width, height);
+        hostedElement.setSize(Display.getWidth(), Display.getHeight());
     }
 
     @Override
     public void drawScreen(int par1, int par2, float par3) {
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        // do gui-y stuff
-        hostedElement.draw();
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        GL11.glOrtho(0, Display.getWidth(), Display.getHeight(), 0, 0, 1024);
+        GL11.glPushMatrix();
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glPushMatrix();
+        GL11.glLoadIdentity();
+        hostedElement.draw(Display.getWidth(), Display.getHeight());
+        GL11.glPopMatrix();
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glPopMatrix();
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_CULL_FACE);
     }

@@ -97,9 +97,6 @@ public final class ModelCache {
 
     private static void loadTextures(PMXModel mdl, IPMXFilenameLocator fl) throws IOException {
         for (PMXFile.PMXMaterial mat : mdl.theFile.matData) {
-            int bTex = GL11.glGenTextures();
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
-
             String str = mat.texTex.toLowerCase();
             // It's dumb, but this is the only place arbitrary pathnames can be entered into that we'll accept.
             // So we have to security-check it. Please, fix this if there is a problem.
@@ -109,25 +106,10 @@ public final class ModelCache {
                 continue;
             try {
                 BufferedImage bi = ImageIO.read(new ByteArrayInputStream(fl.getData(str)));
-                int[] ib = new int[bi.getWidth() * bi.getHeight()];
-                bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth());
-                ByteBuffer inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
-                for (int i = 0; i < (bi.getWidth() * bi.getHeight()); i++) {
-                    int c = ib[i];
-                    inb.put((byte) ((c & 0xFF0000) >> 16));
-                    inb.put((byte) ((c & 0xFF00) >> 8));
-                    inb.put((byte) (c & 0xFF));
-                    inb.put((byte) ((c & 0xFF000000) >> 24));
-                }
-                inb.rewind();
-                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA,
-                        GL11.GL_UNSIGNED_BYTE, inb);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+                mdl.materialData.put(str, bi);
             } catch (Exception e) {
                 throw new IOException(str, e);
             }
-            mdl.materials.put(str, bTex);
         }
     }
 

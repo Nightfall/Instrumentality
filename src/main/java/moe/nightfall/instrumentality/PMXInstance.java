@@ -199,6 +199,8 @@ public class PMXInstance {
         GL20.glUseProgram(s.getProgram());
         for (int i = 0; i < theFile.boneData.length; i++)
             boneCache[i] = null;
+        if (theModel.materials == null)
+            theModel.setupMaterials();
         for (int i = 0; i < theModel.groups.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(mat.texTex.toLowerCase()));

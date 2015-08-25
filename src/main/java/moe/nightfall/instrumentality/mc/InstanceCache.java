@@ -46,6 +46,7 @@ public final class InstanceCache {
                 ModelCacheEntry mce = i.next();
                 if (mce.playerRef.get() == null) {
                     mce.value.cleanupGL();
+                    Loader.currentFileListeners.remove(mce.cfHook);
                     i.remove();
                 } else {
                     mce.value.update(dT);
@@ -56,40 +57,58 @@ public final class InstanceCache {
         }
     }
 
-    public static PlayerInstance getModel(EntityPlayer player) {
+    /**
+     * @param player The EntityPlayer to apply a model to.
+     * @param model  The model to apply.
+     * @return The MCE(Note that MCEs are reused - they are always assigned to the same EntityPlayer, though.)
+     */
+    public static ModelCacheEntry setModel(EntityPlayer player, PMXModel model) {
+        int div = player.hashCode() & 0xFF00 >> 8;
+        LinkedList<ModelCacheEntry> dll = cacheDivisions[div];
+        if (dll == null)
+            cacheDivisions[div] = dll = new LinkedList<ModelCacheEntry>();
+        ModelCacheEntry nm = null;
+        for (ModelCacheEntry mce : dll)
+            if (mce.playerRef.get() == player) {
+                nm = mce;
+                break;
+            }
+
+        if (nm == null) {
+            nm = new ModelCacheEntry();
+            nm.playerRef = new WeakReference<EntityPlayer>(player);
+            dll.add(nm);
+        } else {
+            if (nm.value != null) {
+                nm.value.cleanupGL();
+                nm.value = null;
+            }
+        }
+
+        if (model == null)
+            return nm;
+        // This is the only case where nm.value ends up != null
+        nm.value = new PlayerInstance(model);
+        return nm;
+    }
+
+    public static ModelCacheEntry getModel(EntityPlayer player) {
         int div = player.hashCode() & 0xFF00 >> 8;
         LinkedList<ModelCacheEntry> dll = cacheDivisions[div];
         if (dll == null)
             cacheDivisions[div] = dll = new LinkedList<ModelCacheEntry>();
         // Try to find the value
         for (ModelCacheEntry mce : dll)
-            if (mce.playerRef.get() == player) {
-                // TODO: Does this model value match what the current state of the playermodel is supposed to be?
-                //       Note that the "current state of the playermodel" is about as vaguely defined as you can get...
-                //       Perhaps consider moving to making model creation an explicit thing
-                return mce.value;
-            }
-        //       If none is found then use the ordinary MC model
-        //       The idea is, that when a user changes model,
-        //       the new model gets set in the ext. attributes and shows up here.
-        //       Loading is done in whatever code finds out about the model change or wherever. Not here.
-        // Try to create a new value
-        // Assuming the model being used is the local player's model.
-        String lcf = Loader.currentFile;
-        if (lcf == null)
-            return null;
-        PMXModel pm = ModelCache.getLocal(lcf);
-        if (pm == null)
-            return null;
-        ModelCacheEntry nm = new ModelCacheEntry();
-        nm.playerRef = new WeakReference<EntityPlayer>(player);
-        nm.value = new PlayerInstance(pm);
-        dll.add(nm);
-        return nm.value;
+            if (mce.playerRef.get() == player)
+                return mce;
+        return null;
     }
 
-    private static class ModelCacheEntry {
+    public static class ModelCacheEntry {
         PlayerInstance value;
+        // EntityPlayer. Don't keep not-weak references long-term anywhere in the code.
         WeakReference<EntityPlayer> playerRef;
+        // If != null, is the currentFileListeners Runnable. Is removed from there when the MCE is removed.
+        Runnable cfHook;
     }
 }

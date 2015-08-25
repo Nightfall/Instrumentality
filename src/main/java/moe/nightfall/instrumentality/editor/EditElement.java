@@ -16,13 +16,20 @@ import moe.nightfall.instrumentality.Main;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.GL11;
 
+import java.util.LinkedList;
+
 /**
+ * Base element of the UI framework
  * Created on 18/08/15.
  */
 public class EditElement {
     // Note that posX and posY may be ignored if this is the root
     private int sizeWidth, sizeHeight;
     public int posX, posY;
+
+    public LinkedList<EditElement> subElements = new LinkedList<EditElement>();
+    public float colourStrength = 0.25f;
+    public int borderWidth = 8;
 
     protected void drawRect(int x, int y, int w, int h, double r, double g, double b) {
         GL11.glBegin(GL11.GL_QUADS);
@@ -35,21 +42,29 @@ public class EditElement {
     }
 
     protected void drawSkinnedRect(int x, int y, int w, int h, double strength) {
+        int sz = borderWidth;
+
         double str = 1.0f;
-        double step = (1.0f - strength) / 4;
-        for (int i = 0; i < 4; i++) {
+        double step = (1.0f - strength) / (sz * 2);
+        for (int i = 0; i < sz; i++) {
             drawRect(x + i, y + i, w - (i * 2), h - (i * 2), 0, str * 0.5f, str);
             str -= step;
         }
     }
 
-    public void draw() {
-        drawSkinnedRect(posX, posY, sizeWidth, sizeHeight, 0.5f);
+    public void drawSubelements(int scrWidth, int scrHeight) {
+        for (EditElement ee : subElements) {
+            GL11.glPushMatrix();
+            GL11.glTranslated(ee.posX, ee.posY, 0);
+            ee.draw(scrWidth, scrHeight);
+            GL11.glPopMatrix();
+        }
     }
 
     public void setSize(int width, int height) {
         sizeWidth = width;
         sizeHeight = height;
+        layout();
     }
 
     public int getWidth() {
@@ -60,7 +75,48 @@ public class EditElement {
         return sizeHeight;
     }
 
-    public void cleanup() {
-
+    public EditElement findElementAt(int x, int y) {
+        for (EditElement ee : subElements) {
+            if ((x >= ee.posX) && (x < ee.posX + ee.getWidth()))
+                if ((y >= ee.posY) && (y < ee.posY + ee.getHeight()))
+                    return ee;
+        }
+        return null;
     }
+
+    // Functions meant for overriding
+
+    public void layout() {
+    }
+
+    public void draw(int scrWidth, int scrHeight) {
+        drawSkinnedRect(0, 0, sizeWidth, sizeHeight, colourStrength);
+        drawSubelements(scrWidth, scrHeight);
+    }
+
+    // RANDOM NOTE II : buttons[] is used for detecting dragging,
+    // without embedding the mouse state into every element
+
+    public void mouseMove(int x, int y, boolean[] buttons) {
+        EditElement targetElement = findElementAt(x, y);
+        if (targetElement != null)
+            targetElement.mouseMove(x - targetElement.posX, y - targetElement.posY, buttons);
+    }
+
+    // RANDOM NOTE: We assume people only have 2 buttons, others must be ignored.
+    // This is because not all people have middle-mouse-buttons, it's unfair to assume.
+
+    public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
+        EditElement targetElement = findElementAt(x, y);
+        if (targetElement != null)
+            targetElement.mouseStateChange(x - targetElement.posX, y - targetElement.posY, isDown, isRight);
+    }
+
+    // RANDOM NOTE III : Always call super if overriding this function.
+
+    public void cleanup() {
+        for (EditElement ee : subElements)
+            ee.cleanup();
+    }
+
 }
