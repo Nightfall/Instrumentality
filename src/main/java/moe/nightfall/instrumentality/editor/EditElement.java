@@ -28,6 +28,8 @@ public class EditElement {
     public LinkedList<EditElement> subElements = new LinkedList<EditElement>();
     public float colourStrength = 0.25f;
     public int borderWidth = 8;
+    
+    private EditElement lastHoverTarget;
 
     protected void drawRect(int x, int y, int w, int h, double r, double g, double b) {
         GL11.glBegin(GL11.GL_QUADS);
@@ -82,6 +84,24 @@ public class EditElement {
         return null;
     }
 
+    public void mouseMoveSubelements(int x, int y, boolean[] buttons) {
+        EditElement targetElement = findElementAt(x, y);
+        if (targetElement != lastHoverTarget) {
+            if (lastHoverTarget != null)
+                lastHoverTarget.mouseEnterLeave(false);
+            if (targetElement != null)
+                targetElement.mouseEnterLeave(true);
+            lastHoverTarget = targetElement;
+        }
+        if (targetElement != null)
+            targetElement.mouseMove(x - targetElement.posX, y - targetElement.posY, buttons);
+    }
+    
+    public void updateSubelements(double dTime) {
+        for (EditElement ee : subElements)
+            ee.update(dTime);
+    }
+    
     // Functions meant for overriding
 
     public void layout() {
@@ -96,9 +116,7 @@ public class EditElement {
     // without embedding the mouse state into every element
 
     public void mouseMove(int x, int y, boolean[] buttons) {
-        EditElement targetElement = findElementAt(x, y);
-        if (targetElement != null)
-            targetElement.mouseMove(x - targetElement.posX, y - targetElement.posY, buttons);
+        mouseMoveSubelements(x, y, buttons);
     }
 
     // RANDOM NOTE: We assume people only have 2 buttons, others must be ignored.
@@ -110,11 +128,19 @@ public class EditElement {
             targetElement.mouseStateChange(x - targetElement.posX, y - targetElement.posY, isDown, isRight);
     }
 
+    public void mouseEnterLeave(boolean isInside) {
+        
+    }
+    
     // RANDOM NOTE III : Always call super if overriding this function.
 
     public void cleanup() {
         for (EditElement ee : subElements)
             ee.cleanup();
+    }
+    
+    public void update(double dTime) {
+        updateSubelements(dTime);
     }
 
 }

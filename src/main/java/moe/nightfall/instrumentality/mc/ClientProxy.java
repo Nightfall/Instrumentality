@@ -79,7 +79,9 @@ public class ClientProxy extends CommonProxy {
         if (mce == null) {
             if (player == Minecraft.getMinecraft().thePlayer) {
 
-                PMXModel newMdl = ModelCache.getLocal(Loader.currentFile);
+                PMXModel newMdl = null;
+                if (Loader.currentFile != null)
+                    newMdl = ModelCache.getLocal(Loader.currentFile);
                 mce = InstanceCache.setModel(player, newMdl);
                 final InstanceCache.ModelCacheEntry mceF = mce;
 
@@ -87,7 +89,9 @@ public class ClientProxy extends CommonProxy {
                 Runnable r = new Runnable() {
                     @Override
                     public void run() {
-                        PMXModel newMdl = ModelCache.getLocal(Loader.currentFile);
+                        PMXModel newMdl = null;
+                        if (Loader.currentFile != null)
+                            newMdl = ModelCache.getLocal(Loader.currentFile);
                         EntityPlayer ep = mceF.playerRef.get();
                         if (ep != null)
                             InstanceCache.setModel(ep, newMdl);

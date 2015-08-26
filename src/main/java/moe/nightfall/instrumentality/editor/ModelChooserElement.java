@@ -12,25 +12,69 @@
  */
 package moe.nightfall.instrumentality.editor;
 
+import java.util.LinkedList;
+
+import moe.nightfall.instrumentality.editor.controls.ArrowButtonElement;
+import moe.nightfall.instrumentality.editor.controls.ButtonElement;
+import moe.nightfall.instrumentality.editor.controls.ModelElement;
+
 /**
  * Created on 25/08/15.
  */
 public class ModelChooserElement extends EditElement {
-    private ModelElement currentModel = new ModelElement();
-
-    public ModelChooserElement() {
+    private ModelElement[] group = new ModelElement[3];
+    private EditElement[] buttonbar=new EditElement[3];
+    private final String[] availableModels;
+    private int ptrStart=0;
+    
+    public ModelChooserElement(Iterable<String> models) {
+        LinkedList<String> ls = new LinkedList<String>();
+        ls.add(null);
+        for (String s : models)
+            ls.add(s);
+        availableModels = ls.toArray(new String[0]);
         colourStrength = 0.5f;
-        subElements.add(currentModel);
+        for (int i=0;i<group.length;i++) {
+            group[i] = new ModelElement(true);
+            subElements.add(group[i]);
+        }
+        buttonbar[0]=new ArrowButtonElement(180,new Runnable() {
+            @Override
+            public void run() {
+                ptrStart--;
+                updatePosition();
+            }
+        });
+        buttonbar[1]=new ArrowButtonElement(0,new Runnable() {
+            @Override
+            public void run() {
+                ptrStart++;
+                updatePosition();
+            }
+        });
+        buttonbar[2]=new ModelElement(false);
+        for (int j=0;j<buttonbar.length;j++)
+            subElements.add(buttonbar[j]);
+        updatePosition();
     }
 
     @Override
     public void layout() {
-        currentModel.setSize(320, (int) (getHeight() / 1.5));
+        for (int i=0;i<group.length;i++) {
+            group[i].posX=i*(getWidth() / group.length);
+            group[i].posY=getHeight()/4;
+            group[i].setSize(getWidth() / group.length, (getHeight() / 4)*3);
+        }
+        int bbSize=(getHeight() / 4);
+        for (int j=0;j<buttonbar.length;j++) {
+            buttonbar[j].posX=bbSize*j;
+            buttonbar[j].posY=0;
+            buttonbar[j].setSize(bbSize, bbSize);
+        }
     }
-
-    @Override
-    public void mouseMove(int x, int y, boolean[] b) {
-        currentModel.posX = x;
-        currentModel.posY = y;
+    
+    public void updatePosition() {
+        for (int i=0;i<group.length;i++)
+            group[i].setModel(availableModels[(i+ptrStart)%availableModels.length]);
     }
 }

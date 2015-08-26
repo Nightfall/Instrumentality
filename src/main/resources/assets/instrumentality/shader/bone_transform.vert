@@ -21,6 +21,7 @@ attribute vec4 Bones;
 attribute vec3 Tangent; 
 uniform mat4 Pose[${groupSize}];
 varying vec3 T,B,N;
+varying float originalY;
 
 void main(void) { 
     // Just "0.0" did not work on my system.
@@ -39,7 +40,8 @@ void main(void) {
 
     N = gl_NormalMatrix * (m3 * gl_Normal);
     T = gl_NormalMatrix * (m3 * Tangent); 
-    B = cross(T, N); 
+    B = cross(T, N);
+    originalY = gl_Vertex.y;
 
     gl_TexCoord[0] = gl_MultiTexCoord0; 
 }

@@ -168,7 +168,29 @@ public class PMXInstance {
      */
     private String compatibilityCheck(String globalName) {
 
-        // Kagamine Rin Legs
+        // Kagamine Rin
+
+        // .stuff
+
+        if (globalName.equalsIgnoreCase("center"))
+            return "root";
+        
+        // .arms
+        
+        if (globalName.equalsIgnoreCase("L_Arm"))
+            return "L_shouler";
+        if (globalName.equalsIgnoreCase("R_arm"))
+            return "R_shouler";
+        if (globalName.equalsIgnoreCase("L_elbow"))
+            return "L_ellbow";
+        if (globalName.equalsIgnoreCase("R_elbow"))
+            return "R_ellbow";
+        if (globalName.equalsIgnoreCase("L_wrist"))
+            return "L_hand";
+        if (globalName.equalsIgnoreCase("R_wrist"))
+            return "R_hand";
+
+        // .legs
 
         if (globalName.equalsIgnoreCase("L_leg"))
             return "leg_L";
@@ -193,7 +215,7 @@ public class PMXInstance {
      *
      * @param s The animation shader.
      */
-    public void render(Shader s) {
+    public void render(Shader s, double red, double green, double blue, float clippingSize) {
         FloatBuffer matrix = BufferUtils.createFloatBuffer(16);
         int oldProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         GL20.glUseProgram(s.getProgram());
@@ -201,6 +223,9 @@ public class PMXInstance {
             boneCache[i] = null;
         if (theModel.materials == null)
             theModel.setupMaterials();
+        GL11.glEnable(GL11.GL_BLEND);
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeIn"), clippingSize*theModel.height);
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeInDiscard"), (clippingSize+0.5f)*theModel.height);
         for (int i = 0; i < theModel.groups.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(mat.texTex.toLowerCase()));
@@ -238,7 +263,7 @@ public class PMXInstance {
                 GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboList[i][j]);
                 // Adjust uniforms
                 // Then render this chunk of the model.
-                GL11.glColor4d(1.0f, 1.0f, 1.0f, 1.0f);
+                GL11.glColor4d(red, green, blue, 1.0f);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
                 GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
@@ -264,6 +289,7 @@ public class PMXInstance {
                 GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0);
             }
         }
+        GL11.glDisable(GL11.GL_BLEND);
         GL20.glUseProgram(oldProgram);
     }
 

@@ -15,6 +15,8 @@ package moe.nightfall.instrumentality;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.IEditorHost;
 import moe.nightfall.instrumentality.editor.ModelChooserElement;
+import moe.nightfall.instrumentality.editor.UIMouseHelper;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -78,7 +80,7 @@ public class Main implements IEditorHost {
         Keyboard.create();
         double deltaTime = 0.1;
 
-        changePanel(new ModelChooserElement());
+        changePanel(new ModelChooserElement(ModelCache.getLocalModels()));
 
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
@@ -112,7 +114,8 @@ public class Main implements IEditorHost {
     }
 
     private void doUpdate(double dT) {
-        currentPanel.mouseMove(Mouse.getX(), Display.getHeight() - Mouse.getY(), new boolean[]{Mouse.isButtonDown(0), Mouse.isButtonDown(1)});
+        UIMouseHelper.update(currentPanel);
+        currentPanel.update(dT);
     }
 
     private void doDraw() {

@@ -121,8 +121,6 @@ public class PlayerControlAnimation implements IAnimation {
             return getPlayerLookPBT(0.6f, 0.20f);
         if (boneName.equalsIgnoreCase("head"))
             return getPlayerLookPBT(0.6f, 0.20f);
-        if (boneName.equalsIgnoreCase("spine00"))
-            return getPlayerLookPBT(0.10f, 0.05f);
         if (boneName.equalsIgnoreCase("spine01"))
             return getPlayerLookPBT(0.10f, 0.05f);
         if (boneName.equalsIgnoreCase("L_eye_ctrl"))
@@ -131,7 +129,7 @@ public class PlayerControlAnimation implements IAnimation {
             return getPlayerLookPBT(0.25f, 0.30f);
         if (boneName.equalsIgnoreCase("eyes_ctrl")) {
             PoseBoneTransform pbt = new PoseBoneTransform();
-            pbt.TZ0 = -0.1f;
+//            pbt.TZ0 = -0.1f;
             return pbt;
         }
         if (boneName.equalsIgnoreCase("leg_L"))

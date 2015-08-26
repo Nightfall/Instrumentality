@@ -10,11 +10,16 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor;
+package moe.nightfall.instrumentality.editor.controls;
 
 import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.ModelCache;
 import moe.nightfall.instrumentality.PMXInstance;
+import moe.nightfall.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.animations.OverlayAnimation;
+import moe.nightfall.instrumentality.animations.WalkingAnimation;
+import moe.nightfall.instrumentality.editor.EditElement;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -25,16 +30,22 @@ import java.nio.FloatBuffer;
  * Created on 18/08/15.
  */
 public class ModelElement extends EditElement {
-    PMXInstance workModel;
-
-    public ModelElement() {
-        setModel(Loader.currentFile);
-        Loader.currentFileListeners.add(new Runnable() {
-            @Override
-            public void run() {
-                setModel(Loader.currentFile);
-            }
-        });
+    private PMXInstance workModel;
+    private String workModelName;
+    public boolean isButton;
+    public double rotYaw,rotPitch;
+    
+    public ModelElement(boolean ib) {
+        isButton=ib;
+        if (!isButton) {
+            setModel(Loader.currentFile);
+            Loader.currentFileListeners.add(new Runnable() {
+                @Override
+                public void run() {
+                    setModel(Loader.currentFile);
+                }
+            });
+        }
     }
 
     public void setModel(String modelName) {
@@ -42,33 +53,55 @@ public class ModelElement extends EditElement {
             workModel.cleanupGL();
             workModel = null;
         }
+        workModelName = modelName;
         if (modelName == null)
             return;
         workModel = new PMXInstance(ModelCache.getLocal(modelName));
-        workModel.anim = Loader.animLibs[1].getPose("idle");
+        WalkingAnimation wa=new WalkingAnimation();
+        wa.speed=1.0f;
+        workModel.anim = new OverlayAnimation(new IAnimation[] {Loader.animLibs[1].getPose("idle"),wa});
     }
 
     @Override
     public void draw(int scrWidth, int scrHeight) {
+        if (isButton) {
+            if (workModelName==null) {
+                colourStrength=0.25f;
+            } else {
+                colourStrength=0.5f;
+                if (workModelName.equalsIgnoreCase(Loader.currentFile))
+                    colourStrength=0.75f;
+            }
+        }
         super.draw(scrWidth, scrHeight);
 
+        if (workModel==null)
+            return;
         // avoiding perspective "fun" is hard ^.^;
+        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glPushMatrix();
-        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         GL11.glLoadIdentity();
 
+        GL11.glTranslated(0, 1, 0);
+        
         GL11.glScaled(2.0d / scrWidth, -2.0d / scrHeight, 1);
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
         GL11.glMultMatrix(fb);
         // Add additional screen-space offsets here
-        GL11.glTranslated(getWidth() / 2, getHeight() / 4, 0);
+        GL11.glTranslated(getWidth() / 2.0, getHeight() / 3.0, 0);
         // --
-        GL11.glScaled(scrWidth / 2, -getHeight() / 2, 1);
-        GL11.glTranslated(-1, 1, 0);
+        GL11.glScaled(scrWidth / 2.0, -scrHeight / 2.0, 1);
+        
+        GL11.glTranslated(-1, 0, 0);
 
         GL11.glScaled(3, 3, 1);
+
+        GL11.glScaled(1, getHeight()/(float)scrHeight, 1);
+
+        GL11.glTranslated(0, -0.1, 0);
 
         float asp = ((float) scrWidth) / ((float) getHeight());
         GLU.gluPerspective(45, asp, 0.1f, 100);
@@ -81,11 +114,12 @@ public class ModelElement extends EditElement {
         float sFactor = 1.0f / workModel.theModel.height;
         GL11.glScaled(sFactor, sFactor, sFactor);
         GL11.glTranslated(0, -(workModel.theModel.height / 2), 0);
-        GL11.glRotated(Math.toDegrees((System.currentTimeMillis() % 6282) / 1000.0d), 0, 1, 0);
+        GL11.glRotated(rotPitch, 1, 0, 0);
+        GL11.glRotated(rotYaw, 0, 1, 0);
 
         GL11.glDisable(GL11.GL_CULL_FACE);
         if (workModel != null)
-            workModel.render(Loader.shaderBoneTransform);
+            workModel.render(Loader.shaderBoneTransform, 1, 1, 1, workModel.theModel.height+1.0f);
         GL11.glEnable(GL11.GL_CULL_FACE);
 
         GL11.glPopMatrix();
@@ -117,5 +151,43 @@ public class ModelElement extends EditElement {
     public void cleanup() {
         super.cleanup();
     }
-
+    
+    private int dragX=0,dragY=0;
+    private boolean ignoreFirstDrag=false;
+    
+    @Override
+    public void mouseMove(int x, int y, boolean[] buttons) {
+        if (buttons[0]) {
+            if (!ignoreFirstDrag) {
+                rotYaw+=x-dragX;
+                rotPitch+=y-dragY;
+            }
+            ignoreFirstDrag=false;
+            dragX=x;
+            dragY=y;
+        }
+    }
+    
+    @Override
+    public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
+        super.mouseStateChange(x, y, isDown, isRight);
+        if (isDown&&(!isRight)) {
+            ignoreFirstDrag=true;
+            if (isButton) {
+                Loader.setCurrentFile(workModelName);
+            }
+        }
+    }
+    
+    @Override
+    public void mouseEnterLeave(boolean isInside) {
+        super.mouseEnterLeave(isInside);
+        ignoreFirstDrag=true;
+    }
+    
+    public void update(double dTime) {
+        super.update(dTime);
+        if (workModel != null)
+            workModel.update(dTime);
+    }
 }

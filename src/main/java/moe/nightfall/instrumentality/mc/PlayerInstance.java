@@ -16,7 +16,9 @@ import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.PMXInstance;
 import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.*;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
+
 import org.lwjgl.opengl.GL11;
 
 public class PlayerInstance {
@@ -28,6 +30,8 @@ public class PlayerInstance {
 
     private IAnimation useAnimation, idleAnimation;
 
+    public double clippingPoint=0d;
+    
     public PlayerInstance(PMXModel file) {
         pmxInst = new PMXInstance(file);
 
@@ -48,6 +52,9 @@ public class PlayerInstance {
 
     public void update(double v) {
         pmxInst.update(v);
+        clippingPoint+=v/2.0d;
+        if (clippingPoint >= 1.1d)
+            clippingPoint = 1.1d;
     }
 
     private double interpolate(double last, double current, float partialTicks) {
@@ -68,8 +75,8 @@ public class PlayerInstance {
         GL11.glScalef(scale, scale, scale);
         // I fixed the triangle order, but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE);
-
-        pmxInst.render(Loader.shaderBoneTransform);
+        int lv=player.worldObj.getBlockLightValue_do((int)player.posX, (int)player.posY, (int)player.posZ, true);
+        pmxInst.render(Loader.shaderBoneTransform, lv/15f, lv/15f, lv/15f, (float)clippingPoint);
 
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glPopMatrix();

@@ -27,7 +27,7 @@ public class Loader {
 
     // This is the current model name for the player.
     // To be notified when this changes, put yourself on the list below :)
-    public static String currentFile = "miku";
+    public static String currentFile;
     public static LinkedList<Runnable> currentFileListeners = new LinkedList<Runnable>();
 
     public static Shader shaderBoneTransform;
@@ -53,6 +53,12 @@ public class Loader {
         ial_e = new EmoteAnimationLibrary();
         ial_p = new PlayerAnimationLibrary();
         animLibs = new IAnimationLibrary[]{ial_e, ial_p};
+    }
+
+    public static void setCurrentFile(String workModelName) {
+        currentFile=workModelName;
+        for (Runnable r : currentFileListeners)
+            r.run();
     }
 
 }
