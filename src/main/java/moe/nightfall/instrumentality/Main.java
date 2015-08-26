@@ -12,34 +12,17 @@
  */
 package moe.nightfall.instrumentality;
 
-import moe.nightfall.instrumentality.animations.IAnimation;
-import moe.nightfall.instrumentality.animations.IAnimationLibrary;
-import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
-import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.IEditorHost;
-import moe.nightfall.instrumentality.editor.MainFrame;
-import moe.nightfall.instrumentality.mc.PlayerInstance;
-import moe.nightfall.instrumentality.shader.Shader;
-import moe.nightfall.instrumentality.shader.ShaderManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import org.lwjgl.BufferUtils;
+import moe.nightfall.instrumentality.editor.ModelChooserElement;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
-import org.lwjgl.util.vector.Matrix4f;
-import org.lwjgl.util.vector.Vector4f;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
-import java.util.LinkedList;
 
 /**
  * FULL LIST OF KEYBOARD CONTROLS: WASD: Camera controls. FV: Zoom control! E:
@@ -66,6 +49,7 @@ public class Main implements IEditorHost {
 
     public static void main(String[] args) throws Exception {
         Main m = new Main();
+        ModelCache.getLocalModels();
         m.startWorkbench();
     }
 
@@ -94,7 +78,7 @@ public class Main implements IEditorHost {
         Keyboard.create();
         double deltaTime = 0.1;
 
-        changePanel(new MainFrame());
+        changePanel(new ModelChooserElement());
 
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
@@ -128,12 +112,13 @@ public class Main implements IEditorHost {
     }
 
     private void doUpdate(double dT) {
+        currentPanel.mouseMove(Mouse.getX(), Display.getHeight() - Mouse.getY(), new boolean[]{Mouse.isButtonDown(0), Mouse.isButtonDown(1)});
     }
 
     private void doDraw() {
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        currentPanel.draw();
+        currentPanel.draw(Display.getWidth(), Display.getHeight());
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glDisable(GL11.GL_CULL_FACE);
     }

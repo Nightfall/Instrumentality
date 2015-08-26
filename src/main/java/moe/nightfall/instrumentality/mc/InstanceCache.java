@@ -13,12 +13,9 @@
 package moe.nightfall.instrumentality.mc;
 
 import moe.nightfall.instrumentality.Loader;
-import moe.nightfall.instrumentality.Main;
-import moe.nightfall.instrumentality.ModelCache;
-import moe.nightfall.instrumentality.PMXInstance;
+import moe.nightfall.instrumentality.PMXModel;
 import net.minecraft.entity.player.EntityPlayer;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -49,6 +46,7 @@ public final class InstanceCache {
                 ModelCacheEntry mce = i.next();
                 if (mce.playerRef.get() == null) {
                     mce.value.cleanupGL();
+                    Loader.currentFileListeners.remove(mce.cfHook);
                     i.remove();
                 } else {
                     mce.value.update(dT);
@@ -59,7 +57,42 @@ public final class InstanceCache {
         }
     }
 
-    public static PlayerInstance getModel(EntityPlayer player) {
+    /**
+     * @param player The EntityPlayer to apply a model to.
+     * @param model  The model to apply.
+     * @return The MCE(Note that MCEs are reused - they are always assigned to the same EntityPlayer, though.)
+     */
+    public static ModelCacheEntry setModel(EntityPlayer player, PMXModel model) {
+        int div = player.hashCode() & 0xFF00 >> 8;
+        LinkedList<ModelCacheEntry> dll = cacheDivisions[div];
+        if (dll == null)
+            cacheDivisions[div] = dll = new LinkedList<ModelCacheEntry>();
+        ModelCacheEntry nm = null;
+        for (ModelCacheEntry mce : dll)
+            if (mce.playerRef.get() == player) {
+                nm = mce;
+                break;
+            }
+
+        if (nm == null) {
+            nm = new ModelCacheEntry();
+            nm.playerRef = new WeakReference<EntityPlayer>(player);
+            dll.add(nm);
+        } else {
+            if (nm.value != null) {
+                nm.value.cleanupGL();
+                nm.value = null;
+            }
+        }
+
+        if (model == null)
+            return nm;
+        // This is the only case where nm.value ends up != null
+        nm.value = new PlayerInstance(model);
+        return nm;
+    }
+
+    public static ModelCacheEntry getModel(EntityPlayer player) {
         int div = player.hashCode() & 0xFF00 >> 8;
         LinkedList<ModelCacheEntry> dll = cacheDivisions[div];
         if (dll == null)
@@ -67,27 +100,15 @@ public final class InstanceCache {
         // Try to find the value
         for (ModelCacheEntry mce : dll)
             if (mce.playerRef.get() == player)
-                return mce.value;
-        // TODO: Put a reference to the model(not the instance) in player's extended attributes, look for it here
-        //       If none is found then use the ordinary MC model
-        //       The idea is, that when a user changes model,
-        //       the new model gets set in the ext. attributes and shows up here.
-        //       Loading is done in whatever code finds out about the model change or wherever. Not here.
-        // Try to create a new value
-        ModelCacheEntry nm = new ModelCacheEntry();
-        nm.playerRef = new WeakReference<EntityPlayer>(player);
-        try {
-            // Assuming the model being used is the local player's model.
-            nm.value = new PlayerInstance(ModelCache.getLocal(Loader.currentFile));
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
-        dll.add(nm);
-        return nm.value;
+                return mce;
+        return null;
     }
 
-    private static class ModelCacheEntry {
+    public static class ModelCacheEntry {
         PlayerInstance value;
+        // EntityPlayer. Don't keep not-weak references long-term anywhere in the code.
         WeakReference<EntityPlayer> playerRef;
+        // If != null, is the currentFileListeners Runnable. Is removed from there when the MCE is removed.
+        Runnable cfHook;
     }
 }

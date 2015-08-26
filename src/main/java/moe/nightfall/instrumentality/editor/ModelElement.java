@@ -13,75 +13,109 @@
 package moe.nightfall.instrumentality.editor;
 
 import moe.nightfall.instrumentality.Loader;
-import moe.nightfall.instrumentality.Main;
 import moe.nightfall.instrumentality.ModelCache;
 import moe.nightfall.instrumentality.PMXInstance;
-import moe.nightfall.instrumentality.animations.LibraryAnimation;
-import net.minecraft.client.Minecraft;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
 
-import java.io.IOException;
+import java.nio.FloatBuffer;
 
 /**
  * Created on 18/08/15.
  */
-public class MainFrame extends EditElement {
-    EditElement examplePanel = new EditElement();
+public class ModelElement extends EditElement {
     PMXInstance workModel;
 
-    public MainFrame() {
-        try {
-            workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
-            workModel.anim = Loader.animLibs[1].getPose("idle");
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
+    public ModelElement() {
+        setModel(Loader.currentFile);
         Loader.currentFileListeners.add(new Runnable() {
             @Override
             public void run() {
-                workModel.cleanupGL();
-                try {
-                    workModel = new PMXInstance(ModelCache.getLocal(Loader.currentFile));
-                } catch (IOException ioe) {
-                    throw new RuntimeException(ioe);
-                }
+                setModel(Loader.currentFile);
             }
         });
-        examplePanel.setSize(160, 100);
-        examplePanel.posX = 8;
-        examplePanel.posY = 8;
+    }
+
+    public void setModel(String modelName) {
+        if (workModel != null) {
+            workModel.cleanupGL();
+            workModel = null;
+        }
+        if (modelName == null)
+            return;
+        workModel = new PMXInstance(ModelCache.getLocal(modelName));
+        workModel.anim = Loader.animLibs[1].getPose("idle");
     }
 
     @Override
-    public void draw() {
-        drawSkinnedRect(posX, posY, getWidth(), getHeight(), 1.0f);
-        examplePanel.draw();
+    public void draw(int scrWidth, int scrHeight) {
+        super.draw(scrWidth, scrHeight);
 
-        // 3D Drawing
+        // avoiding perspective "fun" is hard ^.^;
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glPushMatrix();
+        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         GL11.glLoadIdentity();
-        float asp = ((float) getWidth()) / ((float) getHeight());
+
+        GL11.glScaled(2.0d / scrWidth, -2.0d / scrHeight, 1);
+        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
+        GL11.glMultMatrix(fb);
+        // Add additional screen-space offsets here
+        GL11.glTranslated(getWidth() / 2, getHeight() / 4, 0);
+        // --
+        GL11.glScaled(scrWidth / 2, -getHeight() / 2, 1);
+        GL11.glTranslated(-1, 1, 0);
+
+        GL11.glScaled(3, 3, 1);
+
+        float asp = ((float) scrWidth) / ((float) getHeight());
         GLU.gluPerspective(45, asp, 0.1f, 100);
+
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glPushMatrix();
         GL11.glLoadIdentity();
-        GL11.glTranslated(0, -1, -5f);
-        GL11.glScaled(0.1f, 0.1f, 0.1f);
+
+        GL11.glTranslated(0, 0, -5);
+        float sFactor = 1.0f / workModel.theModel.height;
+        GL11.glScaled(sFactor, sFactor, sFactor);
+        GL11.glTranslated(0, -(workModel.theModel.height / 2), 0);
         GL11.glRotated(Math.toDegrees((System.currentTimeMillis() % 6282) / 1000.0d), 0, 1, 0);
+
         GL11.glDisable(GL11.GL_CULL_FACE);
-        workModel.render(Loader.shaderBoneTransform);
+        if (workModel != null)
+            workModel.render(Loader.shaderBoneTransform);
         GL11.glEnable(GL11.GL_CULL_FACE);
+
         GL11.glPopMatrix();
+
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glPopMatrix();
+
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
+    }
+
+    private void dumpProject(FloatBuffer fb) {
+        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, fb);
+        System.out.println("x y z w (Transposed : each row is the multiplier from sV)");
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++)
+                System.out.print(fb.get() + " ");
+            System.out.println();
+        }
+        fb.rewind();
+        System.out.println("-");
     }
 
     @Override
     public void setSize(int w, int h) {
         super.setSize(w, h);
     }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+    }
+
 }

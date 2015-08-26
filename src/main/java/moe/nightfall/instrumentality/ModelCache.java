@@ -12,22 +12,21 @@
  */
 package moe.nightfall.instrumentality;
 
-import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 /**
  * Created on 19/08/15.
  */
 public final class ModelCache {
+
+    // Local model repository
+    public static String modelRepository = "mdl/";
 
     private ModelCache() {
 
@@ -35,60 +34,90 @@ public final class ModelCache {
 
     private static HashMap<String, PMXModel> localModels = new HashMap<String, PMXModel>();
 
-    public static PMXModel getLocal(String baseDir) throws IOException {
-        PMXModel mdl = localModels.get(baseDir);
+    public static PMXModel getByManifest(final HashMap<String, String> hashMap, final IPMXLocator remoteServer) {
+        // Check for eligible candidates locally
+        final String targetHash = hashMap.get("mdl.pmx");
+        for (String s : getLocalModels()) {
+            try {
+                IPMXFilenameLocator l = new FilePMXFilenameLocator(modelRepository + "/" + s.toLowerCase() + "/");
+                if (targetHash.equalsIgnoreCase(Hashing.sha1().hashBytes(l.getData("mdl.pmx")).toString()))
+                    return getLocal(s);
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+        try {
+            return getInternal(new IPMXFilenameLocator() {
+                @Override
+                public byte[] getData(String filename) throws IOException {
+                    byte[] b = remoteServer.getData(hashMap.get(filename.toLowerCase()));
+                    File targ = new File(modelRepository + "/" + targetHash.toLowerCase() + "/" + (filename.toLowerCase()));
+                    targ.getParentFile().mkdirs();
+                    FileOutputStream fos = new FileOutputStream(targ);
+                    fos.write(b);
+                    fos.close();
+                    return b;
+                }
+            }, targetHash);
+        } catch (IOException ioe) {
+            return null;
+        }
+    }
+
+    public static Iterable<String> getLocalModels() {
+        String[] out = new File(modelRepository).list();
+        ArrayList<String> als = new ArrayList<String>(out.length);
+        for (String s : out)
+            als.add(s);
+        return als;
+    }
+
+    public static PMXModel getLocal(String name) {
+        PMXModel mdl = localModels.get(name.toLowerCase());
         if (mdl != null)
             return mdl;
-        mdl = getInternal(new FilePMXFilenameLocator(baseDir));
-        localModels.put(baseDir, mdl);
+        try {
+            mdl = getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name.toLowerCase() + "/"), name);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            return null;
+        }
         return mdl;
     }
 
-    private static PMXModel getInternal(IPMXFilenameLocator locator) throws IOException {
-        PMXModel pm = new PMXModel(new PMXFile(locator.getData("mdl.pmx")), 12);
+    private static PMXModel getInternal(IPMXFilenameLocator locator, String name) throws IOException {
+        PMXModel pm = new PMXModel(new PMXFile(locator.getData("mdl.pmx")), Loader.groupSize);
         loadTextures(pm, locator);
+        localModels.put(name.toLowerCase(), pm);
         return pm;
     }
 
     private static void loadTextures(PMXModel mdl, IPMXFilenameLocator fl) throws IOException {
         for (PMXFile.PMXMaterial mat : mdl.theFile.matData) {
-            int bTex = GL11.glGenTextures();
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
-
             String str = mat.texTex.toLowerCase();
+            // It's dumb, but this is the only place arbitrary pathnames can be entered into that we'll accept.
+            // So we have to security-check it. Please, fix this if there is a problem.
+            if (str.contains("..") || str.contains(":"))
+                throw new IOException("Potentially security-threatening string found");
             if (str == null)
                 continue;
             try {
                 BufferedImage bi = ImageIO.read(new ByteArrayInputStream(fl.getData(str)));
-                int[] ib = new int[bi.getWidth() * bi.getHeight()];
-                bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth());
-                ByteBuffer inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
-                for (int i = 0; i < (bi.getWidth() * bi.getHeight()); i++) {
-                    int c = ib[i];
-                    inb.put((byte) ((c & 0xFF0000) >> 16));
-                    inb.put((byte) ((c & 0xFF00) >> 8));
-                    inb.put((byte) (c & 0xFF));
-                    inb.put((byte) ((c & 0xFF000000) >> 24));
-                }
-                inb.rewind();
-                GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA,
-                        GL11.GL_UNSIGNED_BYTE, inb);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-                GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+                mdl.materialData.put(str, bi);
             } catch (Exception e) {
                 throw new IOException(str, e);
             }
-            mdl.materials.put(str, bTex);
         }
     }
 
     // Automatically creates a manifest, and a way of mapping hashes back to files for use when requests are made
-    public static DataManifestCreationResult createManifestForLocal(String baseDir) throws IOException {
+    public static DataManifestCreationResult createManifestForLocal(String name) throws IOException {
         final DataManifestCreationResult dmcr = new DataManifestCreationResult();
-        final IPMXFilenameLocator rootLocator = new FilePMXFilenameLocator(baseDir);
+        final IPMXFilenameLocator rootLocator = new FilePMXFilenameLocator(modelRepository + "/" + name.toLowerCase() + "/");
         IPMXFilenameLocator locator = new IPMXFilenameLocator() {
             @Override
             public byte[] getData(String filename) throws IOException {
+                filename = filename.toLowerCase();
                 byte[] data = rootLocator.getData(filename);
                 if (dmcr.filesToHashes.containsKey(filename))
                     return data;
@@ -122,7 +151,7 @@ public final class ModelCache {
 
         @Override
         public byte[] getData(String filename) throws IOException {
-            FileInputStream fis = new FileInputStream(baseDir + filename);
+            FileInputStream fis = new FileInputStream(baseDir + (filename.toLowerCase()));
             byte[] data = new byte[fis.available()];
             fis.read(data);
             fis.close();
@@ -132,43 +161,6 @@ public final class ModelCache {
 
     public interface IPMXLocator {
         byte[] getData(String hash) throws IOException;
-    }
-
-    public static class ListPMXLocator implements IPMXLocator {
-        private Iterable<IPMXLocator> back;
-
-        public ListPMXLocator(Iterable<IPMXLocator> backend) {
-            back = backend;
-        }
-
-        @Override
-        public byte[] getData(String hash) throws IOException {
-            for (IPMXLocator ipl : back) {
-                try {
-                    byte[] data = ipl.getData(hash);
-                    return data;
-                } catch (IOException ioe) {
-
-                }
-            }
-            throw new IOException("Couldn't find data in any locator");
-        }
-    }
-
-    public static class FilePMXLocator implements IPMXLocator {
-        public String baseDir = null;
-
-        public FilePMXLocator(String baseDir) {
-            this.baseDir = baseDir;
-        }
-
-        public byte[] getData(String hash) throws IOException {
-            FileInputStream fis = new FileInputStream(baseDir + hash);
-            byte[] data = new byte[fis.available()];
-            fis.read(data);
-            fis.close();
-            return data;
-        }
     }
 
     public static class DataManifestCreationResult {

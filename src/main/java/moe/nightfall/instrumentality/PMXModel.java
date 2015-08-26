@@ -12,10 +12,12 @@
  */
 package moe.nightfall.instrumentality;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
+
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 /**
  * It would be nice if we could move the FaceGroup generator into this file.
@@ -23,7 +25,9 @@ import java.util.LinkedList;
  */
 public class PMXModel {
     public PMXFile theFile;
-    public HashMap<String, Integer> materials = new HashMap<String, Integer>();
+    // This is null'd once setupMaterials is called
+    public HashMap<String, BufferedImage> materialData = new HashMap<String, BufferedImage>();
+    public HashMap<String, Integer> materials = null;
 
     /**
      * Height of the model, determinated by the highest vertex
@@ -168,5 +172,42 @@ public class PMXModel {
         if (weightType == 2)
             return 4;
         return 0;
+    }
+
+    /**
+     * Sets up the OpenGL materials, and (hopefully) deallocs the ByteBuffers that used to hold the data.
+     * (material setup is done this way to avoid problems with multithreading - on that note,
+     * only call from the render thread)
+     */
+    public void setupMaterials() {
+        materials = new HashMap<String, Integer>();
+        for (Map.Entry<String, BufferedImage> e : materialData.entrySet()) {
+            int bTex = GL11.glGenTextures();
+            GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex);
+            BufferedImage bi = e.getValue();
+            int[] ib = new int[bi.getWidth() * bi.getHeight()];
+            bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth());
+            ByteBuffer inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
+            for (int i = 0; i < (bi.getWidth() * bi.getHeight()); i++) {
+                int c = ib[i];
+                inb.put((byte) ((c & 0xFF0000) >> 16));
+                inb.put((byte) ((c & 0xFF00) >> 8));
+                inb.put((byte) (c & 0xFF));
+                inb.put((byte) ((c & 0xFF000000) >> 24));
+            }
+            inb.rewind();
+            GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA,
+                    GL11.GL_UNSIGNED_BYTE, inb);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+            GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+            materials.put(e.getKey(), bTex);
+        }
+    }
+
+    public void cleanupGL() {
+        if (materials != null)
+            for (Integer i : materials.values())
+                GL11.glDeleteTextures(i);
+        materials = null;
     }
 }

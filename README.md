@@ -22,9 +22,19 @@ Also, PlayerControlAnimation's MC-specific way of handling things should be move
 
 2. Setup a run config as for a normal MC mod
 
-3. Put your model into a folder called mdl in the "eclipse" directory, using the name "mdl.pmx"
+3. Put your model into the folder "eclipse" in the sub-folder "mdl"(you may have to create it) in the sub-sub-folder "miku" using the name "mdl.pmx".
    Don't forget to add all textures relative to the model, and note that all filenames are made lowercase
    (because some model authors aren't consistent. This matters on case-sensitive filesystems)
+
+The filestructure should be:
+
+    eclipse-+-mdl-+-someModelName-+-mdl.pmx
+                  |               |
+                  |               +-someTexture.png
+                  |
+                  +-someOtherModel-+-mdl.pmx
+                                   |
+                                   +-otherTex.png
 
 ## For Testbench Only
 

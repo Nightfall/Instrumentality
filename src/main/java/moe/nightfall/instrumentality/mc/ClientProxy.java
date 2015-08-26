@@ -18,7 +18,8 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import moe.nightfall.instrumentality.Loader;
-import moe.nightfall.instrumentality.Main;
+import moe.nightfall.instrumentality.ModelCache;
+import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.mc.gui.EditorHostGui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -74,7 +75,36 @@ public class ClientProxy extends CommonProxy {
         y -= RenderManager.renderPosY;
         z -= RenderManager.renderPosZ;
 
-        PlayerInstance model = InstanceCache.getModel(player);
+        InstanceCache.ModelCacheEntry mce = InstanceCache.getModel(player);
+        if (mce == null) {
+            if (player == Minecraft.getMinecraft().thePlayer) {
+
+                PMXModel newMdl = ModelCache.getLocal(Loader.currentFile);
+                mce = InstanceCache.setModel(player, newMdl);
+                final InstanceCache.ModelCacheEntry mceF = mce;
+
+                // The local player uses currentFile
+                Runnable r = new Runnable() {
+                    @Override
+                    public void run() {
+                        PMXModel newMdl = ModelCache.getLocal(Loader.currentFile);
+                        EntityPlayer ep = mceF.playerRef.get();
+                        if (ep != null)
+                            InstanceCache.setModel(ep, newMdl);
+                    }
+                };
+
+                // InstanceCache will automatically delete any currentFile hook we leave here
+                mce.cfHook = r;
+
+                Loader.currentFileListeners.add(r);
+            } else {
+                return;
+            }
+        }
+        PlayerInstance model = mce.value;
+        if (model == null)
+            return;
         model.apply(player, event.partialRenderTick);
         model.render(player, x, y, z, event.partialRenderTick);
 
