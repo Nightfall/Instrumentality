@@ -15,11 +15,11 @@ package moe.nightfall.instrumentality.editor.controls;
 import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.ModelCache;
 import moe.nightfall.instrumentality.PMXInstance;
+import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.animations.OverlayAnimation;
 import moe.nightfall.instrumentality.animations.WalkingAnimation;
 import moe.nightfall.instrumentality.editor.EditElement;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -56,10 +56,15 @@ public class ModelElement extends EditElement {
         workModelName = modelName;
         if (modelName == null)
             return;
-        workModel = new PMXInstance(ModelCache.getLocal(modelName));
+        workModel = makeTestInstance(ModelCache.getLocal(modelName));
+    }
+
+    public static PMXInstance makeTestInstance(PMXModel pm) {
+        PMXInstance pi = new PMXInstance(pm);
         WalkingAnimation wa=new WalkingAnimation();
         wa.speed=1.0f;
-        workModel.anim = new OverlayAnimation(new IAnimation[] {Loader.animLibs[1].getPose("idle"),wa});
+        pi.anim = new OverlayAnimation(new IAnimation[]{Loader.animLibs[1].getPose("idle"), wa});
+        return pi;
     }
 
     @Override

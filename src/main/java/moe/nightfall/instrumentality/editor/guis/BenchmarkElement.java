@@ -10,40 +10,48 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.controls;
+package moe.nightfall.instrumentality.editor.guis;
 
+import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.editor.EditElement;
-import org.lwjgl.input.Mouse;
+import moe.nightfall.instrumentality.editor.controls.ModelElement;
 
-public class ButtonElement extends EditElement {
-    public boolean isHover;
-    public Runnable onClick;
-    
-    public ButtonElement(Runnable r) {
-        onClick = r;
+import java.util.LinkedList;
+
+/**
+ * Created on 01/09/15.
+ */
+public class BenchmarkElement extends EditElement {
+    public final PMXModel myModel;
+    public LinkedList<ModelElement> flows;
+    public double time;
+
+    public BenchmarkElement(PMXModel mdl) {
+        myModel = mdl;
     }
 
+    @Override
+    public void update(double dTime) {
+        super.update(dTime);
+        time += dTime;
+        if (time > 1.0d) {
+            ModelElement me = new ModelElement(false);
+            me.setSize(200, 320);
+            subElements.add(me);
+            layout();
+            time -= 1.0d;
+        }
+    }
 
     @Override
-    public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
-        super.mouseStateChange(x, y, isDown, isRight);
-        if (!isRight)
-            if (!isDown)
-                if (onClick!=null)
-                    onClick.run();
-    }
-    
-    @Override
-    public void draw(int scrWidth, int scrHeight) {
-        colourStrength = isHover ? 0.75f : 0.5f;
-        if (isHover && Mouse.isButtonDown(0))
-            colourStrength = 0.25f;
-        super.draw(scrWidth, scrHeight);
-    }
-    
-    @Override
-    public void mouseEnterLeave(boolean isIn) {
-        isHover = isIn;
+    public void layout() {
+        int i = 0;
+        for (EditElement me : subElements) {
+            me.posX = i * 50;
+            me.posY = (me.posX / getWidth()) * 50;
+            me.posX %= getWidth();
+            me.posY %= getHeight();
+            i++;
+        }
     }
 }
-

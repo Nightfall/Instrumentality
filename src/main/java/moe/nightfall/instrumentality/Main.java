@@ -13,10 +13,7 @@
 package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.editor.EditElement;
-import moe.nightfall.instrumentality.editor.IEditorHost;
-import moe.nightfall.instrumentality.editor.ModelChooserElement;
-import moe.nightfall.instrumentality.editor.UIMouseHelper;
-
+import moe.nightfall.instrumentality.editor.UIUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -45,7 +42,7 @@ import java.io.InputStreamReader;
  * <p/>
  * Created on 24/07/15.
  */
-public class Main implements IEditorHost {
+public class Main {
 
     private EditElement currentPanel;
 
@@ -80,7 +77,7 @@ public class Main implements IEditorHost {
         Keyboard.create();
         double deltaTime = 0.1;
 
-        changePanel(new ModelChooserElement(ModelCache.getLocalModels()));
+        changePanel(UIUtils.createGui());
 
         while (!Display.isCloseRequested()) {
             long frameStart = System.currentTimeMillis();
@@ -114,7 +111,7 @@ public class Main implements IEditorHost {
     }
 
     private void doUpdate(double dT) {
-        UIMouseHelper.update(currentPanel);
+        UIUtils.update(currentPanel);
         currentPanel.update(dT);
     }
 
@@ -126,7 +123,6 @@ public class Main implements IEditorHost {
         GL11.glDisable(GL11.GL_CULL_FACE);
     }
 
-    @Override
     public void changePanel(EditElement newPanel) {
         currentPanel = newPanel;
         currentPanel.setSize(Display.getWidth(), Display.getHeight());

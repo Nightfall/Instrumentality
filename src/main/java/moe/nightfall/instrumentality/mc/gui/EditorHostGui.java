@@ -12,21 +12,17 @@
  */
 package moe.nightfall.instrumentality.mc.gui;
 
-import moe.nightfall.instrumentality.ModelCache;
 import moe.nightfall.instrumentality.editor.EditElement;
-import moe.nightfall.instrumentality.editor.IEditorHost;
-import moe.nightfall.instrumentality.editor.ModelChooserElement;
-import moe.nightfall.instrumentality.editor.UIMouseHelper;
+import moe.nightfall.instrumentality.editor.UIUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
 /**
  * Created on 18/08/15.
  */
-public class EditorHostGui extends GuiScreen implements IEditorHost {
+public class EditorHostGui extends GuiScreen {
 
     public EditElement hostedElement;
 
@@ -35,7 +31,7 @@ public class EditorHostGui extends GuiScreen implements IEditorHost {
 
     @Override
     public void initGui() {
-        changePanel(new ModelChooserElement(ModelCache.getLocalModels()));
+        changePanel(UIUtils.createGui());
     }
 
     @Override
@@ -66,11 +62,10 @@ public class EditorHostGui extends GuiScreen implements IEditorHost {
     
     @Override
     public void updateScreen() {
-        UIMouseHelper.update(hostedElement);
+        UIUtils.update(hostedElement);
         hostedElement.update(0.05d);
     }
 
-    @Override
     public void changePanel(EditElement newPanel) {
         if (hostedElement != null)
             hostedElement.cleanup();

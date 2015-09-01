@@ -129,7 +129,12 @@ public class EditElement {
     }
 
     public void mouseEnterLeave(boolean isInside) {
-        
+        if (!isInside) {
+            if (lastHoverTarget != null) {
+                lastHoverTarget.mouseEnterLeave(false);
+                lastHoverTarget = null;
+            }
+        }
     }
     
     // RANDOM NOTE III : Always call super if overriding this function.

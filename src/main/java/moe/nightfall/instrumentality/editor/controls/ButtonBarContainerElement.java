@@ -10,24 +10,40 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor;
+package moe.nightfall.instrumentality.editor.controls;
 
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
+import moe.nightfall.instrumentality.editor.EditElement;
 
-public class UIMouseHelper {
-    public static boolean[] state=new boolean[2];
-    public static void update(EditElement targetPanel) {
-        boolean[] newState = new boolean[2];
-        newState[0] = Mouse.isButtonDown(0);
-        newState[1] = Mouse.isButtonDown(1);
-        int x = Mouse.getX();
-        int y = Display.getHeight() - (Mouse.getY() + 1);
-        if (newState[0] != state[0])
-            targetPanel.mouseStateChange(x, y, newState[0], false);
-        if (newState[1] != state[1])
-            targetPanel.mouseStateChange(x, y, newState[1], true);
-        targetPanel.mouseMove(x, y, newState);
-        state = newState;
+/**
+ * Created on 01/09/15.
+ */
+public class ButtonBarContainerElement extends EditElement {
+    public HBoxElement barCore = new HBoxElement();
+    private EditElement underPanel = null;
+    private double sizeRatio;
+
+    public ButtonBarContainerElement(double sizeRat) {
+        sizeRatio = sizeRat;
+        subElements.add(barCore);
+    }
+
+    public void setUnderPanel(EditElement editElement) {
+        if (underPanel != null)
+            subElements.remove(underPanel);
+        underPanel = editElement;
+        subElements.add(underPanel);
+        layout();
+    }
+
+    public void layout() {
+        int size = (int) (getHeight() * sizeRatio);
+        if (underPanel != null) {
+            underPanel.posX = 0;
+            underPanel.posY = size;
+            underPanel.setSize(getWidth(), getHeight() - size);
+        }
+        barCore.setSize(getWidth(), size);
+        barCore.posX = 0;
+        barCore.posY = 0;
     }
 }
