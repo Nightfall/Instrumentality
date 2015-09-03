@@ -17,7 +17,11 @@ import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary;
 import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary;
 import moe.nightfall.instrumentality.shader.Shader;
 import moe.nightfall.instrumentality.shader.ShaderManager;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
 import java.util.LinkedList;
 
 public class Loader {
@@ -61,4 +65,22 @@ public class Loader {
             r.run();
     }
 
+    // No better idea where to put this
+    public static void writeGLTexImg(BufferedImage bi, int filter) {
+        int[] ib = new int[bi.getWidth() * bi.getHeight()];
+        bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth());
+        ByteBuffer inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4);
+        for (int i = 0; i < (bi.getWidth() * bi.getHeight()); i++) {
+            int c = ib[i];
+            inb.put((byte) ((c & 0xFF0000) >> 16));
+            inb.put((byte) ((c & 0xFF00) >> 8));
+            inb.put((byte) (c & 0xFF));
+            inb.put((byte) ((c & 0xFF000000) >> 24));
+        }
+        inb.rewind();
+        GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA,
+                GL11.GL_UNSIGNED_BYTE, inb);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter);
+        GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
+    }
 }

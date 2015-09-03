@@ -20,6 +20,10 @@ import moe.nightfall.instrumentality.editor.guis.BenchmarkElement;
 import moe.nightfall.instrumentality.editor.guis.ModelChooserElement;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.vector.Vector2f;
+
+import java.awt.*;
 
 public class UIUtils {
     public static boolean[] state=new boolean[2];
@@ -59,5 +63,76 @@ public class UIUtils {
         }));
 
         return bbce;
+    }
+
+    private static Font sysFont;
+    private static Thread sysFontCreationThread;
+
+    // yes, this is scalable (in one way or another). TODO: second parameter controls stroke width
+    // the default size will be around 6x9u(where u is whatever your opengl perspective says), with 1u spacing on both axis.
+    // spaces are 1x9u + the normal spacing on top
+    // however, if unknown chars appear, then it will NOT WORK!
+    public static Vector2f drawLine(String str, int strokeWidth) {
+        char[] ca = str.toCharArray();
+        for (char c : ca) {
+            if (c == 10) {
+                // NOP
+            } else if (c == 13) {
+                // NOP
+            } else if (c == 32) {
+                // more NOP
+            } else if (UIFont.getCharLoc(c) == -1) {
+                // welp, we have an unknown char, assume it's an evil diacritic
+                if (sysFont == null) {
+                    if (sysFontCreationThread == null) {
+                        sysFontCreationThread = new Thread() {
+                            @Override
+                            public void run() {
+                                try {
+                                    // did I mention: this call is SLOW. Seriously.
+                                    sysFont = new Font(null, 0, 72);
+                                } catch (Exception e) {
+                                    System.err.println("Cannot load a international font... nippon gomen nasai... :(");
+                                    // TODO: This would be the perfect place to turn on a romanizer as a last resort.
+                                    e.printStackTrace();
+                                }
+                            }
+                        };
+                        sysFontCreationThread.start();
+                    }
+                    // *sigh* NOP it for now while we load a international char-supporting font
+                    continue;
+                }
+                return UISystemFont.drawSystemLine(str, sysFont);
+            }
+        }
+        GL11.glPushMatrix();
+        int lineX = 0;
+        for (char c : ca) {
+            for (int thick = strokeWidth; thick >= 0; thick--) {
+                GL11.glColor3d(0, thick / 8d, thick / 5d);
+                GL11.glLineWidth(thick + 1);
+                UIFont.drawChar(c);
+            }
+            GL11.glTranslated(7, 0, 0);
+            lineX += 7;
+        }
+        GL11.glPopMatrix();
+        return new Vector2f(lineX, 10);
+    }
+
+    public static void drawText(String str, int i) {
+        Vector2f totalSize = new Vector2f();
+        GL11.glPushMatrix();
+        while (str.indexOf(10) != -1) {
+            Vector2f lineSize = drawLine(str.substring(0, str.indexOf(10)), i);
+            str = str.substring(str.indexOf(10) + 1);
+
+            totalSize.x = Math.max(totalSize.x, lineSize.x);
+            totalSize.y += lineSize.y;
+            GL11.glTranslated(0, lineSize.y, 0);
+        }
+        totalSize.x = Math.max(totalSize.x, drawLine(str, i).x);
+        GL11.glPopMatrix();
     }
 }

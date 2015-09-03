@@ -1097,10 +1097,198 @@ public class UIFont {
             "       ",
             "   1   ",
             "   0   ",
+
+            "!",
+            "B",
+            "   3   ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "   2   ",
+            "       ",
+            "   1   ",
+            "   0   ",
+
+            ":",
+            "B",
+            "       ",
+            "   3   ",
+            "   2   ",
+            "       ",
+            "       ",
+            "       ",
+            "   0   ",
+            "   1   ",
+            "       ",
+
+            "/",
+            "B",
+            "      1",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "0      ",
+
+            "\\",
+            "B",
+            "0      ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "      1",
+
+            "-",
+            "B",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "0     1",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+
+            "+",
+            "B",
+            "       ",
+            "   2   ",
+            "       ",
+            "       ",
+            "0     1",
+            "       ",
+            "       ",
+            "   3   ",
+            "       ",
+
+            "=",
+            "B",
+            "       ",
+            "       ",
+            "0     1",
+            "       ",
+            "       ",
+            "       ",
+            "2     3",
+            "       ",
+            "       ",
+
+            "_",
+            "B",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "0     1",
+
+            ";",
+            "B",
+            "       ",
+            "   3   ",
+            "   2   ",
+            "       ",
+            "       ",
+            "       ",
+            "   0   ",
+            "       ",
+            " 1     ",
+
+            "|",
+            "B",
+            "   0   ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "   1   ",
+
+            "<",
+            "S",
+            "       ",
+            "      0",
+            "       ",
+            "       ",
+            "1      ",
+            "       ",
+            "       ",
+            "      2",
+            "       ",
+
+            ">",
+            "S",
+            "       ",
+            "0      ",
+            "       ",
+            "       ",
+            "      1",
+            "       ",
+            "       ",
+            "2      ",
+            "       ",
+
+            "?",
+            "SB",
+            "  65   ",
+            "7    4 ",
+            "      3",
+            "      2",
+            "     1 ",
+            "   0   ",
+            "       ",
+            "       ",
+            "       ",
+
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "       ",
+            "   1   ",
+            "   0   ",
+
+            "@",
+            "SS",
+            "  9 8  ",
+            "       ",
+            "      7",
+            "   1 0 ",
+            "  2    ",
+            "  3   6",
+            "   4 5 ",
+            "       ",
+            "       ",
+
+            "  0    ",
+            "       ",
+            "1      ",
+            "       ",
+            "       ",
+            "       ",
+            "2      ",
+            "       ",
+            "  3   4",
     };
     public static int[] cachedFont = new int[256];
 
-    public static void drawChar(char c) {
+    protected static void drawChar(char c) {
         // bit of a hypocrite here, rendering each char individually, but strings are at a higher layer.
         // hopefully the 1 array lookup and 1 call-list is fast enough?
         boolean isCompiling = false;
@@ -1115,50 +1303,66 @@ public class UIFont {
                 isCompiling = true;
             }
         }
-        int p = 0;
-        while (p < fontDB.length) {
-            String activeChars = fontDB[p++];
-            char[] passes = fontDB[p++].toCharArray();
-            String[] passData = new String[passes.length * 9];
-            for (int i = 0; i < passData.length; i++)
-                passData[i] = fontDB[p++];
-            if (activeChars.contains(String.valueOf(c))) {
-                int passPos = 0;
-                for (int i = 0; i < passes.length; i++) {
-                    char type = passes[i];
-                    int t = GL11.GL_LINE_STRIP;
-                    if (type == 'B')
-                        t = GL11.GL_LINES;
-                    double[] x = new double[10];
-                    double[] y = new double[10];
-                    boolean[] isUsed = new boolean[10];
-                    for (int j = 0; j < 9; j++) {
-                        String str = passData[passPos++];
-                        for (int n = 0; n < 10; n++)
-                            if (str.contains(String.valueOf((char) ('0' + n)))) {
-                                x[n] = str.indexOf(String.valueOf((char) ('0' + n)));
-                                y[n] = j;
-                                isUsed[n] = true;
-                            }
+        int p = getCharLoc(c);
+        if (p == -1) {
+            if (isCompiling)
+                GL11.glEndList();
+            return;
+        }
+        char[] passes = fontDB[p++].toCharArray();
+        String[] passData = new String[passes.length * 9];
+        for (int i = 0; i < passData.length; i++)
+            passData[i] = fontDB[p++];
+        int passPos = 0;
+        for (int i = 0; i < passes.length; i++) {
+            char type = passes[i];
+            int t = GL11.GL_LINE_STRIP;
+            if (type == 'B')
+                t = GL11.GL_LINES;
+            double[] x = new double[10];
+            double[] y = new double[10];
+            boolean[] isUsed = new boolean[10];
+            for (int j = 0; j < 9; j++) {
+                String str = passData[passPos++];
+                for (int n = 0; n < 10; n++)
+                    if (str.contains(String.valueOf((char) ('0' + n)))) {
+                        x[n] = str.indexOf(String.valueOf((char) ('0' + n)));
+                        y[n] = j;
+                        isUsed[n] = true;
                     }
-                    for (int thick = 3; thick >= 0; thick--) {
-                        GL11.glColor3d(0, thick / 8d, thick / 5d);
-                        GL11.glLineWidth(thick + 1);
-                        GL11.glBegin(t);
-                        for (int n = 0; n < 10; n++)
-                            if (isUsed[n])
-                                GL11.glVertex2d(x[n], y[n]);
-                        if (type == 'L')
-                            GL11.glVertex2d(x[0], y[0]);
-                        GL11.glEnd();
-                    }
-                }
-                if (isCompiling)
-                    GL11.glEndList();
-                return;
             }
+            GL11.glBegin(t);
+            for (int n = 0; n < 10; n++)
+                if (isUsed[n])
+                    GL11.glVertex2d(x[n], y[n]);
+            if (type == 'L')
+                GL11.glVertex2d(x[0], y[0]);
+            GL11.glEnd();
         }
         if (isCompiling)
             GL11.glEndList();
+    }
+
+    private static int[] cachedPositions = new int[256];
+
+    public static int getCharLoc(char c) {
+        boolean canCache = c < 256;
+        if (canCache)
+            if (cachedPositions[(int) c] != 0)
+                return cachedPositions[(int) c];
+        int p = 0;
+        while (p < fontDB.length) {
+            String activeChars = fontDB[p++];
+            if (activeChars.contains(String.valueOf(c))) {
+                if (canCache)
+                    cachedPositions[(int) c] = p;
+                return p;
+            }
+            String passes = fontDB[p++];
+            p += passes.length() * 9;
+        }
+        if (canCache)
+            cachedPositions[(int) c] = -1;
+        return -1;
     }
 }

@@ -14,7 +14,7 @@ package moe.nightfall.instrumentality.editor.guis;
 
 import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.editor.EditElement;
-import moe.nightfall.instrumentality.editor.UIFont;
+import moe.nightfall.instrumentality.editor.UIUtils;
 import moe.nightfall.instrumentality.editor.controls.ModelElement;
 import org.lwjgl.opengl.GL11;
 
@@ -24,6 +24,7 @@ import org.lwjgl.opengl.GL11;
 public class BenchmarkElement extends EditElement {
     public final PMXModel myModel;
     public double time;
+    public double avgTime = 0;
 
     public BenchmarkElement(PMXModel mdl) {
         myModel = mdl;
@@ -32,6 +33,7 @@ public class BenchmarkElement extends EditElement {
     @Override
     public void update(double dTime) {
         super.update(dTime);
+        avgTime = ((avgTime * 99) + dTime) / 100;
         time += dTime;
         if (time > 2.0d) {
             ModelElement me = new ModelElement(false);
@@ -61,21 +63,10 @@ public class BenchmarkElement extends EditElement {
         GL11.glTranslated(1, 1, 0);
         GL11.glScaled(2, 2, 2);
         GL11.glColor3d(1, 1, 1);
-        GL11.glPushMatrix();
 
-        String str = "If you've done six impossible things this morning,\nwhy not round it off with breakfast at Milliways,\nthe Restaurant at the End of the Universe.\n1234567890\nthe quick brown fox jumped over the lazy dog\nTHE QUICK BROWN FOX JUMPED OVER THE LAZY DOG";
-        for (char c : str.toCharArray()) {
-            if (c == 10) {
-                GL11.glPopMatrix();
-                GL11.glTranslated(0, 10, 0);
-                GL11.glPushMatrix();
-            } else {
-                UIFont.drawChar(c);
-                GL11.glTranslated(7, 0, 0);
-            }
-        }
+        String str = subElements.size() + " elems/" + (((int) ((1 / avgTime) * 10)) / 10d) + " FPS\n1234567890-=\n!\"£$%^&*()_+\n[]\n{}\n;'#\n:@~\n\\,./\n|<>?";
+        UIUtils.drawText(str, 3);
 
-        GL11.glPopMatrix();
         GL11.glPopMatrix();
     }
 }
