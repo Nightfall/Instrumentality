@@ -63,7 +63,7 @@ public class BenchmarkElement extends EditElement {
         GL11.glColor3d(1, 1, 1);
         GL11.glPushMatrix();
 
-        String str = "If you've done 6 impossible things today,\nwhy not top it off with a meal at Milliways,\nthe cafe at the end of the universe.\n1234567890\nthe quick brown fox jumped over the lazy dog\nTHE QUICK BROWN FOX JUMPED OVER THE LAZY DOG";
+        String str = "If you've done six impossible things this morning,\nwhy not round it off with breakfast at Milliways,\nthe Restaurant at the End of the Universe.\n1234567890\nthe quick brown fox jumped over the lazy dog\nTHE QUICK BROWN FOX JUMPED OVER THE LAZY DOG";
         for (char c : str.toCharArray()) {
             if (c == 10) {
                 GL11.glPopMatrix();
