@@ -174,7 +174,15 @@ public class PMXInstance {
 
         if (globalName.equalsIgnoreCase("center"))
             return "root";
-        
+
+        if (globalName.equalsIgnoreCase("head_o"))
+            return "head";
+
+        if (globalName.equalsIgnoreCase("LEyeCtrl"))
+            return "L_eye_ctrl";
+        if (globalName.equalsIgnoreCase("REyeCtrl"))
+            return "R_eye_ctrl";
+
         // .arms
         
         if (globalName.equalsIgnoreCase("L_Arm"))

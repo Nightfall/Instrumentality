@@ -110,6 +110,11 @@ public class PlayerControlAnimation implements IAnimation {
      */
     public StrengthMultiplyAnimation walkingStrengthControl;
 
+    /**
+     * Set to true to reset various parameters.
+     */
+    public boolean resetFrame = true;
+
     public PlayerControlAnimation(WalkingAnimation wa, StrengthMultiplyAnimation wastr) {
         walking = wa;
         walkingStrengthControl = wastr;
@@ -298,6 +303,9 @@ public class PlayerControlAnimation implements IAnimation {
         float distRotation = angleDist(bRotation, lastTotalRotation);
         lastTotalRotation = bRotation;
 
+        if (resetFrame)
+            distRotation = 0;
+
         directionAdjustment += distRotation;
         while (directionAdjustment < -Math.PI)
             directionAdjustment += Math.PI * 2;
@@ -309,6 +317,10 @@ public class PlayerControlAnimation implements IAnimation {
             daTarget += Math.PI * 2;
         while (daTarget > Math.PI)
             daTarget -= Math.PI * 2;
+
+        if (resetFrame)
+            directionAdjustment = daTarget;
+
         if (walkingFlag || (sneakState < 0)) {
             float waChange = (float) (Math.PI * deltaTime);
             if (directionAdjustment < daTarget) {
@@ -336,6 +348,8 @@ public class PlayerControlAnimation implements IAnimation {
         float lrValue = (lookLR * 1.2f);
         hairSwayVel += (distRotation / 2.0f) + ((lrValue - lastLRValue) * 2);
         lastLRValue = lrValue;
+
+        resetFrame = false;
     }
 
     private float angleDist(float totalRotation, float lastTotalRotation) {
