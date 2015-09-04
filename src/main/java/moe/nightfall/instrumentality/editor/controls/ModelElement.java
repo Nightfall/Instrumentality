@@ -20,6 +20,7 @@ import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.animations.OverlayAnimation;
 import moe.nightfall.instrumentality.animations.WalkingAnimation;
 import moe.nightfall.instrumentality.editor.EditElement;
+import moe.nightfall.instrumentality.editor.UIUtils;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -32,7 +33,7 @@ import java.nio.FloatBuffer;
 public class ModelElement extends EditElement {
     private PMXInstance workModel;
     private String workModelName;
-    public boolean isButton;
+    public boolean isButton, isHover;
     public double rotYaw,rotPitch;
     
     public ModelElement(boolean ib) {
@@ -56,7 +57,10 @@ public class ModelElement extends EditElement {
         workModelName = modelName;
         if (modelName == null)
             return;
-        workModel = makeTestInstance(ModelCache.getLocal(modelName));
+        PMXModel b = ModelCache.getLocal(modelName);
+        if (b == null)
+            return;
+        workModel = makeTestInstance(b);
     }
 
     public static PMXInstance makeTestInstance(PMXModel pm) {
@@ -72,16 +76,29 @@ public class ModelElement extends EditElement {
         if (isButton) {
             if (workModelName==null) {
                 colourStrength=0.25f;
+                colourStrength *= isHover ? 1.4f : 1f;
             } else {
                 colourStrength=0.5f;
                 if (workModelName.equalsIgnoreCase(Loader.currentFile))
                     colourStrength=0.75f;
+                colourStrength *= isHover ? 1.2f : 1f;
             }
         }
         super.draw(scrWidth, scrHeight);
+        if (isButton) {
+            String text = "<null>";
+            if (workModelName != null)
+                text = workModelName;
+            GL11.glPushMatrix();
+            GL11.glTranslated(borderWidth, borderWidth, 0);
+            GL11.glScaled(2, 2, 1);
+            UIUtils.drawText(text, 2);
+            GL11.glPopMatrix();
+        }
 
         if (workModel==null)
             return;
+
         // avoiding perspective "fun" is hard ^.^;
         FloatBuffer fb = BufferUtils.createFloatBuffer(16);
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
@@ -188,6 +205,7 @@ public class ModelElement extends EditElement {
     public void mouseEnterLeave(boolean isInside) {
         super.mouseEnterLeave(isInside);
         ignoreFirstDrag=true;
+        isHover = isInside;
     }
     
     public void update(double dTime) {
