@@ -64,7 +64,7 @@ public class BenchmarkElement extends EditElement {
         GL11.glScaled(2, 2, 2);
         GL11.glColor3d(1, 1, 1);
 
-        String str = subElements.size() + " elems/" + (((int) ((1 / avgTime) * 10)) / 10d) + " FPS\n1234567890-=\n!\"£$%^&*()_+\n[]\n{}\n;'#\n:@~\n\\,./\n|<>?";
+        String str = subElements.size() + " elems/" + (((int) ((1 / avgTime) * 10)) / 10d) + " FPS";
         UIUtils.drawText(str, 3);
 
         GL11.glPopMatrix();

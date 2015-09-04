@@ -26,6 +26,9 @@ import org.lwjgl.util.vector.Vector2f;
 import java.awt.*;
 
 public class UIUtils {
+    // use when adding new chars to the internal font
+    public static final boolean debugDisableSysFont = false;
+
     public static boolean[] state=new boolean[2];
     public static void update(EditElement targetPanel) {
         boolean[] newState = new boolean[2];
@@ -74,38 +77,40 @@ public class UIUtils {
     // however, if unknown chars appear, then it will NOT WORK!
     public static Vector2f drawLine(String str, int strokeWidth) {
         char[] ca = str.toCharArray();
-        for (char c : ca) {
-            if (c == 10) {
-                // NOP
-            } else if (c == 13) {
-                // NOP
-            } else if (c == 32) {
-                // more NOP
-            } else if (UIFont.getCharLoc(c) == -1) {
-                // welp, we have an unknown char, assume it's an evil diacritic
-                if (sysFont == null) {
-                    if (sysFontCreationThread == null) {
-                        sysFontCreationThread = new Thread() {
-                            @Override
-                            public void run() {
-                                try {
-                                    // did I mention: this call is SLOW. Seriously.
-                                    Font f = new Font(null, 0, 24);
-                                    UISystemFont.scratchFont(f);
-                                    sysFont = f;
-                                } catch (Exception e) {
-                                    System.err.println("Cannot load a international font... nippon gomen nasai... :(");
-                                    // TODO: This would be the perfect place to turn on a romanizer as a last resort.
-                                    e.printStackTrace();
+        if (!debugDisableSysFont) {
+            for (char c : ca) {
+                if (c == 10) {
+                    // NOP
+                } else if (c == 13) {
+                    // NOP
+                } else if (c == 32) {
+                    // more NOP
+                } else if (UIFont.getCharLoc(c) == -1) {
+                    // welp, we have an unknown char, assume it's an evil diacritic
+                    if (sysFont == null) {
+                        if (sysFontCreationThread == null) {
+                            sysFontCreationThread = new Thread() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        // did I mention: this call is SLOW. Seriously.
+                                        Font f = new Font(null, 0, 24);
+                                        UISystemFont.scratchFont(f);
+                                        sysFont = f;
+                                    } catch (Exception e) {
+                                        System.err.println("Cannot load a international font... nippon gomen nasai... :(");
+                                        // TODO: This would be the perfect place to turn on a romanizer as a last resort.
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        };
-                        sysFontCreationThread.start();
+                            };
+                            sysFontCreationThread.start();
+                        }
+                        // *sigh* NOP it for now while we load a international char-supporting font
+                        continue;
                     }
-                    // *sigh* NOP it for now while we load a international char-supporting font
-                    continue;
+                    return UISystemFont.drawSystemLine(str, sysFont);
                 }
-                return UISystemFont.drawSystemLine(str, sysFont);
             }
         }
         GL11.glPushMatrix();
