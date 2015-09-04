@@ -31,18 +31,19 @@ public class EditorHostGui extends GuiScreen {
 
     @Override
     public void initGui() {
-        changePanel(UIUtils.createGui());
+        if (hostedElement == null)
+            changePanel(UIUtils.createGui());
     }
 
     @Override
     public void setWorldAndResolution(Minecraft p_146280_1_, int p_146280_2_, int p_146280_3_) {
         super.setWorldAndResolution(p_146280_1_, p_146280_2_, p_146280_3_);
-        hostedElement.setSize(Display.getWidth(), Display.getHeight());
+        if (hostedElement != null)
+            hostedElement.setSize(Display.getWidth(), Display.getHeight());
     }
 
     @Override
     public void drawScreen(int par1, int par2, float par3) {
-        GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glLoadIdentity();
@@ -57,7 +58,6 @@ public class EditorHostGui extends GuiScreen {
         GL11.glPopMatrix();
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
-        GL11.glDisable(GL11.GL_CULL_FACE);
     }
     
     @Override
