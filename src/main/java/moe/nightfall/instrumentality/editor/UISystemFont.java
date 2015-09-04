@@ -89,17 +89,17 @@ public class UISystemFont {
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glColor3d(1, 1, 1);
 
-        GL11.glVertex3d(0, 0, 0);
-        GL11.glTexCoord2d(0, 1);
-
-        GL11.glVertex3d(0, tex.h * tex.scale, 0);
-        GL11.glTexCoord2d(1, 1);
-
-        GL11.glVertex3d(tex.w * tex.scale, tex.h * tex.scale, 0);
-        GL11.glTexCoord2d(1, 0);
-
-        GL11.glVertex3d(tex.w * tex.scale, 0, 0);
         GL11.glTexCoord2d(0, 0);
+        GL11.glVertex3d(0, 0, 0);
+
+        GL11.glTexCoord2d(0, 1);
+        GL11.glVertex3d(0, tex.h * tex.scale, 0);
+
+        GL11.glTexCoord2d(1, 1);
+        GL11.glVertex3d(tex.w * tex.scale, tex.h * tex.scale, 0);
+
+        GL11.glTexCoord2d(1, 0);
+        GL11.glVertex3d(tex.w * tex.scale, 0, 0);
 
         GL11.glEnd();
         GL11.glDisable(GL11.GL_BLEND);
