@@ -20,6 +20,7 @@ import java.util.*;
 /**
  * OLD: It would be nice if we could move the FaceGroup generator into this file.
  * NEW: It would be nice if we could move the VBO generation into this file.
+ * NEW2: Actually, the resource cost would be higher, then - and since these get cached forever, that's a Bad Thing
  * This is a PMXModel. It's meant to contain everything not specific to a given instance of the model.
  * Created on 19/08/15.
  */

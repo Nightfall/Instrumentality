@@ -25,12 +25,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderPlayerEvent;
+import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import org.lwjgl.input.Keyboard;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class ClientProxy extends CommonProxy {
+    public static final String protocolId = "MMC";
 
     public static KeyBinding editorBinding;
+
+    // Assigns usernames to models.
+    public static ConcurrentHashMap<String, MHolder> knownModels = new ConcurrentHashMap<String, MHolder>();
 
     @Override
     public void preInit() {
@@ -39,9 +49,120 @@ public class ClientProxy extends CommonProxy {
         ClientRegistry.registerKeyBinding(editorBinding);
         try {
             Loader.setup();
+            Loader.currentFileListeners.add(new Runnable() {
+                @Override
+                public void run() {
+                    sendMMCChatAnnounce(null);
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void sendMMCAnnounce(String targ) {
+        // TODO: Delegate for other comms protocols!
+        sendMMCChatAnnounce(targ);
+    }
+
+    private void sendMMCChatAnnounce(String targ) {
+        String pmxHash = null;
+        String cf = Loader.currentFile;
+        String prefix = "/me changes into ";
+        if (targ != null) {
+            prefix = "/msg " + targ + " reply:";
+        }
+        if (cf != null) {
+            try {
+                pmxHash = ModelCache.createManifestForLocal(cf).filesToHashes.get("mdl.pmx");
+            } catch (IOException ioe) {
+                System.err.println("Cannot send MMC-Chat protocol message:");
+                ioe.printStackTrace();
+            }
+        }
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.thePlayer != null)
+            if (pmxHash != null) {
+                mc.thePlayer.sendChatMessage(prefix + Loader.currentFile.substring(0, 9) + "¬" + pmxHash + ":" + mc.thePlayer.getDisplayName() + ":set:" + protocolId);
+            } else {
+                mc.thePlayer.sendChatMessage(prefix + "normal¬" + mc.thePlayer.getDisplayName() + ":unset:" + protocolId);
+            }
+    }
+
+    @SubscribeEvent
+    public void onEntityJoin(EntityJoinWorldEvent ejwe) {
+        if (ejwe.entity instanceof EntityPlayer) {
+            EntityPlayer ep = (EntityPlayer) ejwe.entity;
+            Minecraft m = Minecraft.getMinecraft();
+            if (m.thePlayer == null)
+                return;
+            // we are *not* going to query ourselves!
+            if (((EntityPlayer) ejwe.entity).getDisplayName().equalsIgnoreCase(m.thePlayer.getDisplayName()))
+                return;
+            if (m.thePlayer != ejwe.entity) {
+                // Ok, this is another player. Do we know their model?
+                MHolder em = knownModels.get(ep.getDisplayName());
+                if (em != null) {
+                    // Yes, we do!
+                    InstanceCache.setModel(ep, em.held);
+                } else {
+                    // We don't - query them
+                    knownModels.put(ep.getDisplayName(), new MHolder(null));
+                    m.thePlayer.sendChatMessage("/msg " + ep.getDisplayName() + " MMC query(ignore) ¬:" + m.thePlayer.getDisplayName() + ":query:" + protocolId);
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onIncomingChat(ClientChatReceivedEvent event) {
+        // MMC-Chat uses emotes to send change announces, this makes things partially easier and partially harder
+        // It *also* uses private messages to send queries/responses to queries.
+        // It's basically an inter-client protocol.
+        String uText = event.message.getUnformattedText();
+        if (uText.endsWith(":" + protocolId)) {
+            String cmd = uText.substring(uText.lastIndexOf((int) '¬') + 1);
+            String[] args = cmd.split(":");
+            if (args.length >= 3) {
+                cmd = args[args.length - 2];
+                String from = args[args.length - 3];
+                if (from.equalsIgnoreCase(Minecraft.getMinecraft().thePlayer.getDisplayName()))
+                    return; // nope!
+                if (cmd.equalsIgnoreCase("unset"))
+                    updateRemoteModel(args[args.length - 3], null, null);
+                if (cmd.equalsIgnoreCase("set"))
+                    if (args.length >= 4)
+                        updateRemoteModel(args[args.length - 3], miniDM(args[args.length - 4]), null);
+                if (cmd.equalsIgnoreCase("query"))
+                    sendMMCAnnounce(args[args.length - 3]);
+            }
+        }
+    }
+
+    private HashMap<String, String> miniDM(String arg) {
+        HashMap<String, String> s = new HashMap<String, String>();
+        s.put("mdl.pmx", arg);
+        return s;
+    }
+
+    private void updateRemoteModel(final String user, final HashMap<String, String> dataManifest, final ModelCache.IPMXLocator serv) {
+        EntityPlayer ep = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(user);
+        if (dataManifest == null) {
+            knownModels.put(user, new MHolder(null));
+            if (ep != null)
+                InstanceCache.setModel(ep, null);
+            return;
+        }
+        new Thread() {
+            @Override
+            public void run() {
+                PMXModel pm = ModelCache.getByManifest(dataManifest, serv);
+                knownModels.put(user, new MHolder(pm));
+                EntityPlayer ep2 = Minecraft.getMinecraft().theWorld.getPlayerEntityByName(user);
+                if (ep2 != null)
+                    InstanceCache.queueChange(ep2, pm);
+            }
+        }.start();
     }
 
     @SubscribeEvent
@@ -113,5 +234,13 @@ public class ClientProxy extends CommonProxy {
         model.render(player, x, y, z, event.partialRenderTick);
 
         event.setCanceled(true);
+    }
+
+    private static class MHolder {
+        public PMXModel held;
+
+        public MHolder(PMXModel v) {
+            held = v;
+        }
     }
 }

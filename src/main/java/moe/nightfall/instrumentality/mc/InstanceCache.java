@@ -19,6 +19,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * A not-thread-safe implementation of a sort-of hashmap, for one specific purpose:
@@ -31,6 +32,7 @@ public final class InstanceCache {
     }
 
     private static LinkedList<ModelCacheEntry> cacheDivisions[] = new LinkedList[0x100];
+    private static ConcurrentLinkedQueue<ChangeEntry> changes = new ConcurrentLinkedQueue<ChangeEntry>();
 
     /**
      * Updates existing players,
@@ -55,6 +57,12 @@ public final class InstanceCache {
             }
             if (cacheDivisions[div].size() == 0)
                 cacheDivisions[div] = null;
+        }
+        while (true) {
+            ChangeEntry ce = changes.poll();
+            if (ce == null)
+                break;
+            setModel(ce.changeTarget, ce.newModel);
         }
     }
 
@@ -105,11 +113,25 @@ public final class InstanceCache {
         return null;
     }
 
+    // This is how MT writes are done
+    public static void queueChange(EntityPlayer user, PMXModel pm) {
+        ChangeEntry ce = new ChangeEntry();
+        ce.changeTarget = user;
+        ce.newModel = pm;
+        changes.add(ce);
+    }
+
     public static class ModelCacheEntry {
         PlayerInstance value;
         // EntityPlayer. Don't keep not-weak references long-term anywhere in the code.
         WeakReference<EntityPlayer> playerRef;
         // If != null, is the currentFileListeners Runnable. Is removed from there when the MCE is removed.
         Runnable cfHook;
+    }
+
+    private static class ChangeEntry {
+        // Transient, so can contain a direct EntityPlayer reference
+        public EntityPlayer changeTarget;
+        public PMXModel newModel;
     }
 }

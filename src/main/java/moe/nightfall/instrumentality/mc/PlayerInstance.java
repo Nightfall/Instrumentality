@@ -16,9 +16,7 @@ import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.PMXInstance;
 import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.*;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.entity.player.EntityPlayer;
-
 import org.lwjgl.opengl.GL11;
 
 public class PlayerInstance {
@@ -70,8 +68,8 @@ public class PlayerInstance {
         double rotBody = interpolate(player.prevRenderYawOffset, player.renderYawOffset, partialTick);
 
         GL11.glPushMatrix();
-        GL11.glRotated(180 - rotBody, 0, 1, 0);
         GL11.glTranslated(x, ((y - player.height) + player.eyeHeight) + adjustFactor, z);
+        GL11.glRotated(180 - rotBody, 0, 1, 0);
         GL11.glScalef(scale, scale, scale);
         // I fixed the triangle order, but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE);

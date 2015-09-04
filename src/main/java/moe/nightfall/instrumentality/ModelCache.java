@@ -55,7 +55,7 @@ public final class ModelCache {
         for (String s : getLocalModels()) {
             try {
                 IPMXFilenameLocator l = new FilePMXFilenameLocator(modelRepository + "/" + s + "/");
-                if (targetHash.equalsIgnoreCase(Hashing.sha1().hashBytes(l.getData("mdl.pmx")).toString()))
+                if (targetHash.equalsIgnoreCase(hashBytes(l.getData("mdl.pmx"))))
                     return getLocal(s);
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -130,7 +130,10 @@ public final class ModelCache {
 
     private static void loadTextures(PMXModel mdl, PMXFile pf, IPMXFilenameLocator fl) throws IOException {
         for (PMXFile.PMXMaterial mat : pf.matData) {
-            String str = mat.texTex.toLowerCase();
+            String str = mat.texTex;
+            if (str == null)
+                continue;
+            str = str.toLowerCase();
             // It's dumb, but this is the only place arbitrary pathnames can be entered into that we'll accept.
             // So we MUST security-check it. Please, fix this if there is a problem.
 
@@ -154,8 +157,6 @@ public final class ModelCache {
             if (str.matches("[\\\\/]\\.[\\\\/]"))
                 throw new IOException("Potentially security-threatening string found (weirdness)");
 
-            if (str == null)
-                continue;
             try {
                 BufferedImage bi = ImageIO.read(new ByteArrayInputStream(fl.getData(str)));
                 if (mdl != null)
@@ -177,7 +178,7 @@ public final class ModelCache {
                 byte[] data = rootLocator.getData(filename);
                 if (dmcr.filesToHashes.containsKey(filename))
                     return data;
-                String hash = Hashing.sha1().hashBytes(data).toString();
+                String hash = hashBytes(data);
                 dmcr.filesToHashes.put(filename, hash);
                 dmcr.hashesToFiles.put(hash, filename);
                 return data;
@@ -203,6 +204,12 @@ public final class ModelCache {
                     locator.getData(f.getName());
 
         return dmcr;
+    }
+
+    private static String hashBytes(byte[] data) {
+        // NOTE: This hash does NOT need to be cryptographically secure, just large enough to avoid any decent chance of accidental collision.
+        // Oh, and changing it after release will break everything.
+        return Hashing.sha1().hashBytes(data).toString().substring(0, 24);
     }
 
     public interface IPMXFilenameLocator {
