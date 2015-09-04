@@ -224,7 +224,7 @@ public class PMXInstance {
         if (theModel.materials == null)
             theModel.setupMaterials();
         GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_LINEAR, GL11.GL_LINEAR);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeIn"), clippingSize*theModel.height);
         GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeInDiscard"), (clippingSize+0.5f)*theModel.height);
         for (int i = 0; i < theModel.groups.length; i++) {

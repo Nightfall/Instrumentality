@@ -90,7 +90,7 @@ public class UIUtils {
                             public void run() {
                                 try {
                                     // did I mention: this call is SLOW. Seriously.
-                                    Font f = new Font(null, 0, 72);
+                                    Font f = new Font(null, 0, 24);
                                     UISystemFont.scratchFont(f);
                                     sysFont = f;
                                 } catch (Exception e) {

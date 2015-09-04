@@ -73,7 +73,7 @@ public class UISystemFont {
             BufferedImage mainImage = new BufferedImage((int) (neededSize.getWidth() + 1), (int) (neededSize.getHeight() + 1), BufferedImage.TYPE_INT_ARGB);
             Graphics g = mainImage.createGraphics();
             g.setFont(targetFont);
-            g.setColor(Color.white);
+            g.setColor(Color.BLACK);
             g.drawString(str, (int) -neededSize.getX(), (int) -neededSize.getY());
             g.dispose();
             Loader.writeGLTexImg(mainImage, GL11.GL_LINEAR);
@@ -82,10 +82,10 @@ public class UISystemFont {
 
             // Ok, now get a 1-liner's metrics so we can keep everything sane in proportion to our own text engine
             Rectangle2D oneLinerSize = fm.getStringBounds("|_`[]{}右つま先ＩＫ先", fontTestRender);
-            tex.scale = 9d / oneLinerSize.getHeight();
+            tex.scale = 11d / oneLinerSize.getHeight();
         }
         GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_LINEAR, GL11.GL_LINEAR);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glBegin(GL11.GL_QUADS);
         GL11.glColor3d(1, 1, 1);
 
