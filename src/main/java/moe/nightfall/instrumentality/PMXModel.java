@@ -18,13 +18,16 @@ import java.awt.image.BufferedImage;
 import java.util.*;
 
 /**
- * It would be nice if we could move the FaceGroup generator into this file.
+ * OLD: It would be nice if we could move the FaceGroup generator into this file.
+ * NEW: It would be nice if we could move the VBO generation into this file.
+ * This is a PMXModel. It's meant to contain everything not specific to a given instance of the model.
  * Created on 19/08/15.
  */
 public class PMXModel {
     public PMXFile theFile;
-    // This is null'd once setupMaterials is called
+    // This is null'd once setupMaterials is called. Don't modify after this goes into the ModelCache.
     public HashMap<String, BufferedImage> materialData = new HashMap<String, BufferedImage>();
+    // This is the OpenGL materials hashmap, don't access outside the OpenGL owning thread.
     public HashMap<String, Integer> materials = null;
 
     /**
@@ -187,6 +190,10 @@ public class PMXModel {
         }
     }
 
+    /**
+     * Cleanup all GL objects.
+     * Only call from the render thread.
+     */
     public void cleanupGL() {
         if (materials != null)
             for (Integer i : materials.values())

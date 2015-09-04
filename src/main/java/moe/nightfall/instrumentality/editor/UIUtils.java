@@ -15,7 +15,7 @@ package moe.nightfall.instrumentality.editor;
 import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.ModelCache;
 import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement;
-import moe.nightfall.instrumentality.editor.controls.ButtonElement;
+import moe.nightfall.instrumentality.editor.controls.TextButtonElement;
 import moe.nightfall.instrumentality.editor.guis.BenchmarkElement;
 import moe.nightfall.instrumentality.editor.guis.ModelChooserElement;
 import org.lwjgl.input.Mouse;
@@ -50,14 +50,14 @@ public class UIUtils {
         final ModelChooserElement mce = new ModelChooserElement(ModelCache.getLocalModels());
         bbce.setUnderPanel(mce);
 
-        bbce.barCore.addPiece(new ButtonElement(new Runnable() {
+        bbce.barCore.addPiece(new TextButtonElement("MdlChoose", new Runnable() {
             @Override
             public void run() {
                 bbce.setUnderPanel(mce);
             }
         }));
 
-        bbce.barCore.addPiece(new ButtonElement(new Runnable() {
+        bbce.barCore.addPiece(new TextButtonElement("Mikumark 2016", new Runnable() {
             @Override
             public void run() {
                 if (Loader.currentFile != null)

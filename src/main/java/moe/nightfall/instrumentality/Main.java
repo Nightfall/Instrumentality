@@ -58,28 +58,30 @@ public class Main {
         int scrWidth = 800, scrHeight = 600;
         Display.setTitle("Instrumentality: PMX Animation Workbench");
         Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight));
+        Display.setResizable(true);
         Display.create();
         Mouse.create();
 
         Loader.setup();
 
-        GL11.glViewport(0, 0, scrWidth, scrHeight);
-
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDepthFunc(GL11.GL_LEQUAL);
 
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glLoadIdentity();
-        GL11.glOrtho(0, scrWidth, scrHeight, 0, 0, 1024);
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
         long frameEndpoint = System.currentTimeMillis();
 
         Keyboard.create();
         double deltaTime = 0.1;
 
+        onSizeChange(scrWidth, scrHeight);
+
         changePanel(UIUtils.createGui());
 
         while (!Display.isCloseRequested()) {
+            if (Display.wasResized()) {
+                scrWidth = Display.getWidth();
+                scrHeight = Display.getHeight();
+                onSizeChange(scrWidth, scrHeight);
+            }
             long frameStart = System.currentTimeMillis();
             GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             GL11.glClearDepth(1.0f);
@@ -108,6 +110,16 @@ public class Main {
             frameEndpoint = currentTime + 30;
         }
         Display.destroy();
+    }
+
+    private void onSizeChange(int scrWidth, int scrHeight) {
+        GL11.glViewport(0, 0, scrWidth, scrHeight);
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
+        GL11.glLoadIdentity();
+        GL11.glOrtho(0, scrWidth, scrHeight, 0, 0, 1024);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        if (currentPanel != null)
+            currentPanel.setSize(scrWidth, scrHeight);
     }
 
     private void doUpdate(double dT) {
