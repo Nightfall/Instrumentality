@@ -90,7 +90,9 @@ public class UIUtils {
                             public void run() {
                                 try {
                                     // did I mention: this call is SLOW. Seriously.
-                                    sysFont = new Font(null, 0, 72);
+                                    Font f = new Font(null, 0, 72);
+                                    UISystemFont.scratchFont(f);
+                                    sysFont = f;
                                 } catch (Exception e) {
                                     System.err.println("Cannot load a international font... nippon gomen nasai... :(");
                                     // TODO: This would be the perfect place to turn on a romanizer as a last resort.

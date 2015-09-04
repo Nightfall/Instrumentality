@@ -30,7 +30,7 @@ public class UISystemFont {
     // Used to avoid textTextures getting too big
     // (this is a ring, freeTextPtr goes around the ring as textures are alloc'd,
     //  when it runs into old text, it deletes it)
-    private static String[] freeTextRing = new String[512];
+    private static String[] freeTextRing = new String[32];
     private static int freeTextPtr = 0;
 
     // Scratch buffer for font rendering (To measure how big the rendered text will be, we have to measure it first.)
@@ -105,6 +105,17 @@ public class UISystemFont {
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glDisable(GL11.GL_TEXTURE_2D);
         return new Vector2f((float) (tex.w * tex.scale), (float) (tex.h * tex.scale));
+    }
+
+    /**
+     * Fonts are lazy-loaded, causing HUGE amounts of lag for the poor user.
+     * This triggers some functions to try and get the font to be loaded... on a different thread!
+     */
+    public static void scratchFont(Font f) {
+        fontTestRender.setFont(f);
+        FontMetrics fm = fontTestRender.getFontMetrics();
+        fm.getStringBounds("ATTEMPT TO CAUSE LAG ON A DIFFERENT THREAD", fontTestRender);
+        fontTestRender.drawString("Carried away by a moonlight shadow...", 0, 0);
     }
 
     private static class TextTexture {
