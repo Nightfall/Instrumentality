@@ -14,6 +14,7 @@ package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.UIUtils;
+import moe.nightfall.instrumentality.editor.UIFont;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -54,6 +55,8 @@ public class Main {
 
     public void startWorkbench() throws Exception {
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+
+        UIFont.setFont(Main.class.getResourceAsStream("/assets/instrumentality/font.txt"));
 
         int scrWidth = 800, scrHeight = 600;
         Display.setTitle("Instrumentality: PMX Animation Workbench");
