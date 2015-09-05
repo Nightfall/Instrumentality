@@ -1,20 +1,19 @@
 # Instrumentality
-H.I.P (aka Miku playermodel / animation workbench module) is a part of the Miku playermodel project.
+The Miku playermodel project.
 
-The intention is that this will be split into 3 repositories,
-or 3 modules in one repository, after work on rendering by Vic is complete.
+This is made up of:
 
 1. A common library, containing the animation code, PMX loader, PMX renderer for LWJGL, etc.
 
-2. This testbench application(Main.java, basically - it's not a big testbench)
+2. This testbench application(Main.java)
 
-3. The MC mod this will be used for in future (not at all built yet AFAIK -- gamemanj)
+3. The MC mod
 
 ## Current status
 
 We need to separate the majority of the code from the "mc" package as a different repo
 The idea is that the MC mod just integrates the code with MC.
-Also, PlayerControlAnimation's MC-specific way of handling things should be moved into PlayerModel
+Also, PlayerControlAnimation's MC-specific way of handling things should be moved out somehow.
 
 ## Setup
 
