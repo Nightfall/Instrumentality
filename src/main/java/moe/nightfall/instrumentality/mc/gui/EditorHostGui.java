@@ -12,10 +12,15 @@
  */
 package moe.nightfall.instrumentality.mc.gui;
 
+import java.io.IOException;
+
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.UIUtils;
+import moe.nightfall.instrumentality.editor.UIFont;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.ResourceLocation;
+
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 
@@ -31,6 +36,12 @@ public class EditorHostGui extends GuiScreen {
 
     @Override
     public void initGui() {
+        if (UIFont.fontDB == null)
+            try {
+                UIFont.setFont(Minecraft.getMinecraft().mcDefaultResourcePack.getInputStream(new ResourceLocation("instrumentality:/font.txt")));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         if (hostedElement == null)
             changePanel(UIUtils.createGui());
     }

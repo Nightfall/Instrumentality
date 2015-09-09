@@ -14,6 +14,7 @@ package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.UIUtils;
+import moe.nightfall.instrumentality.editor.UIFont;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
@@ -24,22 +25,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
 /**
- * FULL LIST OF KEYBOARD CONTROLS: WASD: Camera controls. FV: Zoom control! E:
- * Animation Update Toggle. R: Walking Flag Disable. Up/Down: Turns on/off the
- * walking flag. Left/Right: Time Controls On Unit 00. Shift: Sneak Ctrl: Sprint
- * C(obalt) Q: YOU NEED THE CONSOLE FOR THIS: Lists emotes. Type in the name to
- * apply it.
- * <p/>
- * NOTE: To use the following you need to actually modify the code in places
- * <p/>
- * TYUIO,GHJKL: Controlling some parameters is difficult so this allows live
- * feedback Enter: Dumps live feedback data
- * <p/>
- * These controls exist to be used when working on Emote poses. It simplifies
- * the process quite a bit :)
- * <p/>
- * Before using this code, look in PlayerControlAnimation for some notes
- * <p/>
+ * The testbench.
  * Created on 24/07/15.
  */
 public class Main {
@@ -48,12 +34,13 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         Main m = new Main();
-        ModelCache.getLocalModels();
         m.startWorkbench();
     }
 
     public void startWorkbench() throws Exception {
         BufferedReader consoleReader = new BufferedReader(new InputStreamReader(System.in));
+
+        UIFont.setFont(Main.class.getResourceAsStream("/assets/instrumentality/font.txt"));
 
         int scrWidth = 800, scrHeight = 600;
         Display.setTitle("Instrumentality: PMX Animation Workbench");

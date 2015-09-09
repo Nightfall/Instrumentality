@@ -83,7 +83,10 @@ public class ClientProxy extends CommonProxy {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer != null)
             if (pmxHash != null) {
-                mc.thePlayer.sendChatMessage(prefix + Loader.currentFile.substring(0, 9) + "¬" + pmxHash + ":" + mc.thePlayer.getDisplayName() + ":set:" + protocolId);
+                int l = 9;
+                if (Loader.currentFile.length() < 9)
+                    l = Loader.currentFile.length();
+                mc.thePlayer.sendChatMessage(prefix + Loader.currentFile.substring(0, l) + "¬" + pmxHash + ":" + mc.thePlayer.getDisplayName() + ":set:" + protocolId);
             } else {
                 mc.thePlayer.sendChatMessage(prefix + "normal¬" + mc.thePlayer.getDisplayName() + ":unset:" + protocolId);
             }
