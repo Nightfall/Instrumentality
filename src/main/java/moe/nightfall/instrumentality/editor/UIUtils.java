@@ -14,8 +14,11 @@ package moe.nightfall.instrumentality.editor;
 
 import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.ModelCache;
+import moe.nightfall.instrumentality.PMXFile;
+import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement;
 import moe.nightfall.instrumentality.editor.controls.TextButtonElement;
+import moe.nightfall.instrumentality.editor.controls.TreeviewElement;
 import moe.nightfall.instrumentality.editor.guis.BenchmarkElement;
 import moe.nightfall.instrumentality.editor.guis.ModelChooserElement;
 import org.lwjgl.input.Mouse;
@@ -24,6 +27,7 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
+import java.util.LinkedList;
 
 public class UIUtils {
     // use when adding new chars to the internal font
@@ -62,6 +66,32 @@ public class UIUtils {
             public void run() {
                 if (Loader.currentFile != null)
                     bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)));
+            }
+        }));
+
+        bbce.barCore.addPiece(new TextButtonElement("TreeviewTest", new Runnable() {
+            @Override
+            public void run() {
+                if (Loader.currentFile != null) {
+                    final PMXModel pm = ModelCache.getLocal(Loader.currentFile);
+                    bbce.setUnderPanel(new TreeviewElement<PMXFile.PMXBone>(new TreeviewElement.INodeStructurer<PMXFile.PMXBone>() {
+                        @Override
+                        public String getNodeName(PMXFile.PMXBone n) {
+                            return n.globalName;
+                        }
+
+                        @Override
+                        public Iterable<PMXFile.PMXBone> getChildNodes(PMXFile.PMXBone n) {
+                            if (n == null)
+                                n = pm.theFile.boneData[0];
+                            LinkedList<PMXFile.PMXBone> subBones = new LinkedList<PMXFile.PMXBone>();
+                            for (PMXFile.PMXBone b : pm.theFile.boneData)
+                                if (b.parentBoneIndex == n.boneId)
+                                    subBones.add(b);
+                            return subBones;
+                        }
+                    }));
+                }
             }
         }));
 

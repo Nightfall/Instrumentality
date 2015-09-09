@@ -23,12 +23,13 @@ public class ArrowButtonElement extends ButtonElement {
     @Override
     public void draw(int scrWidth, int scrHeight) {
         super.draw(scrWidth, scrHeight);
-        double w=getWidth()/8.0;
-        double h=getHeight()/8.0;
+        double w = 1 / 8.0;
+        double h = 1 / 8.0;
         int wu=3;
         int hu=3;
         GL11.glPushMatrix();
-        GL11.glTranslated(w*4, h*4, 0);
+        GL11.glTranslated(getWidth() * w * 4, getHeight() * h * 4, 0);
+        GL11.glScaled(getWidth(), getHeight(), 1);
         GL11.glRotated(arrowAngle, 0, 0, 1);
         GL11.glColor3d(0, 0, 0);
         GL11.glBegin(GL11.GL_TRIANGLES);
