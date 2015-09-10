@@ -85,7 +85,7 @@ public class ModelElement extends View3DElement {
                 text = workModelName;
             GL11.glPushMatrix();
             GL11.glTranslated(borderWidth, borderWidth, 0);
-            double textScale = (getWidth() / 2.0d) / (text.length() * 9.0d);
+            double textScale = getWidth() / (text.length() * 8.0d);
             GL11.glScaled(textScale, textScale, 1);
             UIUtils.drawText(text, 2);
             GL11.glPopMatrix();
