@@ -19,23 +19,17 @@ import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.animations.OverlayAnimation;
 import moe.nightfall.instrumentality.animations.WalkingAnimation;
-import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.UIUtils;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
-import java.nio.FloatBuffer;
+import org.lwjgl.opengl.GL11;
 
 /**
  * Created on 18/08/15.
  */
-public class ModelElement extends EditElement {
-    private PMXInstance workModel;
-    private String workModelName;
+public class ModelElement extends View3DElement {
+    PMXInstance workModel;
+    String workModelName;
     public boolean isButton, isHover;
-    public double rotYaw,rotPitch;
-    
     public ModelElement(boolean ib) {
         isButton=ib;
         if (!isButton) {
@@ -91,126 +85,46 @@ public class ModelElement extends EditElement {
                 text = workModelName;
             GL11.glPushMatrix();
             GL11.glTranslated(borderWidth, borderWidth, 0);
-            GL11.glScaled(2, 2, 1);
+            double textScale=(getWidth()/2.0d)/(text.length()*9.0d);
+            GL11.glScaled(textScale, textScale, 1);
             UIUtils.drawText(text, 2);
             GL11.glPopMatrix();
         }
-
-        if (workModel==null)
-            return;
-
-        // avoiding perspective "fun" is hard ^.^;
-        FloatBuffer fb = BufferUtils.createFloatBuffer(16);
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb);
-
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glPushMatrix();
-        GL11.glLoadIdentity();
-
-        GL11.glTranslated(0, 1, 0);
-        
-        GL11.glScaled(2.0d / scrWidth, -2.0d / scrHeight, 1);
-        GL11.glMultMatrix(fb);
-        // Add additional screen-space offsets here
-        GL11.glTranslated(getWidth() / 2.0, getHeight() / 3.0, 0);
-        // --
-        GL11.glScaled(scrWidth / 2.0, -scrHeight / 2.0, 1);
-        
-        GL11.glTranslated(-1, 0, 0);
-
-        GL11.glScaled(3, 3, 1);
-
-        GL11.glScaled(1, getHeight()/(float)scrHeight, 1);
-
-        GL11.glTranslated(0, -0.1, 0);
-
-        float asp = ((float) scrWidth) / ((float) getHeight());
-        GLU.gluPerspective(45, asp, 0.1f, 100);
-
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
-        GL11.glPushMatrix();
-        GL11.glLoadIdentity();
-
-        GL11.glTranslated(0, 0, -5);
-        float sFactor = 1.0f / workModel.theModel.height;
-        GL11.glScaled(sFactor, sFactor, sFactor);
-        GL11.glTranslated(0, -(workModel.theModel.height / 2), 0);
-        GL11.glRotated(rotPitch, 1, 0, 0);
-        GL11.glRotated(rotYaw, 0, 1, 0);
-
-        GL11.glDisable(GL11.GL_CULL_FACE);
-        if (workModel != null)
-            workModel.render(Loader.shaderBoneTransform, 1, 1, 1, workModel.theModel.height+1.0f);
-        GL11.glEnable(GL11.GL_CULL_FACE);
-
-        GL11.glPopMatrix();
-
-        GL11.glMatrixMode(GL11.GL_PROJECTION);
-        GL11.glPopMatrix();
-
-        GL11.glMatrixMode(GL11.GL_MODELVIEW);
     }
-
-    private void dumpProject(FloatBuffer fb) {
-        GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, fb);
-        System.out.println("x y z w (Transposed : each row is the multiplier from sV)");
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++)
-                System.out.print(fb.get() + " ");
-            System.out.println();
+    
+    @Override
+    protected void draw3d() {
+        if (workModel != null) {
+            float sFactor = 1.0f / workModel.theModel.height;
+            GL11.glTranslated(0, -0.5f, 0);
+            GL11.glScaled(sFactor, sFactor, sFactor);
+            workModel.render(Loader.shaderBoneTransform, 1, 1, 1, workModel.theModel.height+1.0f);
         }
-        fb.rewind();
-        System.out.println("-");
     }
 
     @Override
-    public void setSize(int w, int h) {
-        super.setSize(w, h);
+    public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
+        super.mouseStateChange(x, y, isDown, isRight);
+        if (isButton) {
+            Loader.setCurrentFile(workModelName);
+        }
+    }
+
+    @Override
+    public void update(double dTime) {
+        super.update(dTime);
+        if (workModel != null)
+            workModel.update(dTime);
+    }
+
+    @Override
+    public void mouseEnterLeave(boolean isInside) {
+        super.mouseEnterLeave(isInside);
+        isHover = isInside;
     }
 
     @Override
     public void cleanup() {
         super.cleanup();
-    }
-    
-    private int dragX=0,dragY=0;
-    private boolean ignoreFirstDrag=false;
-    
-    @Override
-    public void mouseMove(int x, int y, boolean[] buttons) {
-        if (buttons[0]) {
-            if (!ignoreFirstDrag) {
-                rotYaw+=x-dragX;
-                rotPitch+=y-dragY;
-            }
-            ignoreFirstDrag=false;
-            dragX=x;
-            dragY=y;
-        }
-    }
-    
-    @Override
-    public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
-        super.mouseStateChange(x, y, isDown, isRight);
-        if (isDown&&(!isRight)) {
-            ignoreFirstDrag=true;
-            if (isButton) {
-                Loader.setCurrentFile(workModelName);
-            }
-        }
-    }
-    
-    @Override
-    public void mouseEnterLeave(boolean isInside) {
-        super.mouseEnterLeave(isInside);
-        ignoreFirstDrag=true;
-        isHover = isInside;
-    }
-    
-    public void update(double dTime) {
-        super.update(dTime);
-        if (workModel != null)
-            workModel.update(dTime);
     }
 }
