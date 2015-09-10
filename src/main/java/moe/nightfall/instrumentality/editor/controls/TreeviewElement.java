@@ -45,7 +45,7 @@ public class TreeviewElement<Node> extends EditElement {
 
     public void layout() {
         subElements.clear();
-        int buttonH = (getHeight() / 24);
+        int buttonH = (getHeight() / 12);
         int depthW = (getWidth() / 16);
         downButton.posX = upButton.posX = getWidth() - depthW;
         upButton.posY = 0;

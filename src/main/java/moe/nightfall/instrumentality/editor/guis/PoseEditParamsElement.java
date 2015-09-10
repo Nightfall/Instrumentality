@@ -12,15 +12,77 @@
  */
 package moe.nightfall.instrumentality.editor.guis;
 
+import moe.nightfall.instrumentality.PoseBoneTransform;
 import moe.nightfall.instrumentality.editor.EditElement;
+import moe.nightfall.instrumentality.editor.controls.AdjusterElement;
 
 /**
  * Created on 10/09/15.
  */
 public class PoseEditParamsElement extends EditElement {
     public final PoseEditElement parentPE;
+    public AdjusterElement[] allAdjusters = new AdjusterElement[3 * 4];
 
     public PoseEditParamsElement(PoseEditElement parent) {
         parentPE = parent;
+        AdjusterElement.IAdjustable[] adjs = new AdjusterElement.IAdjustable[allAdjusters.length];
+        final String[] names = {
+                "X0", "Y0", "Z0",
+                "X1", "Y1", null,
+                "X2", null, null,
+                "TX0", "TY0", "TZ0",
+        };
+        for (int i = 0; i < adjs.length; i++) {
+            if (names[i] != null) {
+                final String nn = names[i];
+                adjs[i] = new AdjusterElement.IAdjustable() {
+                    @Override
+                    public double getValue() {
+                        try {
+                            return (Float) (PoseBoneTransform.class.getField(nn).get(parentPE.getEditPBT()));
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchFieldException e) {
+                            e.printStackTrace();
+                        }
+                        return 0;
+                    }
+
+                    @Override
+                    public void setValue(double v) {
+                        try {
+                            PoseBoneTransform.class.getField(nn).set(parentPE.getEditPBT(), (float) v);
+                        } catch (IllegalAccessException e) {
+                            e.printStackTrace();
+                        } catch (NoSuchFieldException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+            }
+        }
+        for (int i = 0; i < adjs.length; i++) {
+            if (adjs[i] != null) {
+                AdjusterElement ae = new AdjusterElement(names[i] + ":");
+                ae.adjustable = adjs[i];
+                allAdjusters[i] = ae;
+                subElements.add(ae);
+            }
+        }
+    }
+
+    @Override
+    public void layout() {
+        super.layout();
+        int tW = getWidth() / 3;
+        int tH = getHeight() / 8;
+        for (int i = 0; i < allAdjusters.length; i++) {
+            AdjusterElement ae = allAdjusters[i];
+            if (ae != null) {
+                ae.setSize(tW, tH);
+                ae.posX = (i % 3) * tW;
+                ae.posY = (i / 3) * tH;
+            }
+        }
     }
 }

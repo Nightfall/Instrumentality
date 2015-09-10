@@ -12,11 +12,8 @@
  */
 package moe.nightfall.instrumentality.editor.guis;
 
-import moe.nightfall.instrumentality.Loader;
-import moe.nightfall.instrumentality.PMXFile;
+import moe.nightfall.instrumentality.*;
 import moe.nightfall.instrumentality.PMXFile.PMXBone;
-import moe.nightfall.instrumentality.PMXInstance;
-import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.PoseAnimation;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.controls.TreeviewElement;
@@ -30,9 +27,11 @@ public class PoseEditElement extends EditElement {
     public PMXInstance pmxInst;
     public View3DElement model;
     public TreeviewElement<PMXFile.PMXBone> tView;
+    public PoseEditParamsElement params;
     public int selectedBoneId = 0;
 
     public PoseEditElement(PoseAnimation ep, PMXModel pm) {
+        params = new PoseEditParamsElement(this);
         pmxInst = new PMXInstance(pm);
         pmxInst.anim = ep;
         editedPose = ep;
@@ -90,6 +89,7 @@ public class PoseEditElement extends EditElement {
             }
         });
         subElements.add(tView);
+        subElements.add(params);
     }
 
     @Override
@@ -102,5 +102,18 @@ public class PoseEditElement extends EditElement {
         tView.posX = hSplit;
         tView.posY = 0;
         tView.setSize(getWidth() - hSplit, vSplit);
+        params.posX = hSplit;
+        params.posY = vSplit;
+        params.setSize(getWidth() - hSplit, getHeight() - vSplit);
+    }
+
+    public PoseBoneTransform getEditPBT() {
+        String mid = pmxInst.theFile.boneData[selectedBoneId].globalName.toLowerCase();
+        PoseBoneTransform pbt = editedPose.hashMap.get(mid);
+        if (pbt == null) {
+            pbt = new PoseBoneTransform();
+            editedPose.hashMap.put(mid, pbt);
+        }
+        return pbt;
     }
 }
