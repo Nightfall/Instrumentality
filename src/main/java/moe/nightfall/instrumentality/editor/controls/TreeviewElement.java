@@ -104,7 +104,7 @@ public class TreeviewElement<Node> extends EditElement {
         String getNodeName(Node n);
 
         Iterable<Node> getChildNodes(Node n);
-        
+
         void onNodeClick(Node n);
     }
 }

@@ -28,8 +28,8 @@ public class PlayerInstance {
 
     private IAnimation useAnimation, idleAnimation;
 
-    public double clippingPoint=0d;
-    
+    public double clippingPoint = 0d;
+
     public PlayerInstance(PMXModel file) {
         pmxInst = new PMXInstance(file);
 
@@ -50,7 +50,7 @@ public class PlayerInstance {
 
     public void update(double v) {
         pmxInst.update(v);
-        clippingPoint+=v/2.0d;
+        clippingPoint += v / 2.0d;
         if (clippingPoint >= 1.1d)
             clippingPoint = 1.1d;
     }
@@ -73,8 +73,8 @@ public class PlayerInstance {
         GL11.glScalef(scale, scale, scale);
         // I fixed the triangle order, but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE);
-        int lv=player.worldObj.getBlockLightValue_do((int)player.posX, (int)player.posY, (int)player.posZ, true);
-        pmxInst.render(Loader.shaderBoneTransform, lv/15f, lv/15f, lv/15f, (float)clippingPoint);
+        int lv = player.worldObj.getBlockLightValue_do((int) player.posX, (int) player.posY, (int) player.posZ, true);
+        pmxInst.render(Loader.shaderBoneTransform, lv / 15f, lv / 15f, lv / 15f, (float) clippingPoint);
 
         GL11.glEnable(GL11.GL_CULL_FACE);
         GL11.glPopMatrix();

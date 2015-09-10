@@ -12,9 +12,7 @@
  */
 package moe.nightfall.instrumentality.editor.controls;
 
-import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.editor.UIUtils;
-
 import org.lwjgl.opengl.GL11;
 
 public class TextButtonElement extends ButtonElement {
@@ -33,7 +31,7 @@ public class TextButtonElement extends ButtonElement {
         if (scale < 1.7) {
             scale = getHeight() / 8d;
         } else {
-            GL11.glTranslated(borderWidth/2, borderWidth/2, 0);
+            GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0);
         }
         GL11.glScaled(scale, scale, 1);
         UIUtils.drawText(theText, 2);

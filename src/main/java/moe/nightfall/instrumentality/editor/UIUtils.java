@@ -14,30 +14,25 @@ package moe.nightfall.instrumentality.editor;
 
 import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.ModelCache;
-import moe.nightfall.instrumentality.PMXFile;
-import moe.nightfall.instrumentality.PMXInstance;
-import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.PoseAnimation;
 import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement;
 import moe.nightfall.instrumentality.editor.controls.TextButtonElement;
-import moe.nightfall.instrumentality.editor.controls.TreeviewElement;
 import moe.nightfall.instrumentality.editor.guis.BenchmarkElement;
 import moe.nightfall.instrumentality.editor.guis.ModelChooserElement;
 import moe.nightfall.instrumentality.editor.guis.PoseEditElement;
-
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
-import java.util.LinkedList;
 
 public class UIUtils {
     // use when adding new chars to the internal font
     public static final boolean debugDisableSysFont = false;
 
-    public static boolean[] state=new boolean[2];
+    public static boolean[] state = new boolean[2];
+
     public static void update(EditElement targetPanel) {
         boolean[] newState = new boolean[2];
         newState[0] = Mouse.isButtonDown(0);

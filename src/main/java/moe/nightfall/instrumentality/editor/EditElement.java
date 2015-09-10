@@ -28,7 +28,7 @@ public class EditElement {
     public LinkedList<EditElement> subElements = new LinkedList<EditElement>();
     public float colourStrength = 0.25f;
     public int borderWidth = 8;
-    
+
     private EditElement lastHoverTarget;
 
     protected void drawRect(int x, int y, int w, int h, double r, double g, double b) {
@@ -96,12 +96,12 @@ public class EditElement {
         if (targetElement != null)
             targetElement.mouseMove(x - targetElement.posX, y - targetElement.posY, buttons);
     }
-    
+
     public void updateSubelements(double dTime) {
         for (EditElement ee : subElements)
             ee.update(dTime);
     }
-    
+
     // Functions meant for overriding
 
     public void layout() {
@@ -136,14 +136,14 @@ public class EditElement {
             }
         }
     }
-    
+
     // RANDOM NOTE III : Always call super if overriding this function.
 
     public void cleanup() {
         for (EditElement ee : subElements)
             ee.cleanup();
     }
-    
+
     public void update(double dTime) {
         updateSubelements(dTime);
     }

@@ -66,6 +66,7 @@ public final class ModelCache {
         try {
             IPMXFilenameLocator manifestGetter = new IPMXFilenameLocator() {
                 long totalUsage = 0;
+
                 @Override
                 public byte[] getData(String filename) throws IOException {
                     byte[] b = remoteServer.getData(hashMap.get(filename));
@@ -243,6 +244,7 @@ public final class ModelCache {
         // If a model is > 2GB, something is seriously wrong with the model and we should run away first chance we get.
         // Not future planning, but seriously, 2GB is a flipping D.O.S attack by my standards.
         int getLength(String hash) throws IOException;
+
         byte[] getData(String hash) throws IOException;
     }
 

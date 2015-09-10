@@ -12,17 +12,16 @@
  */
 package moe.nightfall.instrumentality.mc.gui;
 
-import java.io.IOException;
-
 import moe.nightfall.instrumentality.editor.EditElement;
-import moe.nightfall.instrumentality.editor.UIUtils;
 import moe.nightfall.instrumentality.editor.UIFont;
+import moe.nightfall.instrumentality.editor.UIUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
-
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
+
+import java.io.IOException;
 
 /**
  * Created on 18/08/15.
@@ -70,7 +69,7 @@ public class EditorHostGui extends GuiScreen {
         GL11.glMatrixMode(GL11.GL_MODELVIEW);
         GL11.glEnable(GL11.GL_TEXTURE_2D);
     }
-    
+
     @Override
     public void updateScreen() {
         UIUtils.update(hostedElement);

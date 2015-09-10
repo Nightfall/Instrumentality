@@ -13,8 +13,8 @@
 package moe.nightfall.instrumentality;
 
 import moe.nightfall.instrumentality.editor.EditElement;
-import moe.nightfall.instrumentality.editor.UIUtils;
 import moe.nightfall.instrumentality.editor.UIFont;
+import moe.nightfall.instrumentality.editor.UIUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;

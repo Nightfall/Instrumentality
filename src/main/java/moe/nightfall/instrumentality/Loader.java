@@ -60,7 +60,7 @@ public class Loader {
     }
 
     public static void setCurrentFile(String workModelName) {
-        currentFile=workModelName;
+        currentFile = workModelName;
         for (Runnable r : currentFileListeners)
             r.run();
     }

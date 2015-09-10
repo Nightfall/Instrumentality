@@ -20,7 +20,6 @@ import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.animations.OverlayAnimation;
 import moe.nightfall.instrumentality.animations.WalkingAnimation;
 import moe.nightfall.instrumentality.editor.UIUtils;
-
 import org.lwjgl.opengl.GL11;
 
 /**
@@ -30,8 +29,9 @@ public class ModelElement extends View3DElement {
     PMXInstance workModel;
     String workModelName;
     public boolean isButton, isHover;
+
     public ModelElement(boolean ib) {
-        isButton=ib;
+        isButton = ib;
         if (!isButton) {
             setModel(Loader.currentFile);
             Loader.currentFileListeners.add(new Runnable() {
@@ -59,8 +59,8 @@ public class ModelElement extends View3DElement {
 
     public static PMXInstance makeTestInstance(PMXModel pm) {
         PMXInstance pi = new PMXInstance(pm);
-        WalkingAnimation wa=new WalkingAnimation();
-        wa.speed=1.0f;
+        WalkingAnimation wa = new WalkingAnimation();
+        wa.speed = 1.0f;
         pi.anim = new OverlayAnimation(new IAnimation[]{Loader.animLibs[1].getPose("idle"), wa});
         return pi;
     }
@@ -68,13 +68,13 @@ public class ModelElement extends View3DElement {
     @Override
     public void draw(int scrWidth, int scrHeight) {
         if (isButton) {
-            if (workModelName==null) {
-                colourStrength=0.25f;
+            if (workModelName == null) {
+                colourStrength = 0.25f;
                 colourStrength *= isHover ? 1.4f : 1f;
             } else {
-                colourStrength=0.5f;
+                colourStrength = 0.5f;
                 if (workModelName.equalsIgnoreCase(Loader.currentFile))
-                    colourStrength=0.75f;
+                    colourStrength = 0.75f;
                 colourStrength *= isHover ? 1.2f : 1f;
             }
         }
@@ -85,20 +85,20 @@ public class ModelElement extends View3DElement {
                 text = workModelName;
             GL11.glPushMatrix();
             GL11.glTranslated(borderWidth, borderWidth, 0);
-            double textScale=(getWidth()/2.0d)/(text.length()*9.0d);
+            double textScale = (getWidth() / 2.0d) / (text.length() * 9.0d);
             GL11.glScaled(textScale, textScale, 1);
             UIUtils.drawText(text, 2);
             GL11.glPopMatrix();
         }
     }
-    
+
     @Override
     protected void draw3d() {
         if (workModel != null) {
             float sFactor = 1.0f / workModel.theModel.height;
             GL11.glTranslated(0, -0.5f, 0);
             GL11.glScaled(sFactor, sFactor, sFactor);
-            workModel.render(Loader.shaderBoneTransform, 1, 1, 1, workModel.theModel.height+1.0f);
+            workModel.render(Loader.shaderBoneTransform, 1, 1, 1, workModel.theModel.height + 1.0f);
         }
     }
 

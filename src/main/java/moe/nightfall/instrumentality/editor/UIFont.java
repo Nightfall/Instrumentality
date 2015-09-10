@@ -13,11 +13,12 @@
 package moe.nightfall.instrumentality.editor;
 
 import org.lwjgl.opengl.GL11;
-import java.util.LinkedList;
-import java.io.InputStream;
-import java.io.IOException;
+
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.LinkedList;
 
 /**
  * A simple no-fuss vector font renderer.
@@ -38,7 +39,7 @@ public class UIFont {
      * curves can be L(oop) S(trip) or B(asic GL_LINES)
      */
     public static String[] fontDB;
-    
+
     public static void setFont(InputStream inp) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(inp));
         LinkedList<String> l = new LinkedList<String>();

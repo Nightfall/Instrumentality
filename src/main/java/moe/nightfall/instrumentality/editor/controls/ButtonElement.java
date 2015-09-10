@@ -18,7 +18,7 @@ import org.lwjgl.input.Mouse;
 public class ButtonElement extends EditElement {
     public boolean isHover;
     public Runnable onClick;
-    
+
     public ButtonElement(Runnable r) {
         onClick = r;
     }
@@ -29,10 +29,10 @@ public class ButtonElement extends EditElement {
         super.mouseStateChange(x, y, isDown, isRight);
         if (!isRight)
             if (!isDown)
-                if (onClick!=null)
+                if (onClick != null)
                     onClick.run();
     }
-    
+
     @Override
     public void draw(int scrWidth, int scrHeight) {
         colourStrength = isHover ? 0.75f : 0.5f;
@@ -40,7 +40,7 @@ public class ButtonElement extends EditElement {
             colourStrength = 0.25f;
         super.draw(scrWidth, scrHeight);
     }
-    
+
     @Override
     public void mouseEnterLeave(boolean isIn) {
         isHover = isIn;

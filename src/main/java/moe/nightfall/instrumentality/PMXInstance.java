@@ -15,7 +15,6 @@ package moe.nightfall.instrumentality;
 import moe.nightfall.instrumentality.PMXFile.PMXBone;
 import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.shader.Shader;
-
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
@@ -187,7 +186,7 @@ public class PMXInstance {
             return "R_eye_ctrl";
 
         // .arms
-        
+
         if (globalName.equalsIgnoreCase("L_Arm"))
             return "L_shouler";
         if (globalName.equalsIgnoreCase("R_arm"))
@@ -236,8 +235,8 @@ public class PMXInstance {
             theModel.setupMaterials();
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeIn"), clippingSize*theModel.height);
-        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeInDiscard"), (clippingSize+0.5f)*theModel.height);
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeIn"), clippingSize * theModel.height);
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeInDiscard"), (clippingSize + 0.5f) * theModel.height);
         for (int i = 0; i < theModel.groups.length; i++) {
             PMXFile.PMXMaterial mat = theFile.matData[i];
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(mat.texTex.toLowerCase()));
@@ -318,14 +317,13 @@ public class PMXInstance {
     }
 
     public void renderDebug(int selected) {
-        GL11.glDisable(GL11.GL_DEPTH_TEST);
         for (PMXFile.PMXBone bone : theFile.boneData) {
             GL11.glPointSize(2);
             Vector3f v3f = doTransform(bone, new Vector3f(bone.posX, bone.posY, bone.posZ));
             if (bone.parentBoneIndex != -1) {
                 GL11.glLineWidth(2);
                 GL11.glBegin(GL11.GL_LINES);
-                boolean parentSelected=selected==bone.parentBoneIndex;
+                boolean parentSelected = selected == bone.parentBoneIndex;
                 if (parentSelected) {
                     GL11.glColor3d(1, 1, 1);
                 } else {
@@ -343,15 +341,14 @@ public class PMXInstance {
             }
             GL11.glPointSize(4);
             GL11.glBegin(GL11.GL_POINTS);
-            GL11.glColor3d(selected==bone.boneId?1:0, 0, 1);
+            GL11.glColor3d(selected == bone.boneId ? 1 : 0, 0, 1);
             GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
             GL11.glEnd();
         }
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
     }
 
     private Vector3f doTransform(PMXBone pmxBone, Vector3f iv) {
-        Vector4f v=new Vector4f(iv.x,iv.y,iv.z,1);
+        Vector4f v = new Vector4f(iv.x, iv.y, iv.z, 1);
         Matrix4f.transform(getBoneMatrix(pmxBone), v, v);
         return new Vector3f(v.x, v.y, v.z);
     }

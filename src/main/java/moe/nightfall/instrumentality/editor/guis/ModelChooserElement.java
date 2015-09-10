@@ -23,10 +23,10 @@ import java.util.LinkedList;
  */
 public class ModelChooserElement extends EditElement {
     private ModelElement[] group = new ModelElement[3];
-    private EditElement[] buttonbar=new EditElement[3];
+    private EditElement[] buttonbar = new EditElement[3];
     private final String[] availableModels;
-    private int ptrStart=0;
-    
+    private int ptrStart = 0;
+
     public ModelChooserElement(Iterable<String> models) {
         LinkedList<String> ls = new LinkedList<String>();
         ls.add(null);
@@ -34,47 +34,47 @@ public class ModelChooserElement extends EditElement {
             ls.add(s);
         availableModels = ls.toArray(new String[0]);
         colourStrength = 0.5f;
-        for (int i=0;i<group.length;i++) {
+        for (int i = 0; i < group.length; i++) {
             group[i] = new ModelElement(true);
             subElements.add(group[i]);
         }
-        buttonbar[0]=new ArrowButtonElement(180,new Runnable() {
+        buttonbar[0] = new ArrowButtonElement(180, new Runnable() {
             @Override
             public void run() {
                 ptrStart--;
                 updatePosition();
             }
         });
-        buttonbar[1]=new ArrowButtonElement(0,new Runnable() {
+        buttonbar[1] = new ArrowButtonElement(0, new Runnable() {
             @Override
             public void run() {
                 ptrStart++;
                 updatePosition();
             }
         });
-        buttonbar[2]=new ModelElement(false);
-        for (int j=0;j<buttonbar.length;j++)
+        buttonbar[2] = new ModelElement(false);
+        for (int j = 0; j < buttonbar.length; j++)
             subElements.add(buttonbar[j]);
         updatePosition();
     }
 
     @Override
     public void layout() {
-        for (int i=0;i<group.length;i++) {
-            group[i].posX=i*(getWidth() / group.length);
-            group[i].posY=getHeight()/4;
-            group[i].setSize(getWidth() / group.length, (getHeight() / 4)*3);
+        for (int i = 0; i < group.length; i++) {
+            group[i].posX = i * (getWidth() / group.length);
+            group[i].posY = getHeight() / 4;
+            group[i].setSize(getWidth() / group.length, (getHeight() / 4) * 3);
         }
-        int bbSize=(getHeight() / 4);
-        for (int j=0;j<buttonbar.length;j++) {
-            buttonbar[j].posX=bbSize*j;
-            buttonbar[j].posY=0;
+        int bbSize = (getHeight() / 4);
+        for (int j = 0; j < buttonbar.length; j++) {
+            buttonbar[j].posX = bbSize * j;
+            buttonbar[j].posY = 0;
             buttonbar[j].setSize(bbSize, bbSize);
         }
     }
-    
+
     public void updatePosition() {
-        for (int i=0;i<group.length;i++)
-            group[i].setModel(availableModels[(i+ptrStart)%availableModels.length]);
+        for (int i = 0; i < group.length; i++)
+            group[i].setModel(availableModels[(i + ptrStart) % availableModels.length]);
     }
 }
