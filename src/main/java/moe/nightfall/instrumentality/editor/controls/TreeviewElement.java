@@ -69,7 +69,7 @@ public class TreeviewElement<Node> extends EditElement {
         TextButtonElement myNode = new TextButtonElement(nodeStructurer.getNodeName(n), new Runnable() {
             @Override
             public void run() {
-
+                nodeStructurer.onNodeClick(n);
             }
         });
         ArrowButtonElement abe = new ArrowButtonElement(sealedTrees.contains(n) ? 0 : 45, new Runnable() {
@@ -104,5 +104,7 @@ public class TreeviewElement<Node> extends EditElement {
         String getNodeName(Node n);
 
         Iterable<Node> getChildNodes(Node n);
+        
+        void onNodeClick(Node n);
     }
 }

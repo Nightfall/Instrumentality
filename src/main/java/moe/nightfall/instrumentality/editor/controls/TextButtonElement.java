@@ -29,11 +29,11 @@ public class TextButtonElement extends ButtonElement {
     public void draw(int scrWidth, int scrHeight) {
         super.draw(scrWidth, scrHeight);
         GL11.glPushMatrix();
-        double scale = (getHeight() - (borderWidth * 2d)) / 8d;
-        if (scale < 1.25) {
+        double scale = (getHeight() - borderWidth) / 8d;
+        if (scale < 1.7) {
             scale = getHeight() / 8d;
         } else {
-            GL11.glTranslated(borderWidth, borderWidth, 0);
+            GL11.glTranslated(borderWidth/2, borderWidth/2, 0);
         }
         GL11.glScaled(scale, scale, 1);
         UIUtils.drawText(theText, 2);

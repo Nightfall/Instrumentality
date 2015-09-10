@@ -80,9 +80,7 @@ public class UISystemFont {
             tex.w = mainImage.getWidth();
             tex.h = mainImage.getHeight();
 
-            // Ok, now get a 1-liner's metrics so we can keep everything sane in proportion to our own text engine
-            Rectangle2D oneLinerSize = fm.getStringBounds("|_`[]{}右つま先ＩＫ先", fontTestRender);
-            tex.scale = 11d / oneLinerSize.getHeight();
+            tex.scale = 9d / fm.getHeight();
         }
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

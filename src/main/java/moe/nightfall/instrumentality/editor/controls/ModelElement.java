@@ -126,5 +126,9 @@ public class ModelElement extends View3DElement {
     @Override
     public void cleanup() {
         super.cleanup();
+        if (workModel != null) {
+            workModel.cleanupGL();
+            workModel = null;
+        }
     }
 }

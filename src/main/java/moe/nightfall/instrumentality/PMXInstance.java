@@ -12,14 +12,17 @@
  */
 package moe.nightfall.instrumentality;
 
+import moe.nightfall.instrumentality.PMXFile.PMXBone;
 import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.shader.Shader;
+
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL15;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.util.vector.Matrix4f;
 import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector4f;
 
 import java.nio.FloatBuffer;
 
@@ -312,6 +315,45 @@ public class PMXInstance {
     public void update(double v) {
         if (anim != null)
             anim.update(v);
+    }
+
+    public void renderDebug(int selected) {
+        GL11.glDisable(GL11.GL_DEPTH_TEST);
+        for (PMXFile.PMXBone bone : theFile.boneData) {
+            GL11.glPointSize(2);
+            Vector3f v3f = doTransform(bone, new Vector3f(bone.posX, bone.posY, bone.posZ));
+            if (bone.parentBoneIndex != -1) {
+                GL11.glLineWidth(2);
+                GL11.glBegin(GL11.GL_LINES);
+                boolean parentSelected=selected==bone.parentBoneIndex;
+                if (parentSelected) {
+                    GL11.glColor3d(1, 1, 1);
+                } else {
+                    GL11.glColor3d(1, 0, 0);
+                }
+                GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
+                if (parentSelected) {
+                    GL11.glColor3d(1, 1, 1);
+                } else {
+                    GL11.glColor3d(0, 1, 0);
+                }
+                Vector3f v3f2 = doTransform(theFile.boneData[bone.parentBoneIndex], new Vector3f(theFile.boneData[bone.parentBoneIndex].posX, theFile.boneData[bone.parentBoneIndex].posY, theFile.boneData[bone.parentBoneIndex].posZ));
+                GL11.glVertex3d(v3f2.x, v3f2.y, v3f2.z);
+                GL11.glEnd();
+            }
+            GL11.glPointSize(4);
+            GL11.glBegin(GL11.GL_POINTS);
+            GL11.glColor3d(selected==bone.boneId?1:0, 0, 1);
+            GL11.glVertex3d(v3f.x, v3f.y, v3f.z);
+            GL11.glEnd();
+        }
+        GL11.glEnable(GL11.GL_DEPTH_TEST);
+    }
+
+    private Vector3f doTransform(PMXBone pmxBone, Vector3f iv) {
+        Vector4f v=new Vector4f(iv.x,iv.y,iv.z,1);
+        Matrix4f.transform(getBoneMatrix(pmxBone), v, v);
+        return new Vector3f(v.x, v.y, v.z);
     }
 
 }
