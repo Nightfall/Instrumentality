@@ -93,7 +93,7 @@ public class Main {
             long v = frameEndpoint - currentTime;
             if (v > 1)
                 Thread.sleep(v);
-            Display.setTitle("I-PMXAW: FrameTime " + (currentTime - frameStart) + "ms");
+            //Display.setTitle("I-PMXAW: FrameTime " + (currentTime - frameStart) + "ms");
             frameEndpoint = currentTime + 30;
         }
         Display.destroy();
