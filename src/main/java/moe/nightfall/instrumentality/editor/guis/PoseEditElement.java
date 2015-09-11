@@ -57,6 +57,7 @@ public class PoseEditElement extends EditElement {
                 GL11.glEnd();
                 double s = 1 / pmxInst.theModel.height;
                 GL11.glScaled(s, s, s);
+                pmxInst.clearBoneCache();
                 if (params.showModel.getChecked())
                     pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 2);
                 GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);

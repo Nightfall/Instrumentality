@@ -51,8 +51,9 @@ public final class InstanceCache {
                     Loader.currentFileListeners.remove(mce.cfHook);
                     i.remove();
                 } else {
-                    if (mce.value != null)
+                    if (mce.value != null) {
                         mce.value.update(dT);
+                    }
                 }
             }
             if (cacheDivisions[div].size() == 0)

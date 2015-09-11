@@ -43,7 +43,7 @@ public class PoseEditParamsElement extends EditElement {
                     @Override
                     public double getValue() {
                         try {
-                            return (Float) (PoseBoneTransform.class.getField(nn).get(parentPE.getEditPBT()));
+                            return (Double) (PoseBoneTransform.class.getField(nn).get(parentPE.getEditPBT()));
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         } catch (NoSuchFieldException e) {
@@ -55,7 +55,7 @@ public class PoseEditParamsElement extends EditElement {
                     @Override
                     public void setValue(double v) {
                         try {
-                            PoseBoneTransform.class.getField(nn).set(parentPE.getEditPBT(), (float) v);
+                            PoseBoneTransform.class.getField(nn).set(parentPE.getEditPBT(), v);
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
                         } catch (NoSuchFieldException e) {

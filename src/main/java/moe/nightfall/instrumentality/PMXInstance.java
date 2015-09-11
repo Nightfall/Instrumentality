@@ -220,6 +220,14 @@ public class PMXInstance {
     }
 
     /**
+     * Clears the bone cache. Use when you believe a change has been made (and preferably only under this case)
+     */
+    public void clearBoneCache() {
+        for (int i = 0; i < theFile.boneData.length; i++)
+            boneCache[i] = null;
+    }
+
+    /**
      * Renders this model, with a given set of textures.
      * Make sure to enable GL_TEXTURE_2D before calling.
      *
@@ -229,8 +237,6 @@ public class PMXInstance {
         FloatBuffer matrix = BufferUtils.createFloatBuffer(16);
         int oldProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM);
         GL20.glUseProgram(s.getProgram());
-        for (int i = 0; i < theFile.boneData.length; i++)
-            boneCache[i] = null;
         if (theModel.materials == null)
             theModel.setupMaterials();
         GL11.glEnable(GL11.GL_BLEND);
@@ -316,6 +322,8 @@ public class PMXInstance {
     public void update(double v) {
         if (anim != null)
             anim.update(v);
+        // naturally implies a change
+        clearBoneCache();
     }
 
     public void renderDebug(int selected) {

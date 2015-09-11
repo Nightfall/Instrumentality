@@ -30,19 +30,29 @@ public class AdjusterElement extends EditElement {
         decButton = new ArrowButtonElement(180, new Runnable() {
             @Override
             public void run() {
-                adjustable.setValue(adjustable.getValue() - adjustmentValue);
+                adjustable.setValue(correct(adjustable.getValue() - adjustmentValue));
             }
         });
         incButton = new ArrowButtonElement(0, new Runnable() {
             @Override
             public void run() {
-                adjustable.setValue(adjustable.getValue() + adjustmentValue);
+                adjustable.setValue(correct(adjustable.getValue() + adjustmentValue));
             }
         });
         valueDisplay = new LabelElement("?");
         subElements.add(decButton);
         subElements.add(incButton);
         subElements.add(valueDisplay);
+    }
+
+    /**
+     * Keeps the value from succumbing to rounding errors
+     *
+     * @param v The value to correct
+     * @return The value, rounded to the nearest adjustmentvalue
+     */
+    private double correct(double v) {
+        return Math.round(v * 100) / 100d;
     }
 
     @Override
