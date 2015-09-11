@@ -307,8 +307,10 @@ public class PMXInstance {
     public void cleanupGL() {
         for (int i = 0; i < theModel.groups.length; i++)
             for (int j = 0; j < vboList[i].length; j++)
-                if (vboList[i][j] != 0)
+                if (vboList[i][j] != 0) {
                     GL15.glDeleteBuffers(vboList[i][j]);
+                    vboList[i][j] = 0;
+                }
     }
 
     public void update(double v) {
@@ -353,4 +355,13 @@ public class PMXInstance {
         return new Vector3f(v.x, v.y, v.z);
     }
 
+    @Override
+    public void finalize() {
+        for (int i = 0; i < theModel.groups.length; i++)
+            for (int j = 0; j < vboList[i].length; j++)
+                if (vboList[i][j] != 0) {
+                    System.err.println("WARNING: Finalize without cleanup of a PMXInstance!");
+                    return;
+                }
+    }
 }

@@ -201,4 +201,10 @@ public class PMXModel {
                 GL11.glDeleteTextures(i);
         materials = null;
     }
+
+    @Override
+    public void finalize() {
+        if (materials != null)
+            System.err.println("WARNING: Finalize without cleanup of a PMXModel!");
+    }
 }

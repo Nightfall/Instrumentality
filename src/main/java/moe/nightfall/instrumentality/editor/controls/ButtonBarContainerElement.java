@@ -28,8 +28,10 @@ public class ButtonBarContainerElement extends EditElement {
     }
 
     public void setUnderPanel(EditElement editElement) {
-        if (underPanel != null)
+        if (underPanel != null) {
+            underPanel.cleanup();
             subElements.remove(underPanel);
+        }
         underPanel = editElement;
         subElements.add(underPanel);
         layout();
