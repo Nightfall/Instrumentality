@@ -15,12 +15,16 @@ package moe.nightfall.instrumentality.editor.guis;
 import moe.nightfall.instrumentality.PoseBoneTransform;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.controls.AdjusterElement;
+import moe.nightfall.instrumentality.editor.controls.CheckboxElement;
+import moe.nightfall.instrumentality.editor.controls.LabelElement;
 
 /**
  * Created on 10/09/15.
  */
 public class PoseEditParamsElement extends EditElement {
     public final PoseEditElement parentPE;
+    public final CheckboxElement showModel, showDebug;
+    public final LabelElement showModelText, showDebugText;
     public AdjusterElement[] allAdjusters = new AdjusterElement[3 * 4];
 
     public PoseEditParamsElement(PoseEditElement parent) {
@@ -69,13 +73,27 @@ public class PoseEditParamsElement extends EditElement {
                 subElements.add(ae);
             }
         }
+        Runnable nullRunnable = new Runnable() {
+            @Override
+            public void run() {
+            }
+        };
+        showModel = new CheckboxElement(nullRunnable);
+        subElements.add(showModel);
+        showDebug = new CheckboxElement(nullRunnable);
+        showDebug.setChecked(true);
+        subElements.add(showDebug);
+        showModelText = new LabelElement("S.Mdl");
+        subElements.add(showModelText);
+        showDebugText = new LabelElement("S.Str");
+        subElements.add(showDebugText);
     }
 
     @Override
     public void layout() {
         super.layout();
         int tW = getWidth() / 3;
-        int tH = getHeight() / 8;
+        int tH = getHeight() / 5;
         for (int i = 0; i < allAdjusters.length; i++) {
             AdjusterElement ae = allAdjusters[i];
             if (ae != null) {
@@ -84,5 +102,17 @@ public class PoseEditParamsElement extends EditElement {
                 ae.posY = (i / 3) * tH;
             }
         }
+        showModelText.posY = showModel.posY = showDebug.posY = showDebugText.posY = tH * 4;
+
+        int labelSize = (getWidth() / 2) - tH;
+        showModel.posX = 0;
+        showModel.setSize(tH, tH);
+        showModelText.posX = tH;
+        showModelText.setSize(labelSize, tH);
+
+        showDebug.posX = tH + labelSize;
+        showDebug.setSize(tH, tH);
+        showDebugText.posX = tH + labelSize + tH;
+        showDebugText.setSize(labelSize, tH);
     }
 }

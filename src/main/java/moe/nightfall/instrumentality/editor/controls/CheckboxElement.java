@@ -12,39 +12,31 @@
  */
 package moe.nightfall.instrumentality.editor.controls;
 
-import moe.nightfall.instrumentality.editor.EditElement;
-import org.lwjgl.input.Mouse;
+/**
+ * Created on 11/09/15.
+ */
+public class CheckboxElement extends ButtonElement {
+    private boolean checked;
 
-public class ButtonElement extends EditElement {
-    public boolean isHover;
-    public Runnable onClick;
-    public float baseStrength = 0.5f;
-
-    public ButtonElement(Runnable r) {
-        onClick = r;
+    public CheckboxElement(final Runnable onClick) {
+        super(onClick);
+        // can't set this up before super-construct
+        this.onClick = new Runnable() {
+            @Override
+            public void run() {
+                setChecked(!checked);
+                onClick.run();
+            }
+        };
+        setChecked(false);
     }
 
-
-    @Override
-    public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
-        super.mouseStateChange(x, y, isDown, isRight);
-        if (!isRight)
-            if (!isDown)
-                if (onClick != null)
-                    onClick.run();
+    public boolean getChecked() {
+        return checked;
     }
 
-    @Override
-    public void draw(int scrWidth, int scrHeight) {
-        colourStrength = baseStrength * (isHover ? 1.50f : 1.0f);
-        if (isHover && Mouse.isButtonDown(0))
-            colourStrength = baseStrength / 2;
-        super.draw(scrWidth, scrHeight);
-    }
-
-    @Override
-    public void mouseEnterLeave(boolean isIn) {
-        isHover = isIn;
+    public void setChecked(boolean isChecked) {
+        checked = isChecked;
+        baseStrength = checked ? 0.75f : 0.25f;
     }
 }
-

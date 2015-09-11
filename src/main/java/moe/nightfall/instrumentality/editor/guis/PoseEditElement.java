@@ -57,9 +57,11 @@ public class PoseEditElement extends EditElement {
                 GL11.glEnd();
                 double s = 1 / pmxInst.theModel.height;
                 GL11.glScaled(s, s, s);
-                pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 2);
+                if (params.showModel.getChecked())
+                    pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 2);
                 GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-                pmxInst.renderDebug(selectedBoneId);
+                if (params.showDebug.getChecked())
+                    pmxInst.renderDebug(selectedBoneId);
                 GL11.glPopMatrix();
             }
         };
@@ -97,7 +99,7 @@ public class PoseEditElement extends EditElement {
         model.posX = 0;
         model.posY = 0;
         int hSplit = (int) (getWidth() * 0.40d);
-        int vSplit = (int) (getHeight() * 0.75d);
+        int vSplit = (int) (getHeight() * 0.8d);
         model.setSize(hSplit, getHeight());
         tView.posX = hSplit;
         tView.posY = 0;
@@ -115,5 +117,11 @@ public class PoseEditElement extends EditElement {
             editedPose.hashMap.put(mid, pbt);
         }
         return pbt;
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        pmxInst.cleanupGL();
     }
 }

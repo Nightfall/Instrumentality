@@ -73,6 +73,7 @@ public class UIUtils {
             public void run() {
                 if (Loader.currentFile != null)
                     bbce.setUnderPanel(new PoseEditElement(new PoseAnimation(), ModelCache.getLocal(Loader.currentFile)));
+                System.gc();
             }
         }));
 
