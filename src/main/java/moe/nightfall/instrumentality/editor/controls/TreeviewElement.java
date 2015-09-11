@@ -24,6 +24,7 @@ public class TreeviewElement<Node> extends EditElement {
     public HashSet<Node> sealedTrees = new HashSet<Node>();
     public int scrollPoint = 0;
     public final ArrowButtonElement upButton, downButton;
+    public Node selectedNode = null;
 
     public TreeviewElement(INodeStructurer<Node> ns) {
         nodeStructurer = ns;
@@ -66,12 +67,16 @@ public class TreeviewElement<Node> extends EditElement {
             for (Node n2 : nodeStructurer.getChildNodes(n))
                 p = createElement(p, depth + 1, n2, buttonH, depthW);
         // handle children, then:
-        TextButtonElement myNode = new TextButtonElement(nodeStructurer.getNodeName(n), new Runnable() {
+        final TextButtonElement myNode = new TextButtonElement(nodeStructurer.getNodeName(n), null);
+        myNode.onClick = new Runnable() {
             @Override
             public void run() {
+                selectedNode = n;
                 nodeStructurer.onNodeClick(n);
+                layout();
             }
-        });
+        };
+        myNode.baseStrength = (n == selectedNode) ? 0.25f : 0.5f;
         ArrowButtonElement abe = new ArrowButtonElement(sealedTrees.contains(n) ? 0 : 45, new Runnable() {
             @Override
             public void run() {

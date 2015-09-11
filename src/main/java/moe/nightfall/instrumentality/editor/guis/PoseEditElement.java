@@ -14,6 +14,7 @@ package moe.nightfall.instrumentality.editor.guis;
 
 import moe.nightfall.instrumentality.*;
 import moe.nightfall.instrumentality.PMXFile.PMXBone;
+import moe.nightfall.instrumentality.animations.IAnimation;
 import moe.nightfall.instrumentality.animations.PoseAnimation;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.controls.TreeviewElement;
@@ -28,12 +29,11 @@ public class PoseEditElement extends EditElement {
     public View3DElement model;
     public TreeviewElement<PMXFile.PMXBone> tView;
     public PoseEditParamsElement params;
-    public int selectedBoneId = 0;
 
-    public PoseEditElement(PoseAnimation ep, PMXModel pm) {
+    public PoseEditElement(PoseAnimation ep, PMXModel pm, IAnimation editAnimation) {
         params = new PoseEditParamsElement(this);
         pmxInst = new PMXInstance(pm);
-        pmxInst.anim = ep;
+        pmxInst.anim = editAnimation;
         editedPose = ep;
         model = new View3DElement() {
             @Override
@@ -62,7 +62,7 @@ public class PoseEditElement extends EditElement {
                     pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 2);
                 GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
                 if (params.showDebug.getChecked())
-                    pmxInst.renderDebug(selectedBoneId);
+                    pmxInst.renderDebug(tView.selectedNode.boneId);
                 GL11.glPopMatrix();
             }
         };
@@ -88,9 +88,10 @@ public class PoseEditElement extends EditElement {
 
             @Override
             public void onNodeClick(PMXBone n) {
-                selectedBoneId = n.boneId;
+
             }
         });
+        tView.selectedNode = pmxInst.theFile.boneData[0];
         subElements.add(tView);
         subElements.add(params);
     }
@@ -111,7 +112,7 @@ public class PoseEditElement extends EditElement {
     }
 
     public PoseBoneTransform getEditPBT() {
-        String mid = pmxInst.theFile.boneData[selectedBoneId].globalName.toLowerCase();
+        String mid = tView.selectedNode.globalName.toLowerCase();
         PoseBoneTransform pbt = editedPose.hashMap.get(mid);
         if (pbt == null) {
             pbt = new PoseBoneTransform();

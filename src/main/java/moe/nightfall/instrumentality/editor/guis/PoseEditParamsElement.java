@@ -79,6 +79,7 @@ public class PoseEditParamsElement extends EditElement {
             }
         };
         showModel = new CheckboxElement(nullRunnable);
+        showModel.setChecked(true);
         subElements.add(showModel);
         showDebug = new CheckboxElement(nullRunnable);
         showDebug.setChecked(true);

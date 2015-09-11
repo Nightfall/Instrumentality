@@ -21,22 +21,26 @@ public class ButtonBarContainerElement extends EditElement {
     public HBoxElement barCore = new HBoxElement();
     private EditElement underPanel = null;
     private double sizeRatio;
+    private boolean noCleanupOnChange = false;
 
     public ButtonBarContainerElement(double sizeRat) {
         sizeRatio = sizeRat;
         subElements.add(barCore);
     }
 
-    public void setUnderPanel(EditElement editElement) {
+    public void setUnderPanel(EditElement editElement, boolean noCleanup) {
         if (underPanel != null) {
-            underPanel.cleanup();
+            if (!noCleanupOnChange)
+                underPanel.cleanup();
             subElements.remove(underPanel);
         }
+        noCleanupOnChange = noCleanup;
         underPanel = editElement;
         subElements.add(underPanel);
         layout();
     }
 
+    @Override
     public void layout() {
         int size = (int) (getHeight() * sizeRatio);
         if (underPanel != null) {
@@ -47,5 +51,11 @@ public class ButtonBarContainerElement extends EditElement {
         barCore.setSize(getWidth(), size);
         barCore.posX = 0;
         barCore.posY = 0;
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        underPanel.cleanup();
     }
 }

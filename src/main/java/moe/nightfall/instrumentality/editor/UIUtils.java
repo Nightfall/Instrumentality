@@ -14,12 +14,12 @@ package moe.nightfall.instrumentality.editor;
 
 import moe.nightfall.instrumentality.Loader;
 import moe.nightfall.instrumentality.ModelCache;
-import moe.nightfall.instrumentality.animations.PoseAnimation;
+import moe.nightfall.instrumentality.animations.PoseSet;
 import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement;
 import moe.nightfall.instrumentality.editor.controls.TextButtonElement;
 import moe.nightfall.instrumentality.editor.guis.BenchmarkElement;
 import moe.nightfall.instrumentality.editor.guis.ModelChooserElement;
-import moe.nightfall.instrumentality.editor.guis.PoseEditElement;
+import moe.nightfall.instrumentality.editor.guis.PoseTreeElement;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.GL11;
@@ -51,12 +51,12 @@ public class UIUtils {
         final ButtonBarContainerElement bbce = new ButtonBarContainerElement(0.05d);
 
         final ModelChooserElement mce = new ModelChooserElement(ModelCache.getLocalModels());
-        bbce.setUnderPanel(mce);
+        bbce.setUnderPanel(mce, true);
 
         bbce.barCore.addPiece(new TextButtonElement("MdlChoose", new Runnable() {
             @Override
             public void run() {
-                bbce.setUnderPanel(mce);
+                bbce.setUnderPanel(mce, true);
             }
         }));
 
@@ -64,16 +64,16 @@ public class UIUtils {
             @Override
             public void run() {
                 if (Loader.currentFile != null)
-                    bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)));
+                    bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false);
             }
         }));
 
-        bbce.barCore.addPiece(new TextButtonElement("TreeviewTest", new Runnable() {
+        final PoseSet poseSet = new PoseSet();
+        bbce.barCore.addPiece(new TextButtonElement("Pose Editor", new Runnable() {
             @Override
             public void run() {
                 if (Loader.currentFile != null)
-                    bbce.setUnderPanel(new PoseEditElement(new PoseAnimation(), ModelCache.getLocal(Loader.currentFile)));
-                System.gc();
+                    bbce.setUnderPanel(new PoseTreeElement(ModelCache.getLocal(Loader.currentFile).poses, bbce), false);
             }
         }));
 

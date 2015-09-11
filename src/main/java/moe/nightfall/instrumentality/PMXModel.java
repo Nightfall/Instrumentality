@@ -12,6 +12,7 @@
  */
 package moe.nightfall.instrumentality;
 
+import moe.nightfall.instrumentality.animations.PoseSet;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.image.BufferedImage;
@@ -26,6 +27,7 @@ import java.util.*;
  */
 public class PMXModel {
     public PMXFile theFile;
+    public PoseSet poses = new PoseSet();
     // This is null'd once setupMaterials is called. Don't modify after this goes into the ModelCache.
     public HashMap<String, BufferedImage> materialData = new HashMap<String, BufferedImage>();
     // This is the OpenGL materials hashmap, don't access outside the OpenGL owning thread.

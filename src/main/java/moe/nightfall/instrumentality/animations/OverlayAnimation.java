@@ -14,15 +14,18 @@ package moe.nightfall.instrumentality.animations;
 
 import moe.nightfall.instrumentality.PoseBoneTransform;
 
+import java.util.LinkedList;
+
 /**
  * Adds the PBTs together.
  * Created on 26/07/15.
  */
 public class OverlayAnimation implements IAnimation {
-    public IAnimation[] subAnimations;
+    public LinkedList<IAnimation> subAnimations = new LinkedList<IAnimation>();
 
     public OverlayAnimation(IAnimation... subAnimations) {
-        this.subAnimations = subAnimations;
+        for (int i=0; i<subAnimations.length; i++)
+            this.subAnimations.add(subAnimations[i]);
     }
 
     @Override

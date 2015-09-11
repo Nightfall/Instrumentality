@@ -30,6 +30,7 @@ public class EditElement {
     public int borderWidth = 8;
 
     private EditElement lastHoverTarget;
+    public EditElement selectedSubelement;
 
     protected void drawRect(int x, int y, int w, int h, double r, double g, double b) {
         GL11.glBegin(GL11.GL_QUADS);
@@ -124,6 +125,8 @@ public class EditElement {
 
     public void mouseStateChange(int x, int y, boolean isDown, boolean isRight) {
         EditElement targetElement = findElementAt(x, y);
+        if (isDown)
+            selectedSubelement = targetElement;
         if (targetElement != null)
             targetElement.mouseStateChange(x - targetElement.posX, y - targetElement.posY, isDown, isRight);
     }

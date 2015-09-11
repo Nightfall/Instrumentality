@@ -69,7 +69,10 @@ public final class ModelCache {
 
                 @Override
                 public byte[] getData(String filename) throws IOException {
-                    byte[] b = remoteServer.getData(hashMap.get(filename));
+                    String hash = hashMap.get(filename);
+                    if (hash == null)
+                        throw new IOException("No file " + filename);
+                    byte[] b = remoteServer.getData(hash);
                     totalUsage += b.length;
                     if (maxTotalUsage >= 0)
                         if (totalUsage > maxTotalUsage)
@@ -92,6 +95,11 @@ public final class ModelCache {
             for (String e : hashMap.keySet())
                 if (e.toLowerCase().endsWith(".txt"))
                     manifestGetter.getData(e);
+            try {
+                manifestGetter.getData("mmcposes.dat");
+            } catch (Exception e) {
+
+            }
 
             return getInternal(manifestGetter, targetHash);
         } catch (IOException ioe) {
@@ -124,6 +132,11 @@ public final class ModelCache {
 
     private static PMXModel getInternal(IPMXFilenameLocator locator, String name) throws IOException {
         PMXModel pm = new PMXModel(new PMXFile(locator.getData("mdl.pmx")), Loader.groupSize);
+        try {
+            pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator.getData("mmcposes.dat"))));
+        } catch (Exception e) {
+            // oh well
+        }
         loadTextures(pm, pm.theFile, locator);
         localModels.put(name, pm);
         return pm;
@@ -193,6 +206,11 @@ public final class ModelCache {
             locator.getData("mdl.pmx"); // Needed to ensure it shows up in the manifest
         } else {
             pf = new PMXFile(locator.getData("mdl.pmx"));
+        }
+        try {
+            locator.getData("mmcposes.dat");
+        } catch (Exception e) {
+            // oh well
         }
         // load the textures (Sure, this probably won't be useful for much... except it'll ensure that the uploaded textures are actually valid.)
         loadTextures(null, pf, locator);
