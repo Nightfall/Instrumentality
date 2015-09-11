@@ -52,7 +52,7 @@ public class AdjusterElement extends EditElement {
      * @return The value, rounded to the nearest adjustmentvalue
      */
     private double correct(double v) {
-        return Math.round(v * 100) / 100d;
+        return Math.round(v * (1 / adjustmentValue)) / (1 / adjustmentValue);
     }
 
     @Override
