@@ -183,7 +183,7 @@ public class ClientProxy extends CommonProxy {
     @SubscribeEvent
     public void onTickRender(TickEvent.RenderTickEvent rte) {
         if (rte.phase == TickEvent.Phase.START)
-            InstanceCache.update(rte.renderTickTime / 20F);
+            InstanceCache.update(rte.renderTickTime / 20d);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

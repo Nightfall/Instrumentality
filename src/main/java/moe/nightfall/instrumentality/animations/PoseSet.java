@@ -88,7 +88,24 @@ public class PoseSet {
 
     public IAnimation createAnimation(HashMap<String, Double> poseStrengths) {
         OverlayAnimation rootOA = new OverlayAnimation();
-        for (Map.Entry<String, Double> entries : poseStrengths.entrySet())
+        HashMap<String, Double> hashMap = new HashMap<String, Double>();
+        for (Map.Entry<String, Double> entries : poseStrengths.entrySet()) {
+            String n = entries.getKey();
+            double tVal = entries.getValue();
+            while (n != null) {
+                Double d = hashMap.get(n);
+                if (d == null) {
+                    hashMap.put(n, tVal);
+                } else {
+                    if (d < tVal)
+                        hashMap.put(n, tVal);
+                }
+                n = poseParents.get(n);
+                if (tVal > 1.0d)
+                    tVal = 1.0d;
+            }
+        }
+        for (Map.Entry<String, Double> entries : hashMap.entrySet())
             rootOA.subAnimations.add(new StrengthMultiplyAnimation(allPoses.get(entries.getKey()), (float) ((double) entries.getValue())));
         return rootOA;
     }
