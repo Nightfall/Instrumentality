@@ -24,7 +24,7 @@ public class OverlayAnimation implements IAnimation {
     public LinkedList<IAnimation> subAnimations = new LinkedList<IAnimation>();
 
     public OverlayAnimation(IAnimation... subAnimations) {
-        for (int i=0; i<subAnimations.length; i++)
+        for (int i = 0; i < subAnimations.length; i++)
             this.subAnimations.add(subAnimations[i]);
     }
 
