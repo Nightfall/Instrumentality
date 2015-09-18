@@ -28,7 +28,10 @@ import java.io.IOException;
  */
 public class EditorHostGui extends GuiScreen {
 
-    public EditElement hostedElement;
+    /**
+     * Static so you don't lose your work when you leave the editor.
+     */
+    public static EditElement hostedElement;
 
     public EditorHostGui() {
     }

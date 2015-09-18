@@ -19,6 +19,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -64,7 +66,12 @@ public final class ModelCache {
         if (remoteServer == null)
             return null;
         try {
-            IPMXFilenameLocator manifestGetter = new IPMXFilenameLocator() {
+            final IPMXFilenameLocator manifestGetter = new IPMXFilenameLocator() {
+                @Override
+                public Iterator<String> iterator() {
+                    return hashMap.keySet().iterator();
+                }
+
                 long totalUsage = 0;
 
                 @Override
@@ -72,7 +79,7 @@ public final class ModelCache {
                     String hash = hashMap.get(filename);
                     if (hash == null)
                         throw new IOException("No file " + filename);
-                    byte[] b = remoteServer.getData(hash);
+                    byte[] b = remoteServer.getData(filename, hash);
                     totalUsage += b.length;
                     if (maxTotalUsage >= 0)
                         if (totalUsage > maxTotalUsage)
@@ -89,19 +96,7 @@ public final class ModelCache {
                     return b;
                 }
             };
-
-            // get all .txt files, as they are harmless and probably needed to avoid legal issues
-            // Note that the DM creator will deliberately include .txt files for this same purpose
-            for (String e : hashMap.keySet())
-                if (e.toLowerCase().endsWith(".txt"))
-                    manifestGetter.getData(e);
-            try {
-                manifestGetter.getData("mmcposes.dat");
-            } catch (Exception e) {
-
-            }
-
-            return getInternal(manifestGetter, targetHash);
+            return getInternal(manifestGetter, targetHash, true);
         } catch (IOException ioe) {
             return null;
         }
@@ -122,7 +117,7 @@ public final class ModelCache {
         if (mdl != null)
             return mdl;
         try {
-            mdl = getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name);
+            mdl = getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name, false);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             return null;
@@ -130,15 +125,24 @@ public final class ModelCache {
         return mdl;
     }
 
-    private static PMXModel getInternal(IPMXFilenameLocator locator, String name) throws IOException {
-        PMXModel pm = new PMXModel(new PMXFile(locator.getData("mdl.pmx")), Loader.groupSize);
+    private static PMXModel getInternal(IPMXFilenameLocator locator, String name, boolean getTxt) throws IOException {
+        String pmxFile = "mdl.pmx";
+        for (String e : locator) {
+            if (e.toLowerCase().endsWith(".pmx"))
+                pmxFile = e;
+            if (getTxt)
+                if (e.toLowerCase().endsWith(".txt"))
+                    locator.getData(e);
+        }
+        PMXModel pm = new PMXModel(new PMXFile(locator.getData(pmxFile)), Loader.groupSize);
         try {
             pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator.getData("mmcposes.dat"))));
         } catch (Exception e) {
             // oh well
         }
         loadTextures(pm, pm.theFile, locator);
-        localModels.put(name, pm);
+        if (!localModels.containsKey(name))
+            localModels.put(name, pm);
         return pm;
     }
 
@@ -184,9 +188,13 @@ public final class ModelCache {
     // Automatically creates a manifest, and a way of mapping hashes back to files for use when requests are made
     public static DataManifestCreationResult createManifestForLocal(String name) throws IOException {
         final DataManifestCreationResult dmcr = new DataManifestCreationResult();
-        File rootDir = new File(modelRepository + "/" + name);
         final IPMXFilenameLocator rootLocator = new FilePMXFilenameLocator(modelRepository + "/" + name + "/");
         IPMXFilenameLocator locator = new IPMXFilenameLocator() {
+            @Override
+            public Iterator<String> iterator() {
+                return dmcr.filesToHashes.keySet().iterator();
+            }
+
             @Override
             public byte[] getData(String filename) throws IOException {
                 byte[] data = rootLocator.getData(filename);
@@ -198,30 +206,7 @@ public final class ModelCache {
                 return data;
             }
         };
-        // If we already have this model in RAM, we can skip loading the PMX file itself.
-        PMXModel alreadyLoaded = localModels.get(name);
-        PMXFile pf;
-        if (alreadyLoaded != null) {
-            pf = alreadyLoaded.theFile;
-            locator.getData("mdl.pmx"); // Needed to ensure it shows up in the manifest
-        } else {
-            pf = new PMXFile(locator.getData("mdl.pmx"));
-        }
-        try {
-            locator.getData("mmcposes.dat");
-        } catch (Exception e) {
-            // oh well
-        }
-        // load the textures (Sure, this probably won't be useful for much... except it'll ensure that the uploaded textures are actually valid.)
-        loadTextures(null, pf, locator);
-
-        // txt files are also saved (licencing)
-        File[] subFiles = rootDir.listFiles();
-        for (File f : subFiles)
-            if (f.getName().toLowerCase().endsWith(".txt"))
-                if (f.isFile())
-                    locator.getData(f.getName());
-
+        getInternal(locator, name, true);
         return dmcr;
     }
 
@@ -231,15 +216,13 @@ public final class ModelCache {
         return Hashing.sha1().hashBytes(data).toString().substring(0, 24);
     }
 
-    public interface IPMXFilenameLocator {
+    // A server which holds filenames and
+    public interface IPMXFilenameLocator extends Iterable<String> {
         // note that "mdl.pmx" is a reserved name for the PMX file
         // also note that this must NOT return null.
         // that's why we throw IOException :)
         byte[] getData(String filename) throws IOException;
     }
-
-    // Upload requires re-reading the files, and automatically creates a data manifest.
-    // It then stores the mappings from hashes to files for when the server asks for them.
 
     public static class FilePMXFilenameLocator implements IPMXFilenameLocator {
         public String baseDir;
@@ -256,14 +239,35 @@ public final class ModelCache {
             fis.close();
             return data;
         }
+
+        @Override
+        public Iterator<String> iterator() {
+            // do a recursive find of all files
+            LinkedList<String> l = new LinkedList<String>();
+            searchDir("", l);
+            return l.iterator();
+        }
+
+        private void searchDir(String s, LinkedList<String> l) {
+            File f = new File(baseDir + s);
+            if (f.isDirectory()) {
+                for (File cf : f.listFiles())
+                    searchDir(s + "/" + cf.getName(), l);
+            } else {
+                l.add(s);
+            }
+        }
     }
 
+    // An interface for a server which can get arbitrary data by it's hash, and get the data's length.
+    // (IPFS would be a good candidate for this, or an HTTP server.
+    //  For HTTP, the filename field is provided.)
     public interface IPMXLocator {
-        // If a model is > 2GB, something is seriously wrong with the model and we should run away first chance we get.
+        // If a single file of a model is > 2GB, something is seriously wrong with the model and we should run away first chance we get.
         // Not future planning, but seriously, 2GB is a flipping D.O.S attack by my standards.
-        int getLength(String hash) throws IOException;
+        int getLength(String filename, String hash) throws IOException;
 
-        byte[] getData(String hash) throws IOException;
+        byte[] getData(String filename, String hash) throws IOException;
     }
 
     public static class DataManifestCreationResult {

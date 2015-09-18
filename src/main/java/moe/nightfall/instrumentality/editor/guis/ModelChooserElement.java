@@ -74,7 +74,11 @@ public class ModelChooserElement extends EditElement {
     }
 
     public void updatePosition() {
-        for (int i = 0; i < group.length; i++)
-            group[i].setModel(availableModels[(i + ptrStart) % availableModels.length]);
+        for (int i = 0; i < group.length; i++) {
+            int ib = (i + ptrStart) % availableModels.length;
+            if (ib < 0)
+                ib = -ib;
+            group[i].setModel(availableModels[ib]);
+        }
     }
 }
