@@ -12,16 +12,21 @@
  */
 package moe.nightfall.instrumentality.editor.guis;
 
-import moe.nightfall.instrumentality.*;
+import java.util.LinkedList;
+
+import org.lwjgl.opengl.GL11;
+
+import moe.nightfall.instrumentality.Loader;
+import moe.nightfall.instrumentality.PMXFile;
 import moe.nightfall.instrumentality.PMXFile.PMXBone;
-import moe.nightfall.instrumentality.animations.IAnimation;
+import moe.nightfall.instrumentality.PMXInstance;
+import moe.nightfall.instrumentality.PMXModel;
+import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.animations.Animation;
 import moe.nightfall.instrumentality.animations.PoseAnimation;
 import moe.nightfall.instrumentality.editor.EditElement;
 import moe.nightfall.instrumentality.editor.controls.TreeviewElement;
 import moe.nightfall.instrumentality.editor.controls.View3DElement;
-import org.lwjgl.opengl.GL11;
-
-import java.util.LinkedList;
 
 public class PoseEditElement extends EditElement {
     public PoseAnimation editedPose;
@@ -30,7 +35,7 @@ public class PoseEditElement extends EditElement {
     public TreeviewElement<PMXFile.PMXBone> tView;
     public PoseEditParamsElement params;
 
-    public PoseEditElement(PoseAnimation ep, PMXModel pm, IAnimation editAnimation) {
+    public PoseEditElement(PoseAnimation ep, PMXModel pm, Animation editAnimation) {
         params = new PoseEditParamsElement(this);
         pmxInst = new PMXInstance(pm);
         pmxInst.anim = editAnimation;

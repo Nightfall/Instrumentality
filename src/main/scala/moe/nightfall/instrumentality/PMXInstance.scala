@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality
 
-import moe.nightfall.instrumentality.animations.IAnimation
-import moe.nightfall.instrumentality.shader.Shader
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.GL15
@@ -21,10 +19,13 @@ import org.lwjgl.opengl.GL20
 import org.lwjgl.util.vector.Matrix4f
 import org.lwjgl.util.vector.Vector3f
 import org.lwjgl.util.vector.Vector4f
-import moe.nightfall.instrumentality.PMXModel.FaceGroup
-import moe.nightfall.instrumentality.PMXFile.PMXVertex
-import moe.nightfall.instrumentality.PMXFile.PMXBone
+
 import PMXInstance.VBO_DATASIZE
+import moe.nightfall.instrumentality.PMXFile.PMXBone
+import moe.nightfall.instrumentality.PMXFile.PMXVertex
+import moe.nightfall.instrumentality.PMXModel.FaceGroup
+import moe.nightfall.instrumentality.animations.Animation
+import moe.nightfall.instrumentality.shader.Shader
 
 
 /**
@@ -49,7 +50,7 @@ class PMXInstance(val theModel : PMXModel) {
     /**
      * Animation. Can be changed at any time.
      */
-    var anim : IAnimation = _
+    var anim : Animation = _
 
     var vboList = new Array[Array[Int]](theModel.groups.length)
     var boneCache = new Array[Matrix4f](theFile.boneData.length)

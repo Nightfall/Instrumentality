@@ -86,7 +86,7 @@ public class PoseSet {
         poseParents.put("hairR", "idle");
     }
 
-    public IAnimation createAnimation(HashMap<String, Double> poseStrengths) {
+    public Animation createAnimation(HashMap<String, Double> poseStrengths) {
         OverlayAnimation rootOA = new OverlayAnimation();
         HashMap<String, Double> hashMap = new HashMap<String, Double>();
         for (Map.Entry<String, Double> entries : poseStrengths.entrySet()) {
@@ -110,7 +110,7 @@ public class PoseSet {
         return rootOA;
     }
 
-    public IAnimation createEditAnimation(String n) {
+    public Animation createEditAnimation(String n) {
         HashMap<String, Double> hashMap = new HashMap<String, Double>();
         while (n != null) {
             hashMap.put(n, 1d);

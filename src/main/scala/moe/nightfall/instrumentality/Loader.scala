@@ -12,9 +12,6 @@
  */
 package moe.nightfall.instrumentality
 
-import moe.nightfall.instrumentality.animations.IAnimationLibrary
-import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary
-import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary
 import moe.nightfall.instrumentality.shader.Shader
 import moe.nightfall.instrumentality.shader.ShaderManager
 import org.lwjgl.BufferUtils
@@ -35,9 +32,9 @@ object Loader {
 
     var shaderBoneTransform : Shader = _
 
-    var animLibs : Array[IAnimationLibrary] = _
+    /*var animLibs : Array[AnimationLibrary] = _
     var ial_e : EmoteAnimationLibrary = _
-    var ial_p : PlayerAnimationLibrary = _
+    var ial_p : PlayerAnimationLibrary = _*/
 
     def setup() {
         loadModel()
@@ -51,9 +48,9 @@ object Loader {
                 "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize)
 
         // animation libraries are NOT a per-model thing
-        ial_e = new EmoteAnimationLibrary()
+        /*ial_e = new EmoteAnimationLibrary()
         ial_p = new PlayerAnimationLibrary()
-        animLibs = Array(ial_e, ial_p)
+        animLibs = Array(ial_e, ial_p)*/
     }
 
     def setCurrentFile(workModelName : String) {

@@ -17,15 +17,15 @@ import moe.nightfall.instrumentality.PoseBoneTransform;
 /**
  * Created on 25/07/15.
  */
-public class StrengthMultiplyAnimation implements IAnimation {
+public class StrengthMultiplyAnimation implements Animation {
     public float mulAmount = 1.0f;
-    public IAnimation beingFaded;
+    public Animation beingFaded;
 
-    public StrengthMultiplyAnimation(IAnimation wa) {
+    public StrengthMultiplyAnimation(Animation wa) {
         beingFaded = wa;
     }
 
-    public StrengthMultiplyAnimation(IAnimation oB, float v) {
+    public StrengthMultiplyAnimation(Animation oB, float v) {
         beingFaded = oB;
         mulAmount = v;
     }

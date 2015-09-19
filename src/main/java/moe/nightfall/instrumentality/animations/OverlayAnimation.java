@@ -20,10 +20,10 @@ import java.util.LinkedList;
  * Adds the PBTs together.
  * Created on 26/07/15.
  */
-public class OverlayAnimation implements IAnimation {
-    public LinkedList<IAnimation> subAnimations = new LinkedList<IAnimation>();
+public class OverlayAnimation implements Animation {
+    public LinkedList<Animation> subAnimations = new LinkedList<Animation>();
 
-    public OverlayAnimation(IAnimation... subAnimations) {
+    public OverlayAnimation(Animation... subAnimations) {
         for (int i = 0; i < subAnimations.length; i++)
             this.subAnimations.add(subAnimations[i]);
     }
@@ -31,7 +31,7 @@ public class OverlayAnimation implements IAnimation {
     @Override
     public PoseBoneTransform getBoneTransform(String boneName) {
         PoseBoneTransform result = new PoseBoneTransform();
-        for (IAnimation ia : subAnimations) {
+        for (Animation ia : subAnimations) {
             PoseBoneTransform pbt = ia.getBoneTransform(boneName);
             if (pbt == null)
                 continue;
@@ -51,7 +51,7 @@ public class OverlayAnimation implements IAnimation {
 
     @Override
     public void update(double deltaTime) {
-        for (IAnimation ia : subAnimations)
+        for (Animation ia : subAnimations)
             ia.update(deltaTime);
     }
 }

@@ -19,7 +19,7 @@ import java.util.HashMap;
 /**
  * Created on 13/09/15.
  */
-public class NewPCAAnimation implements IAnimation {
+public class NewPCAAnimation implements Animation {
     public PoseSet poseSet;
     private double walkCycleTime;
     public double walkStrength, walkSpeed, lookLR, lookUD, fallStrength;
@@ -28,7 +28,7 @@ public class NewPCAAnimation implements IAnimation {
         poseSet = ps;
     }
 
-    public IAnimation poseSetResult = new IAnimation() {
+    public Animation poseSetResult = new Animation() {
         @Override
         public PoseBoneTransform getBoneTransform(String boneName) {
             return null;

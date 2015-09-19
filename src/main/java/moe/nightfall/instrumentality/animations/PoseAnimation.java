@@ -19,7 +19,7 @@ import java.util.HashMap;
 /**
  * Created on 28/07/15.
  */
-public class PoseAnimation implements IAnimation {
+public class PoseAnimation implements Animation {
     public HashMap<String, PoseBoneTransform> hashMap = new HashMap<String, PoseBoneTransform>();
 
     @Override
