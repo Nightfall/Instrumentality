@@ -23,7 +23,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
     private var walkCycleTime: Double = _
     var walkStrength, walkSpeed, lookLR, lookUD, fallStrength: Double = _
 
-    var poseSetResult = new Animation {
+    var poseSetResult: Animation = new Animation {
         override def getBoneTransform(boneName: String) = null
         override def update(deltaTime: Double) {}
     }

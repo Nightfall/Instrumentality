@@ -10,25 +10,16 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.animations;
+package moe.nightfall.instrumentality.animations
 
-import moe.nightfall.instrumentality.PoseBoneTransform;
-
-import java.util.HashMap;
+import moe.nightfall.instrumentality.PoseBoneTransform
+import scala.collection.mutable.HashMap
 
 /**
  * Created on 28/07/15.
  */
-public class PoseAnimation implements Animation {
-    public HashMap<String, PoseBoneTransform> hashMap = new HashMap<String, PoseBoneTransform>();
+class PoseAnimation extends Animation {
+    val hashMap = new HashMap[String, PoseBoneTransform]
 
-    @Override
-    public PoseBoneTransform getBoneTransform(String boneName) {
-        return hashMap.get(boneName.toLowerCase());
-    }
-
-    @Override
-    public void update(double deltaTime) {
-
-    }
+    override def getBoneTransform(boneName: String) = hashMap get (boneName.toLowerCase)
 }

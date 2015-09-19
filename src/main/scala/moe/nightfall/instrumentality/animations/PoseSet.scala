@@ -124,7 +124,7 @@ class PoseSet {
             // (Version names should alternate between genders. We're an equal opportunity name-grabber.)
             os.write(1)
             os.writeUTF(poseKey)
-            poseValue.hashMap forEach { case (pbtKey, pbtValue) =>
+            poseValue.hashMap foreach { case (pbtKey, pbtValue) =>
                 os.write(1)
                 os.writeUTF(pbtKey)
                 os.writeDouble(pbtValue.X0)

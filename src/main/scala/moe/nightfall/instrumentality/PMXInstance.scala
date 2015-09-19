@@ -136,12 +136,12 @@ class PMXInstance(val theModel : PMXModel) {
         if (boneCache(bone.boneId) != null)
             return boneCache(bone.boneId)
         // Simple enough: get what the bone wants us to transform it by...
-        val boneTransform = anim.getBoneTransform(compatibilityCheck(bone.globalName));
+        val boneTransform = anim.getBoneTransform(compatibilityCheck(bone.globalName))
         val i = new Matrix4f()
-        if (boneTransform != null) {
+        boneTransform foreach { tr =>
             // Go into bone-space, apply the transform, then leave.
             createIBS(i, bone, true)
-            boneTransform.apply(i);
+            tr.apply(i);
             createIBS(i, bone, false)
         }
         // If there's a parent, run through this again with that...

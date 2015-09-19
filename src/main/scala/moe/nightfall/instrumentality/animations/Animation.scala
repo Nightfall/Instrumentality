@@ -24,9 +24,9 @@ trait Animation {
      * The idea is that this is simply a getter.
      *
      * @param boneName The name of a bone.
-     * @return Null for no transform(optimization), or the transform to apply to the bone.
+     * @return None for no transform(optimization), or the transform to apply to the bone.
      */
-    def getBoneTransform(boneName: String): PoseBoneTransform
+    def getBoneTransform(boneName: String): Option[PoseBoneTransform]
 
     /**
      * Update the animation. Will be called from the "main" thread.
@@ -34,5 +34,5 @@ trait Animation {
      *
      * @param deltaTime The amount to update by.
      */
-    def update(deltaTime: Double): Unit
+    def update(deltaTime: Double): Unit = {}
 }
