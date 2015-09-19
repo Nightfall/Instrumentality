@@ -12,9 +12,6 @@
  */
 package moe.nightfall.instrumentality
 
-import moe.nightfall.instrumentality.animations.IAnimationLibrary
-import moe.nightfall.instrumentality.animations.libraries.EmoteAnimationLibrary
-import moe.nightfall.instrumentality.animations.libraries.PlayerAnimationLibrary
 import moe.nightfall.instrumentality.shader.Shader
 import moe.nightfall.instrumentality.shader.ShaderManager
 import org.lwjgl.BufferUtils
@@ -34,8 +31,7 @@ object Loader {
     var currentFileListeners = ListBuffer[Runnable]()
 
     var shaderBoneTransform : Shader = _
-
-    var animLibs : Array[IAnimationLibrary] = _
+    
     var ial_e : EmoteAnimationLibrary = _
     var ial_p : PlayerAnimationLibrary = _
 
