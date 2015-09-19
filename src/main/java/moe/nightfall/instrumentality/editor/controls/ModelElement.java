@@ -17,7 +17,6 @@ import moe.nightfall.instrumentality.ModelCache;
 import moe.nightfall.instrumentality.PMXInstance;
 import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.animations.NewPCAAnimation;
-import moe.nightfall.instrumentality.animations.WalkingAnimation;
 import moe.nightfall.instrumentality.editor.UIUtils;
 import org.lwjgl.opengl.GL11;
 
@@ -58,8 +57,6 @@ public class ModelElement extends View3DElement {
 
     public static PMXInstance makeTestInstance(PMXModel pm) {
         PMXInstance pi = new PMXInstance(pm);
-        WalkingAnimation wa = new WalkingAnimation();
-        wa.speed = 1.0f;
         //pi.anim = new OverlayAnimation(new IAnimation[]{Loader.animLibs[1].getPose("idle"), wa});
         pi.anim = new NewPCAAnimation(pm.poses);
         return pi;
