@@ -15,6 +15,7 @@ buildscript {
     }
 }
 
+apply plugin: "scala"
 apply plugin: "forge"
 
 sourceCompatibility = 1.6
@@ -27,7 +28,6 @@ if (System.env.BUILD_NUMBER != null) version = "$version.$System.env.BUILD_NUMBE
 
 minecraft {
     version = "${mcVersion}-latest"
-    runDir = "eclipse"
 }
 
 processResources {

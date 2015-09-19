@@ -15,9 +15,9 @@ package moe.nightfall.instrumentality.mc;
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraftforge.common.MinecraftForge;
 
-public class CommonProxy {
-    public void preInit() {
-        MinecraftForge.EVENT_BUS.register(this);
-        FMLCommonHandler.instance().bus().register(this);
+class CommonProxy {
+    def preInit() {
+        MinecraftForge.EVENT_BUS.register(this)
+        FMLCommonHandler.instance.bus.register(this)
     }
 }

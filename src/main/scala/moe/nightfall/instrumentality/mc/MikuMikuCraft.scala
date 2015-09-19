@@ -17,14 +17,12 @@ import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.SidedProxy;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(name = "MikuMikuCraft", modid = "instrumentality")
-public class MikuMikuCraft {
+@Mod(name = "MikuMikuCraft", modid = "instrumentality", modLanguage = "scala")
+object MikuMikuCraft {
 
     @SidedProxy(serverSide = "moe.nightfall.instrumentality.mc.CommonProxy", clientSide = "moe.nightfall.instrumentality.mc.ClientProxy")
-    public static CommonProxy proxy;
+    var proxy : CommonProxy = null
 
     @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        proxy.preInit();
-    }
+    def preInit(event : FMLPreInitializationEvent) = proxy.preInit
 }
