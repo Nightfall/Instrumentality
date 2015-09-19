@@ -19,7 +19,7 @@ import org.lwjgl.util.vector.Vector3f;
  * I'd replace half of this with a quaternion if I wasn't afraid it wouldn't interpolate.
  * Created on 24/07/15.
  */
-class PoseBoneTransform private {
+class PoseBoneTransform {
     
     // TODO SCALA make this immutable
     
