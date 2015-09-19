@@ -121,7 +121,7 @@ class ClientProxy extends CommonProxy {
             val ep2 = Minecraft.getMinecraft.theWorld.getPlayerEntityByName(user);
             //				if (ep2 != null)
             //					InstanceCache.queueChange(ep2, pm);
-        } start
+        }.start()
     }
 
     @SubscribeEvent
