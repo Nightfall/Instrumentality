@@ -21,7 +21,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 object MikuMikuCraft {
 
     @SidedProxy(serverSide = "moe.nightfall.instrumentality.mc.CommonProxy", clientSide = "moe.nightfall.instrumentality.mc.ClientProxy")
-    var proxy : CommonProxy = null
+    var proxy : CommonProxy = _
 
     @EventHandler
     def preInit(event : FMLPreInitializationEvent) = proxy.preInit

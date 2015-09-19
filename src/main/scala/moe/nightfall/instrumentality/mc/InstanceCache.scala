@@ -12,13 +12,13 @@
  */
 package moe.nightfall.instrumentality.mc;
 
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.PMXModel
 import net.minecraft.entity.player.EntityPlayer
 import java.lang.ref.WeakReference
 import java.util.Iterator
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentLinkedQueue
 import scala.collection.mutable.MutableList
+import moe.nightfall.instrumentality.Loader
+import moe.nightfall.instrumentality.PMXModel
 
 /**
  * A not-thread-safe implementation of a sort-of hashmap, for one specific purpose:
@@ -46,7 +46,7 @@ object InstanceCache {
                     val mce = i.next()
                     if (mce.playerRef.get() == null) {
                         mce.value.cleanupGL()
-                        Loader.currentFileListeners.remove(mce.cfHook)
+                        Loader.currentFileListeners -= mce.cfHook
                         cache.remove(mce)
                     } else {
                         if (mce.value != null) {

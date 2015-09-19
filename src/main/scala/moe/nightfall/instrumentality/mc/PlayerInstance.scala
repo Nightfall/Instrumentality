@@ -12,12 +12,12 @@
  */
 package moe.nightfall.instrumentality.mc
 
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.PMXInstance
 import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import net.minecraft.entity.player.EntityPlayer
 import org.lwjgl.opengl.GL11
+import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.PMXModel
+import moe.nightfall.instrumentality.PMXInstance
 
 class PlayerInstance(file : PMXModel) {
 

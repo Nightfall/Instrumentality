@@ -14,9 +14,6 @@ package moe.nightfall.instrumentality.mc;
 
 import java.util.HashMap
 import java.util.concurrent.ConcurrentHashMap
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.ModelCache
-import moe.nightfall.instrumentality.PMXModel
 import moe.nightfall.instrumentality.mc.gui.EditorHostGui
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.RenderManager
@@ -28,8 +25,11 @@ import cpw.mods.fml.client.registry.ClientRegistry
 import cpw.mods.fml.common.eventhandler.EventPriority
 import cpw.mods.fml.common.eventhandler.SubscribeEvent
 import cpw.mods.fml.common.gameevent.InputEvent
-import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.gameevent.TickEvent
 import scala.collection.JavaConversions
+import moe.nightfall.instrumentality.Loader
+import moe.nightfall.instrumentality.PMXModel
+import moe.nightfall.instrumentality.ModelCache
 
 object ClientProxy {
     val protocolId = "MMC"
@@ -116,7 +116,7 @@ class ClientProxy extends CommonProxy {
             return
         }
         new Thread {
-            val pm = ModelCache.getByManifest(JavaConversions.mapAsJavaMap(dataManifest), serv);
+            val pm = ModelCache.getByManifest(dataManifest, serv);
             ClientProxy.knownModels += user -> new ClientProxy.MHolder(pm)
             val ep2 = Minecraft.getMinecraft.theWorld.getPlayerEntityByName(user);
             //				if (ep2 != null)
@@ -175,7 +175,7 @@ class ClientProxy extends CommonProxy {
                     }
                 }
 
-                Loader.currentFileListeners.add(mce.cfHook)
+                Loader.currentFileListeners += mce.cfHook
             } else return
         }
 
