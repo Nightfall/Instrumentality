@@ -56,7 +56,7 @@ object ModelCache {
         val targetHash = hashMap.get("mdl.pmx").get.toLowerCase()
         getLocalModels() foreach { s =>
             val l = new FilePMXFilenameLocator(modelRepository + "/" + s + "/")
-            if (targetHash.equalsIgnoreCase(hashBytes(l.getData("mdl.pmx"))))
+            if (targetHash.equalsIgnoreCase(hashBytes(l("mdl.pmx"))))
                 return getLocal(s)
         }
         if (remoteServer == null)
@@ -64,7 +64,7 @@ object ModelCache {
 
         val manifestGetter = new IPMXFilenameLocator() {
             var totalUsage = 0
-            override def getData(filename: String): Array[Byte] = {
+            override def apply(filename: String): Array[Byte] = {
                 val hash = hashMap.get(filename) getOrElse null
                 if (hash == null)
                     throw new IOException("No file " + filename);
@@ -172,7 +172,7 @@ object ModelCache {
         val rootDir = new File(modelRepository + "/" + name)
         val rootLocator = new FilePMXFilenameLocator(modelRepository + "/" + name + "/")
         val locator: IPMXFilenameLocator = { filename =>
-            val data = rootLocator.getData(filename)
+            val data = rootLocator(filename)
             if (dmcr.filesToHashes.contains(filename)) data
             val hash = hashBytes(data)
             dmcr.filesToHashes.put(filename, hash)
@@ -220,7 +220,7 @@ object ModelCache {
 
     class FilePMXFilenameLocator(val baseDir: String) extends IPMXFilenameLocator {
 
-        override def getData(filename: String): Array[Byte] = {
+        override def apply(filename: String): Array[Byte] = {
             val fis = new FileInputStream(baseDir + filename)
             val data = new Array[Byte](fis.available)
             fis.read(data)
@@ -240,7 +240,7 @@ object ModelCache {
     }
 
     class DataManifestCreationResult {
-        var filesToHashes: collection.mutable.Map[String, String]
-        var hashesToFiles: collection.mutable.Map[String, String]
+        var filesToHashes = collection.mutable.Map[String, String]()
+        var hashesToFiles = collection.mutable.Map[String, String]()
     }
 }

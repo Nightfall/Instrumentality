@@ -28,14 +28,14 @@ class PoseBoneTransform private {
      * The reason for having 3 sets of values is to allow some rotations to happen after/before others.
      * (for example: rotation on one axis to raise/lower head should be applied after left/right rotation)
      */
-    var X0, Y0, Z0 : Double
-    var X1, Y1 : Double
-    var X2 : Double
+    var X0, Y0, Z0 : Double = _
+    var X1, Y1 : Double = _
+    var X2 : Double = _
 
     /**
      * The translation values(applied before rotation)
      */
-    var TX0, TY0, TZ0 : Double
+    var TX0, TY0, TZ0 : Double = _
     
     /**
      * My Little Miku

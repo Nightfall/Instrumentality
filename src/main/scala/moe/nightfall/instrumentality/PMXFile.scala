@@ -28,71 +28,71 @@ import PMXFile._
 
 object PMXFile {
      class PMXVertex(val vxId : Int) {
-        var posX, posY, posZ : Float
-        var normalX, normalY, normalZ : Float
-        var texU, texV : Float
-        var edgeScale : Float
-        var weightType : Int
+        var posX, posY, posZ : Float = _
+        var normalX, normalY, normalZ : Float = _
+        var texU, texV : Float = _
+        var edgeScale : Float = _
+        var weightType : Int = _
         var boneIndices = new Array[Int](4)
         var boneWeights = new Array[Float](4)
-        var sdefCX, sdefCY, sdefCZ : Float
-        var sdefR0X, sdefR0Y, sdefR0Z : Float
-        var sdefR1X, sdefR1Y, sdefR1Z : Float
+        var sdefCX, sdefCY, sdefCZ : Float = _
+        var sdefR0X, sdefR0Y, sdefR0Z : Float = _
+        var sdefR1X, sdefR1Y, sdefR1Z : Float = _
     }
 
     class PMXMaterial(val matId : Int) {
-        var localName, globalName : String
-        var diffR, diffG, diffB, diffA : Float
-        var specR, specG, specB : Float
-        var specStrength : Float
-        var ambR, ambG, ambB : Float
-        var drawMode : Int
-        var edgeR, edgeG, edgeB, edgeA : Float
-        var edgeSize : Float
-        var texTex, texEnv, texToon : String // the texture pool isn't needed
-        var envMode : Int
+        var localName, globalName : String = _
+        var diffR, diffG, diffB, diffA : Float = _
+        var specR, specG, specB : Float = _
+        var specStrength : Float = _
+        var ambR, ambG, ambB : Float = _
+        var drawMode : Int = _
+        var edgeR, edgeG, edgeB, edgeA : Float = _
+        var edgeSize : Float = _
+        var texTex, texEnv, texToon : String = _ // the texture pool isn't needed
+        var envMode : Int = _
         // toonFlag uses toonIndex if 1, texToon if 0
-        var toonFlag, toonIndex : Int
-        var memo : String
-        var faceCount : Int // Note that this is divided by 3 to match with faceData
+        var toonFlag, toonIndex : Int = _
+        var memo : String = _
+        var faceCount : Int = _ // Note that this is divided by 3 to match with faceData
     }
 
     class PMXBone(val boneId : Int) {
-        var localName, globalName : String
-        var posX, posY, posZ : Float
-        var parentBoneIndex : Int
-        var transformLevel : Int
+        var localName, globalName : String = _
+        var posX, posY, posZ : Float = _
+        var parentBoneIndex : Int = _
+        var transformLevel : Int = _
         var flagConnection, flagRotatable, 
           flagMovable, flagDisplay, flagCanOperate, flagIK, 
           flagAddLocalDeform, flagAddRotation, flagAddMovement, flagFixedAxis, 
           flagLocalAxis, flagPhysicalTransform, flagExternalParentTransform 
-        : Boolean
+        : Boolean = _
         
         // Connection | Set
-        var connectionIndex : Int
+        var connectionIndex : Int = _
         // Connection | Unset
-        var connectionPosOfsX, connectionPosOfsY, connectionPosOfsZ : Float
+        var connectionPosOfsX, connectionPosOfsY, connectionPosOfsZ : Float = _
         // Add Rotation | Set
-        var addRotationParentIndex : Int
-        var addRotationRate : Float
+        var addRotationParentIndex : Int = _
+        var addRotationRate : Float = _
         // Fixed Axis | Set
-        var fixedAxisX, fixedAxisY, fixedAxisZ : Float
+        var fixedAxisX, fixedAxisY, fixedAxisZ : Float = _
         // Local Axis | Set
-        var localAxisXX, localAxisXY, localAxisXZ : Float
-        var localAxisZX, localAxisZY, localAxisZZ : Float
+        var localAxisXX, localAxisXY, localAxisXZ : Float = _
+        var localAxisZX, localAxisZY, localAxisZZ : Float = _
         // External Parent Transform | Set
-        var externalParentTransformKeyValue : Int
+        var externalParentTransformKeyValue : Int = _
         // IK Data not included
     }
 }
 
 class PMXFile private {
-    var localCharname, globalCharname : String
-    var localComment, globalComment : String
-    var vertexData : Array[PMXVertex]
-    var faceData : Array[Array[Int]]
-    var matData : Array[PMXMaterial]
-    var boneData : Array[PMXBone]
+    var localCharname, globalCharname : String = _
+    var localComment, globalComment : String = _
+    var vertexData : Array[PMXVertex] = _
+    var faceData : Array[Array[Int]] = _
+    var matData : Array[PMXMaterial] = _
+    var boneData : Array[PMXBone] = _
 
     def this(pmxFile : Array[Byte]) = { this()
       val bb = ByteBuffer.wrap(pmxFile)

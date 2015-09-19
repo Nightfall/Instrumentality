@@ -49,20 +49,20 @@ object PMXModel {
 }
 
 class PMXModel private {
-    var theFile : PMXFile
+    var theFile : PMXFile = _
     val poses = new PoseSet()
     
     // This is null'd once setupMaterials is called. Don't modify after this goes into the ModelCache.
     var materialData = collection.mutable.Map[String, BufferedImage]()
     // This is the OpenGL materials hashmap, don't access outside the OpenGL owning thread.
-    var materials : Map[String, Int]
+    var materials : Map[String, Int] = _
 
     /**
      * Height of the model, determinated by the highest vertex
      */
-    var height : Float
+    var height : Float = _
 
-    var groups : Array[MutableList[FaceGroup]]
+    var groups : Array[MutableList[FaceGroup]] = _
 
     def this(pf : PMXFile, maxGroupSize : Int) { this()
         theFile = pf

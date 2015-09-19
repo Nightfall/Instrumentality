@@ -21,6 +21,10 @@ import org.lwjgl.opengl.GL20
 import org.lwjgl.util.vector.Matrix4f
 import org.lwjgl.util.vector.Vector3f
 import org.lwjgl.util.vector.Vector4f
+import moe.nightfall.instrumentality.PMXModel.FaceGroup
+import moe.nightfall.instrumentality.PMXFile.PMXVertex
+import moe.nightfall.instrumentality.PMXFile.PMXBone
+import PMXInstance.VBO_DATASIZE
 
 
 /**
