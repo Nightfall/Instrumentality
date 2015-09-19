@@ -67,9 +67,9 @@ object ModelCache {
             override def apply(filename: String): Array[Byte] = {
                 val hash = hashMap.get(filename) getOrElse null
                 if (hash == null)
-                    throw new IOException("No file " + filename);
+                    throw new IOException("No file " + filename)
                 val b = remoteServer.getData(hash)
-                totalUsage += b.length;
+                totalUsage += b.length
                 if (maxTotalUsage >= 0 && totalUsage > maxTotalUsage)
                     throw new IOException(
                         "Potential Denial Of Service attack via HDD usage, download will not be continued.")

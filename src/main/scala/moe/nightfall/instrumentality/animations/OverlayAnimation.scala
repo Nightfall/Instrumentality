@@ -12,45 +12,29 @@
  */
 package moe.nightfall.instrumentality.animations;
 
-import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.PoseBoneTransform
+import java.util.LinkedList;
+import scala.collection.mutable.MutableList
 
 /**
- * Created on 25/07/15.
+ * Adds the PBTs together.
+ * Created on 26/07/15.
  */
-public class StrengthMultiplyAnimation implements Animation {
-    public float mulAmount = 1.0f;
-    public Animation beingFaded;
+class OverlayAnimation(val subAnimations : MutableList[Animation]) extends Animation {
+    
+    def this(subAnimations : Animation*) = this(MutableList(subAnimations:_*))
 
-    public StrengthMultiplyAnimation(Animation wa) {
-        beingFaded = wa;
+    override def getBoneTransform(boneName : String) : Option[PoseBoneTransform] = {
+        val result = new PoseBoneTransform
+        subAnimations foreach { ia =>
+              val opt = ia.getBoneTransform(boneName)
+              if (opt.isDefined) {
+                  result += opt.get
+              }
+        }
+
+        return Some(result)
     }
 
-    public StrengthMultiplyAnimation(Animation oB, float v) {
-        beingFaded = oB;
-        mulAmount = v;
-    }
-
-    @Override
-    public PoseBoneTransform getBoneTransform(String boneName) {
-        PoseBoneTransform pbt = beingFaded.getBoneTransform(boneName);
-        if (pbt == null)
-            return null;
-        // We're going to modify this instance, some things may not like that
-        pbt = new PoseBoneTransform(pbt);
-        pbt.X0 *= mulAmount;
-        pbt.X1 *= mulAmount;
-        pbt.X2 *= mulAmount;
-        pbt.Y0 *= mulAmount;
-        pbt.Y1 *= mulAmount;
-        pbt.Z0 *= mulAmount;
-        pbt.TX0 *= mulAmount;
-        pbt.TY0 *= mulAmount;
-        pbt.TZ0 *= mulAmount;
-        return pbt;
-    }
-
-    @Override
-    public void update(double deltaTime) {
-        beingFaded.update(deltaTime);
-    }
+    override def update(deltaTime : Double) = subAnimations.foreach(_.update(deltaTime))
 }

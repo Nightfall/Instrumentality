@@ -99,7 +99,7 @@ class PoseSet {
             }
         }
         hashMap foreach { case (key, value) =>
-            rootOA.subAnimations.add(new StrengthMultiplyAnimation((allPoses get key).get, value.toFloat))
+            rootOA.subAnimations += new StrengthMultiplyAnimation((allPoses get key).get, value.toFloat)
         }
         
         rootOA

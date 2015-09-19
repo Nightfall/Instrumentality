@@ -14,44 +14,20 @@ package moe.nightfall.instrumentality.animations;
 
 import moe.nightfall.instrumentality.PoseBoneTransform;
 
-import java.util.LinkedList;
-
 /**
- * Adds the PBTs together.
- * Created on 26/07/15.
+ * Created on 25/07/15.
  */
-public class OverlayAnimation implements Animation {
-    public LinkedList<Animation> subAnimations = new LinkedList<Animation>();
+class StrengthMultiplyAnimation(var beingFaded : Animation, var mulAmount : Float) extends Animation {
 
-    public OverlayAnimation(Animation... subAnimations) {
-        for (int i = 0; i < subAnimations.length; i++)
-            this.subAnimations.add(subAnimations[i]);
+    def this(beingFaded : Animation) = this(beingFaded, 1)
+    
+    override def getBoneTransform(boneName : String) : Option[PoseBoneTransform] = {
+        var pbt = beingFaded.getBoneTransform(boneName).orNull
+        if (pbt == null) return null
+        // We're going to modify this instance, some things may not like that
+        pbt = new PoseBoneTransform(pbt) *= mulAmount
+        return Some(pbt)
     }
 
-    @Override
-    public PoseBoneTransform getBoneTransform(String boneName) {
-        PoseBoneTransform result = new PoseBoneTransform();
-        for (Animation ia : subAnimations) {
-            PoseBoneTransform pbt = ia.getBoneTransform(boneName);
-            if (pbt == null)
-                continue;
-            result.X0 += pbt.X0;
-            result.Y0 += pbt.Y0;
-            result.Z0 += pbt.Z0;
-            result.X1 += pbt.X1;
-            result.Y1 += pbt.Y1;
-            result.X2 += pbt.X2;
-            result.TX0 += pbt.TX0;
-            result.TY0 += pbt.TY0;
-            result.TZ0 += pbt.TZ0;
-        }
-
-        return result;
-    }
-
-    @Override
-    public void update(double deltaTime) {
-        for (Animation ia : subAnimations)
-            ia.update(deltaTime);
-    }
+    override def update(deltaTime : Double) = beingFaded.update(deltaTime)
 }

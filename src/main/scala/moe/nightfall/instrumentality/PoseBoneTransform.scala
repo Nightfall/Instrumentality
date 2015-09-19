@@ -13,7 +13,7 @@
 package moe.nightfall.instrumentality
 
 import org.lwjgl.util.vector.Matrix4f
-import org.lwjgl.util.vector.Vector3f;
+import org.lwjgl.util.vector.Vector3f
 
 /**
  * I'd replace half of this with a quaternion if I wasn't afraid it wouldn't interpolate.
@@ -21,7 +21,7 @@ import org.lwjgl.util.vector.Vector3f;
  */
 class PoseBoneTransform {
     
-    // TODO SCALA make this immutable
+    // TODO SCALA make this immutable / more OPS!
     
     /**
      * The rotation values(applied in that order)
@@ -77,6 +77,34 @@ class PoseBoneTransform {
 
     def this(v : Float, v1 : Float, v2 : Float, v3 : Float, v4 : Float) { this()
         X0 = v; Y0 = v1; Z0 = v2; X1 = v3; Y1 = v4;
+    }
+    
+    def += (other : PoseBoneTransform) : PoseBoneTransform = {
+        val nt = new PoseBoneTransform
+        X0 += other.X0
+        Y0 += other.Y0
+        Z0 += other.Z0
+        X1 += other.X1
+        Y1 += other.Y1
+        X2 += other.X2
+        TX0 += other.TX0
+        TY0 += other.TY0
+        TZ0 += other.TZ0
+        return this
+    }
+    
+    def *= (other : Double) : PoseBoneTransform = {
+        val nt = new PoseBoneTransform
+        X0 *= other
+        Y0 *= other
+        Z0 *= other
+        X1 *= other
+        Y1 *= other
+        X2 *= other
+        TX0 *= other
+        TY0 *= other
+        TZ0 *= other
+        return this
     }
 
     def apply(boneMatrix : Matrix4f) {
