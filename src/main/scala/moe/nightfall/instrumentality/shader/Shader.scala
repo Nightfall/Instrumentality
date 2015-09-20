@@ -19,24 +19,13 @@ import java.util.Map;
  * A shader.
  * A holder for the GL program ID.
  */
-public class Shader {
+final class Shader(val vertexShader : String, val fragmentShader : String) {
 
-    int program;
-    final String vertexShader;
-    final String fragmentShader;
-    final Map<String, Object> variables = new HashMap<String, Object>();
+    var program : Int = _
+    val variables = collection.mutable.HashMap[String, Any]()
 
-    Shader(String vertexShader, String fragmentShader) {
-        this.vertexShader = vertexShader;
-        this.fragmentShader = fragmentShader;
-    }
-
-    public int getProgram() {
-        return program;
-    }
-
-    public Shader set(String variable, Object obj) {
-        variables.put(variable, obj);
+    def set(variable : String, obj : Any) : Shader = {
+        variables.put(variable, AnyRef)
         return this;
     }
 }

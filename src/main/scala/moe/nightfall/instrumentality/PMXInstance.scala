@@ -229,13 +229,13 @@ class PMXInstance(val theModel : PMXModel) {
     def render(s : Shader, red : Double, green : Double, blue : Double, clippingSize : Float) {
         val matrix = BufferUtils.createFloatBuffer(16)
         val oldProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM)
-        GL20.glUseProgram(s.getProgram())
+        GL20.glUseProgram(s.program)
         if (theModel.materials == null)
             theModel.setupMaterials()
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeIn"), clippingSize * theModel.height)
-        GL20.glUniform1f(GL20.glGetUniformLocation(s.getProgram(), "fadeInDiscard"), (clippingSize + 0.5f) * theModel.height)
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeIn"), clippingSize * theModel.height)
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeInDiscard"), (clippingSize + 0.5f) * theModel.height)
         for (i <- 0 until theModel.groups.length) {
             val mat = theFile.matData(i)
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(mat.texTex.toLowerCase()).get)
@@ -280,7 +280,7 @@ class PMXInstance(val theModel : PMXModel) {
                 GL11.glVertexPointer(3, GL11.GL_FLOAT, VBO_DATASIZE * 4, 0 * 4)
                 GL11.glTexCoordPointer(2, GL11.GL_FLOAT, VBO_DATASIZE * 4, 3 * 4)
                 GL11.glNormalPointer(GL11.GL_FLOAT, VBO_DATASIZE * 4, 5 * 4);
-                val bonesAttrib = GL20.glGetAttribLocation(s.getProgram(), "Bones")
+                val bonesAttrib = GL20.glGetAttribLocation(s.program, "Bones")
                 GL20.glEnableVertexAttribArray(bonesAttrib)
                 GL20.glVertexAttribPointer(bonesAttrib, 4, GL11.GL_FLOAT, false, VBO_DATASIZE * 4, 8 * 4)
                 //GL20.glVertexAttribPointer(tangentsAttrib, 3, GL11.GL_FLOAT, false, VBO_DATASIZE * 4, 12 * 4);
@@ -288,7 +288,7 @@ class PMXInstance(val theModel : PMXModel) {
                     val m = getBoneMatrix(theFile.boneData(fg.boneMappingGroupFile(bInd)))
                     m.store(matrix)
                     matrix.rewind()
-                    val poseUniform = GL20.glGetUniformLocation(s.getProgram(), "Pose[" + bInd + "]")
+                    val poseUniform = GL20.glGetUniformLocation(s.program, "Pose[" + bInd + "]")
                     GL20.glUniformMatrix4(poseUniform, false, matrix)
                 }
                 GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, fg.vertexList.size)
