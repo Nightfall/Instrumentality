@@ -1,7 +1,7 @@
-*
-!/src/*
-!/gradle/*
-!/shaders/*
+/*
+!/src/
+!/gradle/
+!/shaders/
 !build.gradle
 !gradle.properties
 !FORMAT.md
