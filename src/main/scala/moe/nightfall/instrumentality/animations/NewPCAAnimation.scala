@@ -24,8 +24,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
     var walkStrength, walkSpeed, lookLR, lookUD, fallStrength: Double = _
 
     var poseSetResult: Animation = new Animation {
-        override def getBoneTransform(boneName: String) = null
-        override def update(deltaTime: Double) {}
+        override def getBoneTransform(boneName: String) = None
     }
 
     override def getBoneTransform(boneName: String) = poseSetResult getBoneTransform boneName

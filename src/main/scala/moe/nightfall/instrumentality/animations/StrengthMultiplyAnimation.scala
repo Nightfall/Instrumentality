@@ -22,11 +22,10 @@ class StrengthMultiplyAnimation(var beingFaded : Animation, var mulAmount : Floa
     def this(beingFaded : Animation) = this(beingFaded, 1)
     
     override def getBoneTransform(boneName : String) : Option[PoseBoneTransform] = {
-        var pbt = beingFaded.getBoneTransform(boneName).orNull
-        if (pbt == null) return null
-        // We're going to modify this instance, some things may not like that
-        pbt = new PoseBoneTransform(pbt) *= mulAmount
-        return Some(pbt)
+        beingFaded.getBoneTransform(boneName) map {
+            // We're going to modify this instance, some things may not like that
+            pbt => new PoseBoneTransform(pbt) *= mulAmount
+        }
     }
 
     override def update(deltaTime : Double) = beingFaded.update(deltaTime)
