@@ -15,9 +15,9 @@ package moe.nightfall.instrumentality.editor;
 import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.ModelCache
 import moe.nightfall.instrumentality.animations.PoseSet
-import moe.nightfall.instrumentality.editor.ModelChooserElement
 import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement
 import moe.nightfall.instrumentality.editor.controls.TextButtonElement
+import moe.nightfall.instrumentality.editor.gui.ModelChooserElement
 import moe.nightfall.instrumentality.editor.guis.BenchmarkElement
 import moe.nightfall.instrumentality.editor.guis.PoseTreeElement
 import org.lwjgl.input.Mouse
