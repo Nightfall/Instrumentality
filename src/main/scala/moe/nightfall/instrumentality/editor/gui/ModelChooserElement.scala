@@ -14,7 +14,8 @@
 package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.controls.{ArrowButtonElement, ModelElement}
+import moe.nightfall.instrumentality.editor.controls.ModelElement
+import moe.nightfall.instrumentality.editor.control.ArrowButtonElement
 
 /**
  * Created on 25/08/15, ported to Scala on 2015-09-20
