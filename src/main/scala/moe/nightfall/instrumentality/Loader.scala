@@ -32,10 +32,6 @@ object Loader {
 
     var shaderBoneTransform : Shader = _
 
-    /*var animLibs : Array[AnimationLibrary] = _
-    var ial_e : EmoteAnimationLibrary = _
-    var ial_p : PlayerAnimationLibrary = _*/
-
     def setup() {
         loadModel()
         loadShaders()
@@ -46,11 +42,6 @@ object Loader {
     def loadModel() {
         shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert",
                 "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize)
-
-        // animation libraries are NOT a per-model thing
-        /*ial_e = new EmoteAnimationLibrary()
-        ial_p = new PlayerAnimationLibrary()
-        animLibs = Array(ial_e, ial_p)*/
     }
 
     def setCurrentFile(workModelName : String) {
