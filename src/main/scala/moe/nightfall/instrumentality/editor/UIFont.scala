@@ -24,7 +24,7 @@ import java.util.LinkedList;
  * A simple no-fuss vector font renderer.
  * Created on 02/09/15.
  */
-public class UIFont {
+object UIFont {
     /*
      * +-----
      * | 0   1
@@ -38,100 +38,115 @@ public class UIFont {
      * | 8   9
      * curves can be L(oop) S(trip) or B(asic GL_LINES)
      */
-    public static String[] fontDB;
+    var fontDB : Seq[String] = _
 
-    public static void setFont(InputStream inp) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(inp));
-        LinkedList<String> l = new LinkedList<String>();
+    def setFont(inp : InputStream) {
+        val br = new BufferedReader(new InputStreamReader(inp))
+        fontDB = Iterator.continually {
+            val s = br.readLine()
+            if (s.endsWith(";"))
+                Some(s.substring(0, s.length() - 1))
+            else None    
+        }.takeWhile(_ => br.ready).flatten.toSeq
+        
+        // TODO SCALA Test this before removal
+       /* LinkedList<String> l = new LinkedList<String>();
         while (br.ready()) {
             String s = br.readLine();
             if (s.endsWith(";"))
-                l.add(s.substring(0, s.length() - 1));
+                l.add();
         }
         String[] fontData = new String[l.size()];
         int i = 0;
         for (String s : l)
             fontData[i++] = s;
-        fontDB = fontData;
+        fontDB = fontData; */
     }
 
-    public static int[] cachedFont = new int[256];
+    val cachedFont = new Array[Int](256)
 
-    protected static void drawChar(char c) {
+    def drawChar(c : Char) {
         // bit of a hypocrite here, rendering each char individually, but strings are at a higher layer.
         // hopefully the 1 array lookup and 1 call-list is fast enough?
-        boolean isCompiling = false;
+        var isCompiling = false
         if (c < cachedFont.length) {
-            if (cachedFont[c] != 0) {
-                GL11.glCallList(cachedFont[c]);
-                return;
+            if (cachedFont(c) != 0) {
+                GL11.glCallList(cachedFont(c))
+                return
             } else {
-                int lst = GL11.glGenLists(1);
-                GL11.glNewList(lst, GL11.GL_COMPILE_AND_EXECUTE);
-                cachedFont[c] = lst;
-                isCompiling = true;
+                val lst = GL11.glGenLists(1)
+                GL11.glNewList(lst, GL11.GL_COMPILE_AND_EXECUTE)
+                cachedFont(c) = lst
+                isCompiling = true
             }
         }
-        int p = getCharLoc(c);
+        var p = getCharLoc(c)
         if (p == -1) {
             if (isCompiling)
-                GL11.glEndList();
-            return;
+                GL11.glEndList()
+            return
         }
-        char[] passes = fontDB[p++].toCharArray();
-        String[] passData = new String[passes.length * 9];
-        for (int i = 0; i < passData.length; i++)
-            passData[i] = fontDB[p++];
-        int passPos = 0;
-        for (int i = 0; i < passes.length; i++) {
-            char type = passes[i];
-            int t = GL11.GL_LINE_STRIP;
-            if (type == 'B')
-                t = GL11.GL_LINES;
-            double[] x = new double[10];
-            double[] y = new double[10];
-            boolean[] isUsed = new boolean[10];
-            for (int j = 0; j < 9; j++) {
-                String str = passData[passPos++];
-                for (int n = 0; n < 10; n++)
-                    if (str.contains(String.valueOf((char) ('0' + n)))) {
-                        x[n] = str.indexOf(String.valueOf((char) ('0' + n)));
-                        y[n] = j;
-                        isUsed[n] = true;
+        val passes = fontDB(p).toCharArray()
+        p += 1
+        val passData = new Array[String](passes.length * 9)
+        for (i <- 0 until passData.length) {
+            passData(i) = fontDB(p)
+            p += 1
+        }
+        var passPos = 0
+        for (i <- 0 until passes.length) {
+            val tpe = passes(i)
+            var t = GL11.GL_LINE_STRIP
+            if (tpe == 'B')
+                t = GL11.GL_LINES
+            var x = new Array[Double](10)
+            var y = new Array[Double](10)
+            var isUsed = new Array[Boolean](10)
+            for (j <- 0 to 10) {     
+                val str = passData(passPos)
+                passPos += 1
+                for (n <- 0 until 10) {
+                    if (str.contains(String.valueOf(('0' + n).toChar))) {
+                        x(n) = str.indexOf(String.valueOf(('0' + n).toChar))
+                        y(n) = j
+                        isUsed(n) = true
                     }
+                }
             }
-            GL11.glBegin(t);
-            for (int n = 0; n < 10; n++)
-                if (isUsed[n])
-                    GL11.glVertex2d(x[n], y[n]);
-            if (type == 'L')
-                GL11.glVertex2d(x[0], y[0]);
-            GL11.glEnd();
+            GL11.glBegin(t)
+            for (n <- 0 until 10)
+                if (isUsed(n))
+                    GL11.glVertex2d(x(n), y(n));
+            if (tpe == 'L')
+                GL11.glVertex2d(x(0), y(0))
+            GL11.glEnd()
         }
         if (isCompiling)
-            GL11.glEndList();
+            GL11.glEndList()
     }
 
-    private static int[] cachedPositions = new int[256];
+    val cachedPositions = new Array[Int](256)
 
-    public static int getCharLoc(char c) {
-        boolean canCache = c < 256;
+    def getCharLoc(c : Char) : Int = {
+        val canCache = c < 256
         if (canCache)
-            if (cachedPositions[(int) c] != 0)
-                return cachedPositions[(int) c];
-        int p = 0;
+            if (cachedPositions(c) != 0)
+                return cachedPositions(c)
+        var p = 0
         while (p < fontDB.length) {
-            String activeChars = fontDB[p++];
+            val activeChars = fontDB(p)
+            p += 1
             if (activeChars.contains(String.valueOf(c))) {
                 if (canCache)
-                    cachedPositions[(int) c] = p;
-                return p;
+                    cachedPositions(c) = p
+                return p
             }
-            String passes = fontDB[p++];
+            val passes = fontDB(p)
+            p += 1
             p += passes.length() * 9;
         }
         if (canCache)
-            cachedPositions[(int) c] = -1;
-        return -1;
+            cachedPositions(c) = -1
+        return -1
     }
 }
