@@ -21,9 +21,6 @@ import moe.nightfall.instrumentality.editor.control.ArrowButtonElement
  * Created on 25/08/15, ported to Scala on 2015-09-20
  */
 class ModelChooserElement(models: Seq[String]) extends EditElement {
-	// TODO: Remove this when code is ported to Scala.
-	implicit def funToRunnable(fun: () => Unit) = new Runnable() { def run() = fun() }
-	
 	private var group = Array.fill[ModelElement](3)(new ModelElement(true))
 	subElements ++= group
 	
