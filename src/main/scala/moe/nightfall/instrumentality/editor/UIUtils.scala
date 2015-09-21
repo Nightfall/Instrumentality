@@ -15,11 +15,11 @@ package moe.nightfall.instrumentality.editor
 import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.ModelCache
 import moe.nightfall.instrumentality.animations.PoseSet
-import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement
+import moe.nightfall.instrumentality.editor.control.ButtonBarContainerElement
 import moe.nightfall.instrumentality.editor.control.TextButtonElement
 import moe.nightfall.instrumentality.editor.gui.ModelChooserElement
 import moe.nightfall.instrumentality.editor.gui.BenchmarkElement
-import moe.nightfall.instrumentality.editor.guis.PoseTreeElement
+import moe.nightfall.instrumentality.editor.gui.PoseTreeElement
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.Display
 import org.lwjgl.opengl.GL11
@@ -55,28 +55,28 @@ object UIUtils {
         bbce.setUnderPanel(mce, true)
 
         // TODO SCALA No
-        bbce.barCore.addPiece(new TextButtonElement("MdlChoose", new Runnable() {
+        bbce.barCore += new TextButtonElement("MdlChoose", new Runnable() {
             override def run() {
                 bbce.setUnderPanel(mce, true)
             }
-        }))
+        })
 
-        bbce.barCore.addPiece(new TextButtonElement("Mikumark 2016", new Runnable() {
+        bbce.barCore += new TextButtonElement("Mikumark 2016", new Runnable() {
             override def run() {
                 if (Loader.currentFile != null)
                     bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false)
             }
-        }))
+        })
 
         val poseSet = new PoseSet()
-        bbce.barCore.addPiece(new TextButtonElement("Pose Editor", new Runnable() {
+        bbce.barCore += new TextButtonElement("Pose Editor", new Runnable() {
             override def run() {
                 if (Loader.currentFile != null)
                     bbce.setUnderPanel(new PoseTreeElement(ModelCache.getLocal(Loader.currentFile).poses, bbce), false)
             }
-        }))
+        })
 
-        return bbce
+        /*return*/ bbce
     }
 
     private var sysFont : Font = _

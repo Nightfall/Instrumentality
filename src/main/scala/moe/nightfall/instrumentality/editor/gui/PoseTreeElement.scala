@@ -16,20 +16,18 @@ import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.ModelCache
 import moe.nightfall.instrumentality.animations.PoseSet
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.controls.ButtonBarContainerElement
+import moe.nightfall.instrumentality.editor.control.ButtonBarContainerElement
 import moe.nightfall.instrumentality.editor.control.TextButtonElement
-import moe.nightfall.instrumentality.editor.controls.TreeviewElement
+import moe.nightfall.instrumentality.editor.control.TreeviewElement
+import moe.nightfall.instrumentality.editor.control.TreeviewElementStructurer
 import java.io.DataOutputStream
 import java.io.FileOutputStream
-import java.io.IOException
-import java.util.LinkedList;
-import moe.nightfall.instrumentality.editor.controls.TreeviewElement.INodeStructurer
-
 /**
  * Created on 11/09/15.
  */
 class PoseTreeElement(val targetSet : PoseSet, whereAmI : ButtonBarContainerElement) extends EditElement {
-    val treeviewElement = new TreeviewElement[String] (new INodeStructurer[String] {
+    val treeviewElement = new TreeviewElement[String] (new TreeviewElementStructurer[String] {
+        /*
         override def getNodeName(n : String) = n
         override def getChildNodes(n : String) : Seq[String] = {
             val map = for((k, v) <- targetSet.allPoses) yield {
@@ -42,6 +40,27 @@ class PoseTreeElement(val targetSet : PoseSet, whereAmI : ButtonBarContainerElem
         }
         override def onNodeClick(n : String) {
             whereAmI.setUnderPanel(new PoseEditElement(PoseTreeElement.this.targetSet.allPoses.get(n).get, ModelCache.getLocal(Loader.currentFile), targetSet.createEditAnimation(n)), false)
+        }
+        */
+        // note: "null" is the Root Node, and is invisible (only it's children are seen)
+        override def getNodeName(n: Option[String]): String = n.get
+    
+        override def onNodeClick(n: Option[String]): Unit =
+            whereAmI.setUnderPanel(
+                new PoseEditElement(
+                    PoseTreeElement.this.targetSet.allPoses.get(n.get).get,
+                    ModelCache.getLocal(Loader.currentFile),
+                    targetSet.createEditAnimation(n.get)),
+                noCleanup = false)
+        
+        override def getChildNodes(n: Option[String]): Iterable[String] = {
+            val map = for((k, v) <- targetSet.allPoses) yield {
+                (if (n == null) {
+                    if (!targetSet.poseParents.contains(k)) Some(k)
+                } else if (n.equals(targetSet.poseParents.get(k))) Some(k)
+                else None).asInstanceOf[Option[String]]
+            }
+            /*return*/ map.flatten.toSeq
         }
     })
     

@@ -14,11 +14,11 @@ package moe.nightfall.instrumentality.editor.gui;
 
 import moe.nightfall.instrumentality.PoseBoneTransform
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.controls.AdjusterElement
-import moe.nightfall.instrumentality.editor.controls.CheckboxElement
-import moe.nightfall.instrumentality.editor.controls.LabelElement
+import moe.nightfall.instrumentality.editor.control.AdjusterElement
+import moe.nightfall.instrumentality.editor.control.CheckboxElement
+import moe.nightfall.instrumentality.editor.control.LabelElement
 import scala.collection.Iterator
-import moe.nightfall.instrumentality.editor.controls.AdjusterElement.IAdjustable
+import moe.nightfall.instrumentality.editor.control.AdjusterElementData
 import scala.collection.mutable.MutableList
 
 /**
@@ -30,14 +30,11 @@ class PoseEditParamsElement(val parentPE : PoseEditElement) extends EditElement 
 //    Seq("X0", "Y0", "Z0", "X1", "Y1", null, "X2", null, null, "TX0", "TY0", "TX0") zipWithIndex {
 
     
-    private def createElement(name : String, get: PoseBoneTransform => Double, set: (PoseBoneTransform, Double) => Unit) : AdjusterElement = {
-        val ae = new AdjusterElement(name + ":")
-        ae.adjustable = new IAdjustable {
-            override def getValue() = get(parentPE.getEditPBT)
-            override def setValue(v : Double) = set(parentPE.getEditPBT, v)
-        }
-        return ae
-    }
+    private def createElement(name : String, get: PoseBoneTransform => Double, set: (PoseBoneTransform, Double) => Unit) : AdjusterElement =
+        new AdjusterElement(name + ":", new AdjusterElementData {
+            override def value_=(newValue: Double): Unit = set(parentPE.getEditPBT, newValue)
+            override def value: Double = get(parentPE.getEditPBT)
+        })
     
     allAdjusters += 
         createElement("X0", _.X0, (a, b) => a.X0 = b) +=
@@ -53,12 +50,12 @@ class PoseEditParamsElement(val parentPE : PoseEditElement) extends EditElement 
     
     // Elements
     // TODO SCALA this doesn't compile yet
-    val showModel = new CheckboxElement(new Runnable {})
-    showModel.setChecked(true)
+    val showModel = new CheckboxElement(() => {})
+    showModel.checked = true
     subElements += showModel
     
-    val showDebug = new CheckboxElement(new Runnable {})
-    showDebug.setChecked(true)
+    val showDebug = new CheckboxElement(() => {})
+    showDebug.checked = true
     subElements += showDebug
     
     val showModelText = new LabelElement("S.Mdl")
@@ -71,14 +68,17 @@ class PoseEditParamsElement(val parentPE : PoseEditElement) extends EditElement 
         super.layout()
         val tW = width / 3
         val tH = height / 5
-        for (ae <- allAdjusters) {
-            ae.setSize(tW, tH);
-            ae.posX = (i % 3) * tW;
-            ae.posY = (i / 3) * tH;
+        for ((ae, i) <- allAdjusters.view.zipWithIndex) {
+            ae.setSize(tW, tH)
+            ae.posX = (i % 3) * tW
+            ae.posY = (i / 3) * tH
         }
-        showModelText.posY = showModel.posY = showDebug.posY = showDebugText.posY = tH * 4
+        showDebugText.posY = tH * 4
+        showDebug.posY = showDebugText.posY
+        showModel.posY = showDebug.posY
+        showModelText.posY = showModel.posY
 
-        val labelSize = (getWidth() / 2) - tH
+        val labelSize = (width / 2) - tH
         showModel.posX = 0
         showModel.setSize(tH, tH)
         showModelText.posX = tH
