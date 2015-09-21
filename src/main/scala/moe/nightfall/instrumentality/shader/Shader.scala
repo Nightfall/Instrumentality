@@ -25,7 +25,7 @@ final class Shader(val vertexShader : String, val fragmentShader : String) {
     val variables = collection.mutable.HashMap[String, Any]()
 
     def set(variable : String, obj : Any) : Shader = {
-        variables.put(variable, AnyRef)
+        variables.put(variable, obj)
         return this;
     }
 }
