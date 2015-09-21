@@ -37,7 +37,7 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
 		upButton.setSize(depthW, buttonH)
 		downButton.setSize(depthW, buttonH)
 		
-		subElements ++= Array(upButton, downButton
+		subElements ++= Array(upButton, downButton)
 		
 		var dp = scrollPoint
 		

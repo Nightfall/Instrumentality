@@ -10,33 +10,17 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.controls;
+package moe.nightfall.instrumentality.editor.control
 
-/**
- * Created on 11/09/15.
- */
-public class CheckboxElement extends ButtonElement {
-    private boolean checked;
-
-    public CheckboxElement(final Runnable onClick) {
-        super(onClick);
-        // can't set this up before super-construct
-        this.onClick = new Runnable() {
-            @Override
-            public void run() {
-                setChecked(!checked);
-                onClick.run();
-            }
-        };
-        setChecked(false);
-    }
-
-    public boolean getChecked() {
-        return checked;
-    }
-
-    public void setChecked(boolean isChecked) {
-        checked = isChecked;
-        baseStrength = checked ? 0.75f : 0.25f;
-    }
+// TODO: Is there a better way to do this?
+class CheckboxElement(dummy: Null, run: () => Unit) extends ButtonElement(run) {
+	def this(runnable: Runnable) = this(() => runnable.run())
+	
+	var checked = false
+	
+	def this(toRun: () => Unit) {
+		this(null, () => {
+			checked = !checked
+		})
+	}
 }
