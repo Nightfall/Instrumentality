@@ -164,15 +164,13 @@ class ClientProxy extends CommonProxy {
 
                 // InstanceCache will automatically delete any currentFile hook
                 // we leave here
-                mce.cfHook = new Runnable {
-                    override def run {
-                        var newMdl: PMXModel = null
-                        if (Loader.currentFile != null)
-                            newMdl = ModelCache.getLocal(Loader.currentFile)
-                        val ep = mceF.playerRef.get()
-                        if (ep != null)
-                            InstanceCache.setModel(ep, newMdl)
-                    }
+                mce.cfHook = () => {
+                    var newMdl: PMXModel = null
+                    if (Loader.currentFile != null)
+                        newMdl = ModelCache.getLocal(Loader.currentFile)
+                    val ep = mceF.playerRef.get()
+                    if (ep != null)
+                        InstanceCache.setModel(ep, newMdl)
                 }
 
                 Loader.currentFileListeners += mce.cfHook
