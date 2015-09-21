@@ -14,7 +14,7 @@
 package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.controls.ModelElement
+import moe.nightfall.instrumentality.editor.control.ModelElement
 import moe.nightfall.instrumentality.editor.control.ArrowButtonElement
 
 /**

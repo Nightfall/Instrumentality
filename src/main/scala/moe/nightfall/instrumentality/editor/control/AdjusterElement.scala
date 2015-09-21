@@ -10,51 +10,53 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.gui
+package moe.nightfall.instrumentality.editor.control
 
-import moe.nightfall.instrumentality.PMXModel
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.UIUtils
-import moe.nightfall.instrumentality.editor.control.ModelElement
-import org.lwjgl.opengl.GL11
 
+class AdjusterElement(valuePrefix: String, toAdjust: AdjusterElementData) extends EditElement {
+	val adjustmentValue = 0.05d
+	val valueDisplay = new LabelElement("?")
+	
+	val incButton = new ArrowButtonElement(0, () => 
+		toAdjust.value = correct(toAdjust.value + adjustmentValue)
+	)
+	val decButton = new ArrowButtonElement(0, () =>
+		toAdjust.value = correct(toAdjust.value - adjustmentValue)
+	)
+	
+	subElements ++= Array(incButton, decButton, valueDisplay)
+	
+	/**
+	 * Keeps the value from succumbing to rounding errors
+	 *
+	 * @param v The value to correct
+	 * @return The value, rounded to the nearest adjustmentvalue
+	 */
+	private def correct(v: Double): Double = v * (1 / adjustmentValue).round / (1 / adjustmentValue)
+	
+	override def draw(scrWidth: Int, scrHeight: Int) {
+		valueDisplay.text = valuePrefix + toAdjust.value
+		super.draw(scrWidth, scrHeight)
+	}
+	
+	override def layout() {
+		super.layout()
+		val du = height
+		decButton.posX = 0
+		decButton.posY = 0
+		decButton.setSize(du, du)
+		incButton.posX = width - du
+		incButton.posY = 0
+		incButton.setSize(du, du)
+		valueDisplay.posX = du
+		valueDisplay.posY = 0
+		valueDisplay.setSize(width - (du * 2), du)
+	}
 
-class BenchmarkElement(val myModel : PMXModel) extends EditElement {
-    var time: Double = 0
-    var avgTime: Double = 0
+}
 
-    override def update(dTime: Double) {
-        super.update(dTime)
-	    
-        avgTime = ((avgTime * 99) + dTime) / 100
-        time += dTime
-        if (time > 2.0d) {
-            val modelElement = new ModelElement(false)
-            modelElement.setSize(200, 320)
-            subElements += modelElement
-            layout()
-            time -= 2.0d
-        }
-    }
-
-    override def layout() {
-        for ((element, index) <- subElements.view.zipWithIndex) {
-            element.posX = width % (index * 50)
-            element.posY = height % ((element.posX / width) * 50)
-        }
-    }
-
-    override def draw(scrWidth : Int, scrHeight : Int) {
-        super.draw(scrWidth, scrHeight)
-	    
-        GL11.glPushMatrix()
-        GL11.glTranslated(1, 1, 0)
-        GL11.glScaled(2, 2, 2)
-        GL11.glColor3d(1, 1, 1)
-
-        UIUtils.drawText(
-            subElements.size + " elems/" + (((1 / avgTime) * 10).toInt / 10d) + " FPS", 3)
-
-        GL11.glPopMatrix()
-    }
+trait AdjusterElementData {
+	def value: Double
+	def value_=(newValue: Double): Unit
 }

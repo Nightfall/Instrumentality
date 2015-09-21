@@ -121,7 +121,7 @@ class ModelCacheEntry {
     // EntityPlayer. Don't keep not-weak references long-term anywhere in the code.
     var playerRef : WeakReference[EntityPlayer] = null
     // If != null, is the currentFileListeners Runnable. Is removed from there when the MCE is removed.
-    var cfHook : Runnable = null
+    var cfHook : () => Unit = null
 }
 
 private class ChangeEntry (

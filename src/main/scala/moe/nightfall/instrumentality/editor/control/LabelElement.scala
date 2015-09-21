@@ -10,33 +10,26 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.controls;
+package moe.nightfall.instrumentality.editor.control
 
-/**
- * Created on 11/09/15.
- */
-public class CheckboxElement extends ButtonElement {
-    private boolean checked;
+import moe.nightfall.instrumentality.editor.{UIUtils, EditElement}
+import org.lwjgl.opengl.GL11
 
-    public CheckboxElement(final Runnable onClick) {
-        super(onClick);
-        // can't set this up before super-construct
-        this.onClick = new Runnable() {
-            @Override
-            public void run() {
-                setChecked(!checked);
-                onClick.run();
-            }
-        };
-        setChecked(false);
-    }
-
-    public boolean getChecked() {
-        return checked;
-    }
-
-    public void setChecked(boolean isChecked) {
-        checked = isChecked;
-        baseStrength = checked ? 0.75f : 0.25f;
-    }
+class LabelElement(initial: String) extends EditElement {
+	var text = initial
+	
+	override def draw(scrWidth: Int, scrHeight: Int) {
+		super.draw(scrWidth, scrHeight)
+		GL11.glPushMatrix()
+		var scale: Double = (height - borderWidth) / 8d
+		if (scale < 1.7) {
+			scale = height / 8d
+		}
+		else {
+			GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
+		}
+		GL11.glScaled(scale, scale, 1)
+		UIUtils.drawText(text, 2)
+		GL11.glPopMatrix()
+	}
 }

@@ -16,8 +16,11 @@ package moe.nightfall.instrumentality.editor.control
 import moe.nightfall.instrumentality.editor.EditElement
 import org.lwjgl.input.Mouse
 
-class ButtonElement(onClick: () => Unit) extends EditElement {
+class ButtonElement(toRun: () => Unit) extends EditElement {
 	def this(runnable: Runnable) = this(() => runnable.run())
+	
+	// So this can be changed...
+	var onClick = toRun
 	
 	var isHover = false
 	var baseStrength = 0.5f

@@ -28,7 +28,7 @@ object Loader {
     // This is the current model name for the player.
     // To be notified when this changes, put yourself on the list below :)
     var currentFile : String = _
-    var currentFileListeners = ListBuffer[Runnable]()
+    var currentFileListeners = ListBuffer[() => Unit]()
 
     var shaderBoneTransform : Shader = _
 
@@ -45,8 +45,8 @@ object Loader {
     }
 
     def setCurrentFile(workModelName : String) {
-        currentFile = workModelName;
-        currentFileListeners.foreach(_.run())
+        currentFile = workModelName
+        currentFileListeners.foreach(_())
     }
 
     // No better idea where to put this

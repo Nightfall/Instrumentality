@@ -81,7 +81,7 @@ object ModelCache {
                     // terminal abusers are not welcome here
                     throw new IOException(
                         "Target path outside model repository, a model is dangerous, offensive filename : "
-                            + filename.replace("\27", "(REALLY DODGY: ^[)"))
+                            + filename.replace("\u001B", "(REALLY DODGY: ^[)"))
                 targ.getParentFile().mkdirs()
                 val fos = new FileOutputStream(targ)
                 fos.write(b)
