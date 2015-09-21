@@ -164,13 +164,11 @@ class PMXModel private {
             }
             // Pass 2 : clean up the mess
             groups(i) foreach { fg =>
-                fg.boneMappingFileGroup = new Array(theFile.boneData.length)
+                fg.boneMappingFileGroup = Array.fill(theFile.boneData.length)(-1)
                 fg.boneMappingGroupFile = new Array(fg.boneSet.size)
                 val it = fg.boneSet.iterator
-                for (j <- 0 until fg.boneMappingFileGroup.length)
-                    fg.boneMappingFileGroup(j) = -1
-                for (j <- 0 until fg.boneMappingFileGroup.length) {
-                    val k = it.next().boneId
+                for (j <- 0 until fg.boneMappingGroupFile.length) {
+                    val k = it.next.boneId
                     fg.boneMappingGroupFile(j) = k
                     fg.boneMappingFileGroup(k) = j
                 }

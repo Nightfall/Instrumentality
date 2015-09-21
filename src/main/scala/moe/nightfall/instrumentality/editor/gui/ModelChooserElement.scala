@@ -20,7 +20,7 @@ import moe.nightfall.instrumentality.editor.control.ArrowButtonElement
 /**
  * Created on 25/08/15, ported to Scala on 2015-09-20
  */
-class ModelChooserElement(models: Seq[String]) extends EditElement {
+class ModelChooserElement(val availableModels: Seq[String]) extends EditElement {
 	private var group = Array.fill[ModelElement](3)(new ModelElement(true))
 	subElements ++= group
 	
@@ -39,7 +39,6 @@ class ModelChooserElement(models: Seq[String]) extends EditElement {
 	subElements ++= buttonbar
 	updatePosition()
 	
-	private val availableModels = models.toArray
 	colourStrength = 0.5f
 	
 	override def layout() = {

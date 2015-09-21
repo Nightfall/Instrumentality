@@ -102,7 +102,6 @@ object ShaderManager {
                     program.substring(end + 1, program.length)
             }
             program = program.replaceAll("\\$\\{", "\\${")
-            print(program)
             GL20.glShaderSource(shader, program)
             GL20.glCompileShader(shader)
             if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) throw new RuntimeException("Error creating shader: " +

@@ -117,7 +117,9 @@ object ModelCache {
 
     private def getInternal(locator: IPMXFilenameLocator, name: String): PMXModel = {
         val pm = new PMXModel(new PMXFile(locator("mdl.pmx")), Loader.groupSize)
-        pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
+        try {
+            pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
+        } catch { case _ : IOException =>}
 
         loadTextures(pm, pm.theFile, locator)
         localModels.put(name, pm)
