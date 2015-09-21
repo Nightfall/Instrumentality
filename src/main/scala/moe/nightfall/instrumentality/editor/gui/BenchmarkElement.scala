@@ -10,7 +10,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.guis;
+package moe.nightfall.instrumentality.editor.gui;
 
 import moe.nightfall.instrumentality.PMXModel;
 import moe.nightfall.instrumentality.editor.EditElement;
@@ -21,52 +21,44 @@ import org.lwjgl.opengl.GL11;
 /**
  * Created on 01/09/15.
  */
-public class BenchmarkElement extends EditElement {
-    public final PMXModel myModel;
-    public double time;
-    public double avgTime = 0;
+class BenchmarkElement(val myModel : PMXModel) extends EditElement {
+    var time : Double = _
+    var avgTime : Double = _
 
-    public BenchmarkElement(PMXModel mdl) {
-        myModel = mdl;
-    }
-
-    @Override
-    public void update(double dTime) {
-        super.update(dTime);
-        avgTime = ((avgTime * 99) + dTime) / 100;
-        time += dTime;
+    override def update(dTime : Double) {
+        super.update(dTime)
+        avgTime = ((avgTime * 99) + dTime) / 100
+        time += dTime
         if (time > 2.0d) {
-            ModelElement me = new ModelElement(false);
-            me.setSize(200, 320);
-            subElements.add(me);
-            layout();
-            time -= 2.0d;
+            val me = new ModelElement(false)
+            me.setSize(200, 320)
+            subElements += me
+            layout()
+            time -= 2.0d
         }
     }
 
-    @Override
-    public void layout() {
-        int i = 0;
-        for (EditElement me : subElements) {
-            me.posX = i * 50;
-            me.posY = (me.posX / getWidth()) * 50;
-            me.posX %= getWidth();
-            me.posY %= getHeight();
-            i++;
+    override def layout() {
+        var i = 0
+        for (me <- subElements) {
+            me.posX = i * 50
+            me.posY = (me.posX / width) * 50
+            me.posX %= width
+            me.posY %= height
+            i += 1
         }
     }
 
-    @Override
-    public void draw(int scrWidth, int scrHeight) {
-        super.draw(scrWidth, scrHeight);
-        GL11.glPushMatrix();
-        GL11.glTranslated(1, 1, 0);
-        GL11.glScaled(2, 2, 2);
-        GL11.glColor3d(1, 1, 1);
+    override def draw(scrWidth : Int, scrHeight : Int) {
+        super.draw(scrWidth, scrHeight)
+        GL11.glPushMatrix()
+        GL11.glTranslated(1, 1, 0)
+        GL11.glScaled(2, 2, 2)
+        GL11.glColor3d(1, 1, 1)
 
-        String str = subElements.size() + " elems/" + (((int) ((1 / avgTime) * 10)) / 10d) + " FPS";
-        UIUtils.drawText(str, 3);
+        val str = subElements.size + " elems/" + ((((1 / avgTime) * 10).toInt) / 10d) + " FPS"
+        UIUtils.drawText(str, 3)
 
-        GL11.glPopMatrix();
+        GL11.glPopMatrix()
     }
 }
