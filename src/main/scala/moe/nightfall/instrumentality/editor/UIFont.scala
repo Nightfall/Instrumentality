@@ -102,7 +102,7 @@ object UIFont {
             var x = new Array[Double](10)
             var y = new Array[Double](10)
             var isUsed = new Array[Boolean](10)
-            for (j <- 0 to 10) {     
+            for (j <- 0 until 9) {     
                 val str = passData(passPos)
                 passPos += 1
                 for (n <- 0 until 10) {
@@ -116,7 +116,7 @@ object UIFont {
             GL11.glBegin(t)
             for (n <- 0 until 10)
                 if (isUsed(n))
-                    GL11.glVertex2d(x(n), y(n));
+                    GL11.glVertex2d(x(n), y(n))
             if (tpe == 'L')
                 GL11.glVertex2d(x(0), y(0))
             GL11.glEnd()
