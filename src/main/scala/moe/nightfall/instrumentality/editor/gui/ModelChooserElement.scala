@@ -23,11 +23,13 @@ import moe.nightfall.instrumentality.editor.control.ArrowButtonElement
 class ModelChooserElement(val availableModels: Seq[String]) extends EditElement {
 	private var group = Array.fill[ModelElement](3)(new ModelElement(true))
 	subElements ++= group
-	
+
 	private var ptrStart: Int = 0
 	private var buttonbar = Array[EditElement](
 		new ArrowButtonElement(180, () => {
 			ptrStart -= 1
+            if (ptrStart<0)
+                ptrStart = availableModels.length;
 			updatePosition()
 		}),
 		new ArrowButtonElement(0, () => {
@@ -51,7 +53,7 @@ class ModelChooserElement(val availableModels: Seq[String]) extends EditElement 
 			element.setSize(x, y * 3)
 		}
 		
-		for((button, index) <- group.view.zipWithIndex) {
+		for((button, index) <- buttonbar.view.zipWithIndex) {
 			button.posX = y * index
 			button.posY = 0
 			button.setSize(y, y)
@@ -60,7 +62,12 @@ class ModelChooserElement(val availableModels: Seq[String]) extends EditElement 
 	
 	def updatePosition() = {
 		for((element, index) <- group.view.zipWithIndex) {
-			element.setModel(availableModels((index + ptrStart) % availableModels.length))
+            val indi = (index + ptrStart) % (availableModels.length + 1);
+            if (indi == 0) {
+                element.setModel(null);
+            } else {
+                element.setModel(availableModels(indi - 1))
+            }
 		}
 	}
 }

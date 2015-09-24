@@ -12,14 +12,10 @@
  */
 package moe.nightfall.instrumentality
 
-import java.io.ByteArrayInputStream
-import java.io.DataInputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
+import java.io.{ByteArrayInputStream, DataInputStream, File, FileInputStream, FileOutputStream, IOException}
 import javax.imageio.ImageIO
+
 import com.google.common.hash.Hashing
-import java.io.IOException
 
 /**
  * Model cache. This is designed to be used from multiple threads, as long as
@@ -44,11 +40,11 @@ object ModelCache {
      * Gets a PMXModel from a data manifest. Will try local FS, then try server
      *
      * @param hashMap
-     *            Mapping from filenames to hashes. Only "mdl.pmx" is needed if
-     *            remoteServer==null. This is so that MMC-Chat protocol can work
+     * Mapping from filenames to hashes. Only "mdl.pmx" is needed if
+     * remoteServer==null. This is so that MMC-Chat protocol can work
      * @param remoteServer
-     *            The remote server should a local copy be unavailable (can be
-     *            null)
+     * The remote server should a local copy be unavailable (can be
+     * null)
      * @return The resulting model
      */
     def getByManifest(hashMap: Map[String, String], remoteServer: IPMXLocator): PMXModel = {
@@ -62,45 +58,50 @@ object ModelCache {
         if (remoteServer == null)
             return null
 
-        val manifestGetter = new IPMXFilenameLocator() {
-            var totalUsage = 0
-            override def apply(filename: String): Array[Byte] = {
-                val hash = hashMap.get(filename) getOrElse null
-                if (hash == null)
-                    throw new IOException("No file " + filename)
-                val b = remoteServer.getData(hash)
-                totalUsage += b.length
-                if (maxTotalUsage >= 0 && totalUsage > maxTotalUsage)
-                    throw new IOException(
-                        "Potential Denial Of Service attack via HDD usage, download will not be continued.")
-                val targ = new File(modelRepository + "/" + targetHash + "/" + filename)
-                // one final sanity check (lowercase'd because of potential
-                // case madness on Windows, etc.)
-                if (!targ.getAbsolutePath().toLowerCase()
-                    .startsWith(new File(modelRepository).getAbsolutePath().toLowerCase()))
+        try {
+            val manifestGetter = new IPMXFilenameLocator() {
+                var totalUsage = 0
+
+                override def apply(filename: String): Array[Byte] = {
+                    val hash = hashMap.get(filename) getOrElse null
+                    if (hash == null)
+                        throw new IOException("No file " + filename)
+                    val b = remoteServer.getData(hash)
+                    totalUsage += b.length
+                    if (maxTotalUsage >= 0 && totalUsage > maxTotalUsage)
+                        throw new IOException(
+                            "Potential Denial Of Service attack via HDD usage, download will not be continued.")
+                    val targ = new File(modelRepository + "/" + targetHash + "/" + filename)
+                    // one final sanity check (lowercase'd because of potential
+                    // case madness on Windows, etc.)
+                    if (!targ.getAbsolutePath().toLowerCase()
+                        .startsWith(new File(modelRepository).getAbsolutePath().toLowerCase()))
                     // terminal abusers are not welcome here
-                    throw new IOException(
-                        "Target path outside model repository, a model is dangerous, offensive filename : "
-                            + filename.replace("\u001B", "(REALLY DODGY: ^[)"))
-                targ.getParentFile().mkdirs()
-                val fos = new FileOutputStream(targ)
-                fos.write(b)
-                fos.close()
-                return b
+                        throw new IOException(
+                            "Target path outside model repository, a model is dangerous, offensive filename : "
+                                + filename.replace("\u001B", "(REALLY DODGY: ^[)"))
+                    targ.getParentFile().mkdirs()
+                    val fos = new FileOutputStream(targ)
+                    fos.write(b)
+                    fos.close()
+                    return b
+                }
             }
-        }
 
-        // get all .txt files, as they are harmless and probably needed to
-        // avoid legal issues
-        // Note that the DM creator will deliberately include .txt files for
-        // this same purpose
-        for ((k, v) <- hashMap) {
-            if (k.toLowerCase().endsWith(".txt"))
-                manifestGetter(v)
-        }
-        manifestGetter("mmcposes.dat")
+            // get all .txt files, as they are harmless and probably needed to
+            // avoid legal issues
+            // Note that the DM creator will deliberately include .txt files for
+            // this same purpose
+            for ((k, v) <- hashMap) {
+                if (k.toLowerCase().endsWith(".txt"))
+                    manifestGetter(v)
+            }
+            manifestGetter("mmcposes.dat")
 
-        return getInternal(manifestGetter, targetHash);
+            return getInternal(manifestGetter, targetHash);
+        } catch {
+            case e: IOException => return null
+        }
     }
 
     def getLocalModels(): Seq[String] = {
@@ -111,15 +112,20 @@ object ModelCache {
     def getLocal(name: String): PMXModel = {
         val mdl = localModels.get(name)
         if (mdl.isDefined) return mdl.get
-
-        return getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name)
+        try {
+            return getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name)
+        } catch {
+            case e: IOException => return null
+        }
     }
 
     private def getInternal(locator: IPMXFilenameLocator, name: String): PMXModel = {
         val pm = new PMXModel(new PMXFile(locator("mdl.pmx")), Loader.groupSize)
         try {
             pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
-        } catch { case _ : IOException =>}
+        } catch {
+            case _: IOException =>
+        }
 
         loadTextures(pm, pm.theFile, locator)
         localModels.put(name, pm)
@@ -245,4 +251,5 @@ object ModelCache {
         var filesToHashes = collection.mutable.Map[String, String]()
         var hashesToFiles = collection.mutable.Map[String, String]()
     }
+
 }
