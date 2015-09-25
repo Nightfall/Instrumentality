@@ -74,6 +74,10 @@ class ModelElement(ib: Boolean) extends View3DElement {
             GL11.glTranslated(0, -0.5f, 0)
             GL11.glScaled(sFactor, sFactor, sFactor)
             workModel.render(Loader.shaderBoneTransform, 1, 1, 1, workModel.theModel.height + 1.0f)
+        } else {
+            GL11.glTranslated(-0.25, 0, 0)
+            GL11.glScaled(0.01, -0.01, 0.01)
+            UIUtils.drawText("Load Fail", 1)
         }
     }
 
