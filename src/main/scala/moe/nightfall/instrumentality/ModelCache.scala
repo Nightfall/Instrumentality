@@ -129,7 +129,8 @@ object ModelCache {
         }
 
         loadTextures(pm, pm.theFile, locator)
-        localModels.put(name, pm)
+        if (!localModels.contains(name))
+            localModels.put(name, pm)
         return pm
     }
 
@@ -192,28 +193,10 @@ object ModelCache {
                 data
             }
         }
-        // If we already have this model in RAM, we can skip loading the PMX
-        // file itself.
-        val alreadyLoaded = localModels.get(name)
-        var pf: PMXFile = null
-        if (alreadyLoaded.isDefined) {
-            pf = alreadyLoaded.get.theFile
-            locator("mdl.pmx"); // Needed to ensure it shows up in the
-            // manifest
-        } else {
-            pf = new PMXFile(locator("mdl.pmx"))
-        }
-        locator("mmcposes.dat")
-
-        // load the textures (Sure, this probably won't be useful for much...
-        // except it'll ensure that the uploaded textures are actually valid.)
-        loadTextures(null, pf, locator)
-
-        // txt files are also saved (licencing)
-        rootDir.listFiles foreach { f =>
-            if (f.getName().toLowerCase().endsWith(".txt") && f.isFile())
-                locator(f.getName())
-        }
+        // This way absolutely ensures the model is valid before we upload,
+        // and it means we don't have to keep a "DM dry run" copy of the loading logic.
+        // Plus, if it occurs *before* the model is loaded, it'll pre-load it (though this is unlikely to matter)
+        getInternal(locator, name, true)
         return dmcr;
     }
 
@@ -238,7 +221,7 @@ object ModelCache {
     class FilePMXFilenameLocator(val baseDir: String) extends IPMXFilenameLocator {
         def listFiles(base: String): Seq[String] = {
             var strseq = Seq.empty[String]
-            val fileList = new File(baseDir).listFiles()
+            val fileList = new File(baseDir + base).listFiles()
             if (fileList != null) {
                 fileList.foreach(f => {
                     if (f.isDirectory()) {
