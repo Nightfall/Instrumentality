@@ -21,7 +21,7 @@ class AdjusterElement(valuePrefix: String, toAdjust: AdjusterElementData) extend
     val incButton = new ArrowButtonElement(0, () =>
         toAdjust.value = correct(toAdjust.value + adjustmentValue)
     )
-    val decButton = new ArrowButtonElement(0, () =>
+    val decButton = new ArrowButtonElement(180, () =>
         toAdjust.value = correct(toAdjust.value - adjustmentValue)
     )
 
@@ -33,7 +33,7 @@ class AdjusterElement(valuePrefix: String, toAdjust: AdjusterElementData) extend
      * @param v The value to correct
      * @return The value, rounded to the nearest adjustmentvalue
      */
-    private def correct(v: Double): Double = v * (1 / adjustmentValue).round / (1 / adjustmentValue)
+    private def correct(v: Double): Double = ((v * (1 / adjustmentValue)).round) / (1 / adjustmentValue)
 
     override def draw(scrWidth: Int, scrHeight: Int) {
         valueDisplay.text = valuePrefix + toAdjust.value
