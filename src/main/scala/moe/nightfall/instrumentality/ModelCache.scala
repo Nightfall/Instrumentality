@@ -116,7 +116,9 @@ object ModelCache {
 
     // getTxt will get .txt files for legal purposes (but will not fail if they cannot be downloaded)
     private def getInternal(locator: IPMXFilenameLocator, name: String, getTxt: Boolean): PMXModel = {
-        val pm = new PMXModel(new PMXFile(locator(findPMX(locator.listFiles))), Loader.groupSize)
+        val pmxData = locator(findPMX(locator.listFiles))
+        val pmxHash = hashBytes(pmxData)
+        val pm = new PMXModel(new PMXFile(pmxData), Loader.groupSize)
 
         try {
             locator.listFiles.filter(k => k.toLowerCase.endsWith(".txt")).foreach(k => locator)
@@ -127,7 +129,15 @@ object ModelCache {
         try {
             pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
         } catch {
-            case _: IOException =>
+            case _: IOException => {
+                try {
+                    val stream = classOf[Main].getClassLoader.getResourceAsStream("assets/instrumentality/posesbuiltin/" + pmxHash + ".dat")
+                    if (stream != null)
+                        pm.poses.load(new DataInputStream(stream))
+                } catch {
+                    case _: IOException =>
+                }
+            }
         }
 
         loadTextures(pm, pm.theFile, locator)
@@ -206,7 +216,7 @@ object ModelCache {
         // NOTE: This hash does NOT need to be cryptographically secure, just
         // large enough to avoid any decent chance of accidental collision.
         // Oh, and changing it after release will break everything.
-        return Hashing.sha1.hashBytes(data).toString.substring(0, 24)
+        return Hashing.sha1.hashBytes(data).toString
     }
 
     trait IPMXFilenameLocator {

@@ -212,7 +212,7 @@ class PlayerInstance(file: PMXModel) {
             val dX = Math.abs(player.lastTickPosX - player.posX)
             val dZ = Math.abs(player.lastTickPosZ - player.posZ)
             val dist = Math.sqrt((dX * dX) + (dZ * dZ))
-            spdMul = dist * 17.5d
+            spdMul = dist * 10.0d
         }
         anim.walkSpeed = spdMul
         anim.walkStrength = 1.0d

@@ -113,6 +113,30 @@ class PoseBoneTransform {
         return this
     }
 
+    def isZero(): Boolean = {
+        if (X0 != 0)
+            return false
+        if (X0 != 0)
+            return false
+        if (Z0 != 0)
+            return false
+        if (X1 != 0)
+            return false
+        if (Y1 != 0)
+            return false
+        if (X2 != 0)
+            return false
+        if (TX0 != 0)
+            return false
+        if (TY0 != 0)
+            return false
+        if (TZ0 != 0)
+            return false
+        return true
+    }
+
+    def isNotZero(): Boolean = !isZero()
+
     def apply(boneMatrix: Matrix4f) {
         boneMatrix.translate(new Vector3f(TX0.toFloat, TY0.toFloat, TZ0.toFloat));
 

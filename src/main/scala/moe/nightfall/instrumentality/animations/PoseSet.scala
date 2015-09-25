@@ -12,7 +12,8 @@
  */
 package moe.nightfall.instrumentality.animations
 
-import java.io.{DataInputStream, DataOutputStream, IOException}
+import java.io.{ByteArrayOutputStream, DataInputStream, DataOutputStream, IOException}
+import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import moe.nightfall.instrumentality.PoseBoneTransform
 
@@ -23,8 +24,19 @@ import scala.collection.mutable.{HashMap, Map}
  * Created on 11/09/15.
  */
 class PoseSet {
+    // Basic pose data, added in version Lelouch (first version)
     val allPoses = new HashMap[String, PoseAnimation]
     val poseParents = new HashMap[String, String]
+    // Model ZIP download URL & folder containing PMX within ZIP, added in version Kallen
+    // A blank downloadURL means that this is not usable for suggestion.
+    // A blank downloadBaseFolder means that the URL *cannot* be automatically followed for some reason,
+    // and the URL should instead be given to the web browser on the system.
+    // (This mechanism allows creating a listing of recommended models for the user to download,
+    //  which should make the mod a LOT easier to use. This method isn't flexible, but it's easy for the user.
+    //  Also, this being bundled with the posedata ensure that whenever we suggest a model,
+    //  it's a one-click process to use it, as the posedata is where we got the URL from.)
+    var downloadURL = ""
+    var downloadBaseFolder = ""
 
     allPoses.put("idle", new PoseAnimation)
     allPoses.put("lookL", new PoseAnimation)
@@ -116,55 +128,75 @@ class PoseSet {
 
     @throws(classOf[IOException])
     def save(os: DataOutputStream) {
-        os.writeUTF("Lelouch")
+        os.writeUTF("Kallen")
+        os.writeUTF(downloadURL)
+        os.writeUTF(downloadBaseFolder)
+        // GZIP does better if we throw in all the data at once. Also, we need finish()
+        val baos = new ByteArrayOutputStream()
+        val zos = new DataOutputStream(baos)
         allPoses foreach { case (poseKey, poseValue) =>
             // if we ever have the unfortunate situation of having multiple versions, here's how to check
-            // VERSION NAMES: Lelouch Kallen Yukki Yuno
+            // VERSION NAMES: Lelouch Kallen Yukki Yuno Tomoya(?) Nagisa
+            //                        ^ CURRENT
             // (Version names should alternate between genders. We're an equal opportunity name-grabber.)
-            os.write(1)
-            os.writeUTF(poseKey)
-            poseValue.hashMap foreach { case (pbtKey, pbtValue) =>
-                os.write(1)
-                os.writeUTF(pbtKey)
-                os.writeDouble(pbtValue.X0)
-                os.writeDouble(pbtValue.X1)
-                os.writeDouble(pbtValue.X2)
-                os.writeDouble(pbtValue.Y0)
-                os.writeDouble(pbtValue.Y1)
-                os.writeDouble(pbtValue.Z0)
-                os.writeDouble(pbtValue.TX0)
-                os.writeDouble(pbtValue.TY0)
-                os.writeDouble(pbtValue.TZ0)
+            zos.write(1)
+            zos.writeUTF(poseKey)
+            poseValue.hashMap.filter(_._2.isNotZero).foreach { case (pbtKey, pbtValue) =>
+                zos.write(1)
+                zos.writeUTF(pbtKey)
+                zos.writeDouble(pbtValue.X0)
+                zos.writeDouble(pbtValue.X1)
+                zos.writeDouble(pbtValue.X2)
+                zos.writeDouble(pbtValue.Y0)
+                zos.writeDouble(pbtValue.Y1)
+                zos.writeDouble(pbtValue.Z0)
+                zos.writeDouble(pbtValue.TX0)
+                zos.writeDouble(pbtValue.TY0)
+                zos.writeDouble(pbtValue.TZ0)
             }
-            os.write(0)
+            zos.write(0)
         }
-        os.write(0)
+        zos.write(0)
+        zos.flush()
+        val gzos = new GZIPOutputStream(os)
+        gzos.write(baos.toByteArray)
+        gzos.finish()
     }
 
     @throws(classOf[IOException])
     def load(dis: DataInputStream) {
         val ver = dis.readUTF()
         if (ver == "Lelouch") {
-            while (dis.read() != 0) {
-                val poseName = dis.readUTF()
-                val pa = new PoseAnimation
-                allPoses.put(poseName, pa)
-                while (dis.read() != 0) {
-                    val pbt = new PoseBoneTransform
-                    pa.hashMap.put(dis.readUTF(), pbt)
-                    pbt.X0 = dis.readDouble()
-                    pbt.X1 = dis.readDouble()
-                    pbt.X2 = dis.readDouble()
-                    pbt.Y0 = dis.readDouble()
-                    pbt.Y1 = dis.readDouble()
-                    pbt.Z0 = dis.readDouble()
-                    pbt.TX0 = dis.readDouble()
-                    pbt.TY0 = dis.readDouble()
-                    pbt.TZ0 = dis.readDouble()
-                }
-            }
+            downloadURL = "Unknown";
+            loadMain(0, dis)
+        } else if (ver == "Kallen") {
+            downloadURL = dis.readUTF()
+            downloadBaseFolder = dis.readUTF()
+            // main pose loader is generally very similar
+            loadMain(0, new DataInputStream(new GZIPInputStream(dis)))
         } else {
             throw new IOException("Not posedata!")
+        }
+    }
+
+    def loadMain(ver: Int, dis: DataInputStream): Unit = {
+        while (dis.read() != 0) {
+            val poseName = dis.readUTF()
+            val pa = new PoseAnimation
+            allPoses.put(poseName, pa)
+            while (dis.read() != 0) {
+                val pbt = new PoseBoneTransform
+                pa.hashMap.put(dis.readUTF(), pbt)
+                pbt.X0 = dis.readDouble()
+                pbt.X1 = dis.readDouble()
+                pbt.X2 = dis.readDouble()
+                pbt.Y0 = dis.readDouble()
+                pbt.Y1 = dis.readDouble()
+                pbt.Z0 = dis.readDouble()
+                pbt.TX0 = dis.readDouble()
+                pbt.TY0 = dis.readDouble()
+                pbt.TZ0 = dis.readDouble()
+            }
         }
     }
 }
