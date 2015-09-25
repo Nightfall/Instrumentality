@@ -10,24 +10,22 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.gui;
+package moe.nightfall.instrumentality.editor.gui
 
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.ModelCache
-import moe.nightfall.instrumentality.PMXFile.PMXBone
+;
+
+import java.io.{DataOutputStream, FileOutputStream}
+
+import moe.nightfall.instrumentality.{Loader, ModelCache}
 import moe.nightfall.instrumentality.animations.PoseSet
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.ButtonBarContainerElement
-import moe.nightfall.instrumentality.editor.control.TextButtonElement
-import moe.nightfall.instrumentality.editor.control.TreeviewElement
-import moe.nightfall.instrumentality.editor.control.TreeviewElementStructurer
-import java.io.DataOutputStream
-import java.io.FileOutputStream
+import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement, TreeviewElement, TreeviewElementStructurer}
+
 /**
  * Created on 11/09/15.
  */
-class PoseTreeElement(val targetSet : PoseSet, whereAmI : ButtonBarContainerElement) extends EditElement {
-    val treeviewElement = new TreeviewElement[String] (new TreeviewElementStructurer[String] {
+class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElement) extends EditElement {
+    val treeviewElement = new TreeviewElement[String](new TreeviewElementStructurer[String] {
         /*
         override def getNodeName(n : String) = n
         override def getChildNodes(n : String) : Seq[String] = {
@@ -45,7 +43,7 @@ class PoseTreeElement(val targetSet : PoseSet, whereAmI : ButtonBarContainerElem
         */
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
         override def getNodeName(n: Option[String]): String = n.get
-    
+
         override def onNodeClick(n: Option[String]): Unit =
             whereAmI.setUnderPanel(
                 new PoseEditElement(
@@ -59,17 +57,17 @@ class PoseTreeElement(val targetSet : PoseSet, whereAmI : ButtonBarContainerElem
         override def getChildNodes(n: Option[String]): Iterable[String] =
             targetSet.allPoses.keys.filter(k => targetSet.poseParents.get(k) == n).toSeq
     })
-    
+
     subElements += treeviewElement
-    
+
     val saveButton = new TextButtonElement("Save", () => {
-          val fos = new FileOutputStream(ModelCache.modelRepository + "/" + Loader.currentFile + "/mmcposes.dat")
-          val dos = new DataOutputStream(fos)
-          targetSet.save(dos)
-          dos.close()
-        }
+        val fos = new FileOutputStream(ModelCache.modelRepository + "/" + Loader.currentFile + "/mmcposes.dat")
+        val dos = new DataOutputStream(fos)
+        targetSet.save(dos)
+        dos.close()
+    }
     )
-    
+
     subElements += saveButton
 
     override def layout() {

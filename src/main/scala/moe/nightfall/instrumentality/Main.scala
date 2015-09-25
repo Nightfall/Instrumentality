@@ -12,16 +12,11 @@
  */
 package moe.nightfall.instrumentality
 
-import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.UIFont
-import moe.nightfall.instrumentality.editor.UIUtils
-import org.lwjgl.input.Keyboard
-import org.lwjgl.input.Mouse
-import org.lwjgl.opengl.Display
-import org.lwjgl.opengl.DisplayMode
-import org.lwjgl.opengl.GL11
-import java.io.BufferedReader
-import java.io.InputStreamReader;
+import java.io.{BufferedReader, InputStreamReader}
+
+import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
+import org.lwjgl.input.{Keyboard, Mouse}
+import org.lwjgl.opengl.{Display, DisplayMode, GL11};
 
 /**
  * The testbench.
@@ -30,10 +25,10 @@ import java.io.InputStreamReader;
 object Main extends App {
     new Main().startWorkbench()
 }
-    
-class Main {    
-    private var currentPanel : EditElement = _
-    
+
+class Main {
+    private var currentPanel: EditElement = _
+
     def startWorkbench() {
         val consoleReader = new BufferedReader(new InputStreamReader(System.in));
 
@@ -96,7 +91,7 @@ class Main {
         Display.destroy();
     }
 
-    def onSizeChange(scrWidth : Int, scrHeight : Int) {
+    def onSizeChange(scrWidth: Int, scrHeight: Int) {
         GL11.glViewport(0, 0, scrWidth, scrHeight)
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glLoadIdentity()
@@ -106,7 +101,7 @@ class Main {
             currentPanel.setSize(scrWidth, scrHeight)
     }
 
-    def doUpdate(dt : Double) {
+    def doUpdate(dt: Double) {
         UIUtils.update(currentPanel)
         currentPanel.update(dt)
     }
@@ -119,7 +114,7 @@ class Main {
         GL11.glDisable(GL11.GL_CULL_FACE)
     }
 
-    def changePanel(newPanel : EditElement) {
+    def changePanel(newPanel: EditElement) {
         currentPanel = newPanel
         currentPanel.setSize(Display.getWidth(), Display.getHeight())
     }

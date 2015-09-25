@@ -12,19 +12,15 @@
  */
 package moe.nightfall.instrumentality.editor
 
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.ModelCache
-import moe.nightfall.instrumentality.animations.PoseSet
-import moe.nightfall.instrumentality.editor.control.ButtonBarContainerElement
-import moe.nightfall.instrumentality.editor.control.TextButtonElement
-import moe.nightfall.instrumentality.editor.gui.ModelChooserElement
-import moe.nightfall.instrumentality.editor.gui.BenchmarkElement
-import moe.nightfall.instrumentality.editor.gui.PoseTreeElement
-import org.lwjgl.input.Mouse
-import org.lwjgl.opengl.Display
-import org.lwjgl.opengl.GL11
-import org.lwjgl.util.vector.Vector2f
 import java.awt.Font
+
+import moe.nightfall.instrumentality.{Loader, ModelCache}
+import moe.nightfall.instrumentality.animations.PoseSet
+import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement}
+import moe.nightfall.instrumentality.editor.gui.{BenchmarkElement, ModelChooserElement, PoseTreeElement}
+import org.lwjgl.input.Mouse
+import org.lwjgl.opengl.{Display, GL11}
+import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
     // use when adding new chars to the internal font
@@ -33,7 +29,7 @@ object UIUtils {
     // TODO Couldn't this just be two variables?
     var state = new Array[Boolean](2)
 
-    def update(targetPanel : EditElement) {
+    def update(targetPanel: EditElement) {
         val newState = new Array[Boolean](2)
         newState(0) = Mouse.isButtonDown(0)
         newState(1) = Mouse.isButtonDown(1)
@@ -47,7 +43,7 @@ object UIUtils {
         state = newState
     }
 
-    def createGui() : EditElement = {
+    def createGui(): EditElement = {
         val bbce = new ButtonBarContainerElement(0.05d)
 
         // TODO SCALA If this ain't compiling, just wait...
@@ -85,14 +81,14 @@ object UIUtils {
         /*return*/ bbce
     }
 
-    private var sysFont : Font = _
-    private var sysFontCreationThread : Thread = _
+    private var sysFont: Font = _
+    private var sysFontCreationThread: Thread = _
 
     // yes, this is scalable (in one way or another). TODO: second parameter controls stroke width
     // the default size will be around 6x9u(where u is whatever your opengl perspective says), with 1u spacing on both axis.
     // spaces are 1x9u + the normal spacing on top
     // however, if unknown chars appear, then it will NOT WORK!
-    def drawLine(str : String, strokeWidth : Int) : Vector2f = {
+    def drawLine(str: String, strokeWidth: Int): Vector2f = {
         val ca = str.toCharArray()
         if (!debugDisableSysFont) {
             for (c <- ca) {
@@ -107,17 +103,17 @@ object UIUtils {
                     if (sysFont == null) {
                         if (sysFontCreationThread == null) {
                             sysFontCreationThread = new Thread {
-                                  try {
-                                      // did I mention: this call is SLOW. Seriously.
-                                      val f = new Font(null, 0, 24)
-                                      UISystemFont.scratchFont(f)
-                                      sysFont = f
-                                  } catch {
-                                      case e : Exception =>
-                                      System.err.println("Cannot load a international font... nippon gomen nasai... :(")
-                                      // TODO: This would be the perfect place to turn on a romanizer as a last resort.
-                                      e.printStackTrace()
-                                  }
+                                try {
+                                    // did I mention: this call is SLOW. Seriously.
+                                    val f = new Font(null, 0, 24)
+                                    UISystemFont.scratchFont(f)
+                                    sysFont = f
+                                } catch {
+                                    case e: Exception =>
+                                        System.err.println("Cannot load a international font... nippon gomen nasai... :(")
+                                        // TODO: This would be the perfect place to turn on a romanizer as a last resort.
+                                        e.printStackTrace()
+                                }
                             }
                             sysFontCreationThread.start()
                         }
@@ -142,7 +138,7 @@ object UIUtils {
         return new Vector2f(lineX, 10)
     }
 
-    def drawText(str0 : String, i : Int) {
+    def drawText(str0: String, i: Int) {
         var str = str0
         val totalSize = new Vector2f()
         GL11.glPushMatrix()

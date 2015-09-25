@@ -10,26 +10,20 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.mc;
+package moe.nightfall.instrumentality.mc
 
-import java.util.HashMap
-import java.util.concurrent.ConcurrentHashMap
+;
+
+import cpw.mods.fml.client.registry.ClientRegistry
+import cpw.mods.fml.common.eventhandler.{EventPriority, SubscribeEvent}
+import cpw.mods.fml.common.gameevent.{InputEvent, TickEvent}
+import moe.nightfall.instrumentality.{Loader, ModelCache, PMXModel}
 import moe.nightfall.instrumentality.mc.gui.EditorHostGui
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.settings.KeyBinding
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraftforge.client.event.RenderPlayerEvent
 import org.lwjgl.input.Keyboard
-import cpw.mods.fml.client.registry.ClientRegistry
-import cpw.mods.fml.common.eventhandler.EventPriority
-import cpw.mods.fml.common.eventhandler.SubscribeEvent
-import cpw.mods.fml.common.gameevent.InputEvent
-import cpw.mods.fml.common.gameevent.TickEvent
-import scala.collection.JavaConversions
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.PMXModel
-import moe.nightfall.instrumentality.ModelCache
 
 object ClientProxy {
     val protocolId = "MMC"
@@ -39,6 +33,7 @@ object ClientProxy {
     val knownModels: collection.concurrent.TrieMap[String, MHolder] = collection.concurrent.TrieMap()
 
     class MHolder(val held: PMXModel)
+
 }
 
 class ClientProxy extends CommonProxy {
@@ -136,7 +131,7 @@ class ClientProxy extends CommonProxy {
     @SubscribeEvent
     def onTickRender(rte: TickEvent.RenderTickEvent) {
         if (rte.phase == TickEvent.Phase.START)
-        InstanceCache.update(rte.renderTickTime / 20d)
+            InstanceCache.update(rte.renderTickTime / 20d)
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)

@@ -12,12 +12,13 @@
  */
 package moe.nightfall.instrumentality
 
+import java.awt.image.BufferedImage
+
+import moe.nightfall.instrumentality.PMXModel._
 import moe.nightfall.instrumentality.animations.PoseSet
 import org.lwjgl.opengl.GL11
-import java.awt.image.BufferedImage
+
 import scala.collection.mutable.MutableList
-import PMXModel._
-import scala.annotation.migration
 
 /**
  * OLD: It would be nice if we could move the FaceGroup generator into this file.
@@ -28,6 +29,7 @@ import scala.annotation.migration
  */
 
 object PMXModel {
+
     class FaceGroup {
         // Used while creating the FaceGroup, this is discarded after the group is compiled
         val boneSet = collection.mutable.Set[PMXFile.PMXBone]()
@@ -36,38 +38,40 @@ object PMXModel {
         val vertexList = MutableList[PMXFile.PMXVertex]()
 
         // Bone mappings (these are finalized after the material containing this group is compiled)
-        var boneMappingFileGroup : Array[Int] = _
-        var boneMappingGroupFile : Array[Int] = _
+        var boneMappingFileGroup: Array[Int] = _
+        var boneMappingGroupFile: Array[Int] = _
 
         // TODO SCALA Use apply?
-        def get(boneIndice : Int) : Int = {
+        def get(boneIndice: Int): Int = {
             val res = boneMappingFileGroup(boneIndice)
             if (res == -1) throw new RuntimeException("Bone is being relied on that does not exist within this group.")
             return res;
         }
     }
+
 }
 
 class PMXModel private {
-    var theFile : PMXFile = _
+    var theFile: PMXFile = _
     val poses = new PoseSet()
-    
+
     // This is null'd once setupMaterials is called. Don't modify after this goes into the ModelCache.
     var materialData = collection.mutable.Map[String, BufferedImage]()
     // This is the OpenGL materials hashmap, don't access outside the OpenGL owning thread.
-    var materials : Map[String, Int] = _
+    var materials: Map[String, Int] = _
 
     /**
      * Height of the model, determinated by the highest vertex
      */
-    var height : Float = _
+    var height: Float = _
 
-    var groups : Array[MutableList[FaceGroup]] = _
+    var groups: Array[MutableList[FaceGroup]] = _
 
-    def this(pf : PMXFile, maxGroupSize : Int) { this()
+    def this(pf: PMXFile, maxGroupSize: Int) {
+        this()
         theFile = pf
         groups = new Array(theFile.matData.length)
-        
+
         var face = 0
         var height = 0f
 
@@ -87,7 +91,7 @@ class PMXModel private {
                 val wA = weightVertices(vA.weightType)
                 val wB = weightVertices(vB.weightType)
                 val wC = weightVertices(vC.weightType)
-                
+
                 val usedBones = collection.mutable.Set[PMXFile.PMXBone]()
                 for (i2 <- 0 until wA)
                     usedBones += theFile.boneData(vA.boneIndices(i2))
@@ -98,11 +102,11 @@ class PMXModel private {
 
                 // Ok, now for each group, check how many bones are missing (if none are missing we can break)
 
-                var target : FaceGroup = null
-                var bestBoneAdd : FaceGroup = null
+                var target: FaceGroup = null
+                var bestBoneAdd: FaceGroup = null
                 var bestBoneAddRequired = collection.mutable.Set[PMXFile.PMXBone]()
                 var bbarWork = collection.mutable.Set[PMXFile.PMXBone]()
-                
+
                 groups(i) takeWhile { fg =>
                     // If the group can contain it, we don't need to do any more.
                     if (usedBones.subsetOf(fg.boneSet)) {
@@ -116,7 +120,7 @@ class PMXModel private {
                                 bbarWork += pb
                             }
                         }
-                        
+
                         if (bbarWork.size + fg.boneSet.size <= maxGroupSize) {
                             if (bestBoneAddRequired == null) {
                                 bestBoneAdd = fg
@@ -178,7 +182,7 @@ class PMXModel private {
         this.height = height
     }
 
-    private def weightVertices(weightType : Int) : Int = {
+    private def weightVertices(weightType: Int): Int = {
         return weightType match {
             case 0 => 1
             case 1 => 2

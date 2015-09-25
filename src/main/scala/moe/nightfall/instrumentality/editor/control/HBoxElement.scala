@@ -14,40 +14,39 @@ package moe.nightfall.instrumentality.editor.control
 
 import moe.nightfall.instrumentality.editor.EditElement
 
-import scala.collection.mutable
-
 /**
  * See: GTK+ v3's horizontal Box for a general idea of what this is supposed to be used for.
  * It's just less flexible.
  * Created on 01/09/15.
  */
 class HBoxElement extends EditElement {
-	private var barPieces = scala.collection.mutable.ListBuffer[EditElement]()
-	
-	def +=(editElement: EditElement): Unit = {
-		barPieces += editElement
-		subElements += editElement
-	}
-	override def layout() {
-		 if (barPieces.nonEmpty) {
-			 val div = width / barPieces.size
-			 val leftover = width - (div * barPieces.size)
-			
-			 var first = true
-			 var pos = 0
-			 for (button <- barPieces) {
-				 var ds = div 
-				 if (first) {
-					 ds += leftover
-					 first = false
-				 }
-				 
-				 button.posX = pos
-				 button.posY = 0
-				 
-				 pos += ds
-				 button.setSize(ds, height)
-			 }
-		 }
-	 }
+    private var barPieces = scala.collection.mutable.ListBuffer[EditElement]()
+
+    def +=(editElement: EditElement): Unit = {
+        barPieces += editElement
+        subElements += editElement
+    }
+
+    override def layout() {
+        if (barPieces.nonEmpty) {
+            val div = width / barPieces.size
+            val leftover = width - (div * barPieces.size)
+
+            var first = true
+            var pos = 0
+            for (button <- barPieces) {
+                var ds = div
+                if (first) {
+                    ds += leftover
+                    first = false
+                }
+
+                button.posX = pos
+                button.posY = 0
+
+                pos += ds
+                button.setSize(ds, height)
+            }
+        }
+    }
 }

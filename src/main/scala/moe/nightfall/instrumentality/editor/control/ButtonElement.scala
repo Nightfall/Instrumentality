@@ -17,29 +17,29 @@ import moe.nightfall.instrumentality.editor.EditElement
 import org.lwjgl.input.Mouse
 
 class ButtonElement(toRun: () => Unit) extends EditElement {
-	def this(runnable: Runnable) = this(() => runnable.run())
-	
-	// So this can be changed...
-	var onClick = toRun
-	
-	var isHover = false
-	var baseStrength = 0.5f
-	
-	override def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
-		super.mouseStateChange(x, y, isDown, isRight)
-		if(!isRight && !isDown && onClick != null) onClick()
-	}
-	
-	override def draw(scrWidth: Int, scrHeight: Int) {
-		if (isHover && Mouse.isButtonDown(0))
-			colourStrength = baseStrength / 2
-		else
-			colourStrength = baseStrength * (if (isHover) 1.50f else 1.0f)
-		
-		super.draw(scrWidth, scrHeight)
-	}
-	
-	override def mouseEnterLeave(isIn: Boolean) {
-		isHover = isIn
-	}
+    def this(runnable: Runnable) = this(() => runnable.run())
+
+    // So this can be changed...
+    var onClick = toRun
+
+    var isHover = false
+    var baseStrength = 0.5f
+
+    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
+        super.mouseStateChange(x, y, isDown, isRight)
+        if (!isRight && !isDown && onClick != null) onClick()
+    }
+
+    override def draw(scrWidth: Int, scrHeight: Int) {
+        if (isHover && Mouse.isButtonDown(0))
+            colourStrength = baseStrength / 2
+        else
+            colourStrength = baseStrength * (if (isHover) 1.50f else 1.0f)
+
+        super.draw(scrWidth, scrHeight)
+    }
+
+    override def mouseEnterLeave(isIn: Boolean) {
+        isHover = isIn
+    }
 }

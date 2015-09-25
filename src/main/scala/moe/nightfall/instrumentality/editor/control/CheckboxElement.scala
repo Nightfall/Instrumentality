@@ -14,13 +14,14 @@ package moe.nightfall.instrumentality.editor.control
 
 // TODO: Is there a better way to do this?
 class CheckboxElement(toRun: () => Unit) extends ButtonElement(() => {}) {
-	def this(runnable: Runnable) = this(() => runnable.run())
-	
-	val toRunOnClick = toRun // so this can be changed...
-	var checked = false
-	
-	onClick = () => {
-		checked = !checked
-		this.toRunOnClick()
-	}
+    def this(runnable: Runnable) = this(() => runnable.run())
+
+    val toRunOnClick = toRun
+    // so this can be changed...
+    var checked = false
+
+    onClick = () => {
+        checked = !checked
+        this.toRunOnClick()
+    }
 }

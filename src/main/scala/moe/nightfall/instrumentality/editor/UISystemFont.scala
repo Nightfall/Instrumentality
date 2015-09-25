@@ -10,16 +10,16 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor;
+package moe.nightfall.instrumentality.editor
 
-import moe.nightfall.instrumentality.Loader;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.vector.Vector2f;
+;
 
 import java.awt._
-import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
+import java.awt.image.BufferedImage
+
+import moe.nightfall.instrumentality.Loader
+import org.lwjgl.opengl.GL11
+import org.lwjgl.util.vector.Vector2f;
 
 /**
  * Created on 03/09/15.
@@ -47,9 +47,9 @@ object UISystemFont {
      * @param str The text you want to display.
      * @return The resulting size.
      */
-    def drawSystemLine(str : String, targetFont : Font) : Vector2f = {
+    def drawSystemLine(str: String, targetFont: Font): Vector2f = {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
-        var tex : TextTexture = null
+        var tex: TextTexture = null
         if (textTextures.contains(str)) {
             tex = textTextures.get(str).get
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, tex.tex)
@@ -110,7 +110,7 @@ object UISystemFont {
      * Fonts are lazy-loaded, causing HUGE amounts of lag for the poor user.
      * This triggers some functions to try and get the font to be loaded... on a different thread!
      */
-    def scratchFont(f : Font) {
+    def scratchFont(f: Font) {
         fontTestRender.setFont(f)
         val fm = fontTestRender.getFontMetrics()
         fm.getStringBounds("ATTEMPT TO CAUSE LAG ON A DIFFERENT THREAD", fontTestRender)
@@ -118,7 +118,8 @@ object UISystemFont {
     }
 
     private class TextTexture {
-        var tex, w, h : Int = _
-        var scale : Double = _ // scale needed to adjust w/h into normal units
+        var tex, w, h: Int = _
+        var scale: Double = _ // scale needed to adjust w/h into normal units
     }
+
 }

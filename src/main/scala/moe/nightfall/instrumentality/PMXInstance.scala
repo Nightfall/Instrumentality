@@ -12,20 +12,14 @@
  */
 package moe.nightfall.instrumentality
 
-import org.lwjgl.BufferUtils
-import org.lwjgl.opengl.GL11
-import org.lwjgl.opengl.GL15
-import org.lwjgl.opengl.GL20
-import org.lwjgl.util.vector.Matrix4f
-import org.lwjgl.util.vector.Vector3f
-import org.lwjgl.util.vector.Vector4f
-
-import PMXInstance.VBO_DATASIZE
-import moe.nightfall.instrumentality.PMXFile.PMXBone
-import moe.nightfall.instrumentality.PMXFile.PMXVertex
+import moe.nightfall.instrumentality.PMXFile.{PMXBone, PMXVertex}
+import moe.nightfall.instrumentality.PMXInstance.VBO_DATASIZE
 import moe.nightfall.instrumentality.PMXModel.FaceGroup
 import moe.nightfall.instrumentality.animations.Animation
 import moe.nightfall.instrumentality.shader.Shader
+import org.lwjgl.BufferUtils
+import org.lwjgl.opengl.{GL11, GL15, GL20}
+import org.lwjgl.util.vector.{Matrix4f, Vector3f, Vector4f}
 
 
 /**
@@ -40,25 +34,25 @@ object PMXInstance {
     val VBO_DATASIZE = 15
 }
 
-class PMXInstance(val theModel : PMXModel) {
+class PMXInstance(val theModel: PMXModel) {
 
     val theFile = theModel.theFile
     /**
      * although theFile is part of theModel, most code uses theFile
      */
-    
+
     /**
      * Animation. Can be changed at any time.
      */
-    var anim : Animation = _
+    var anim: Animation = _
 
     var vboList = new Array[Array[Int]](theModel.groups.length)
     var boneCache = new Array[Matrix4f](theFile.boneData.length)
-    
-    for (i <- 0 until vboList.length)
-         vboList(i) = Array(theModel.groups(i).size)
 
-    private def createBoneData(fg : FaceGroup, v : PMXVertex) : Array[Float] = {
+    for (i <- 0 until vboList.length)
+        vboList(i) = Array(theModel.groups(i).size)
+
+    private def createBoneData(fg: FaceGroup, v: PMXVertex): Array[Float] = {
         return v.weightType match {
             case 0 => Array(fg.get(v.boneIndices(0)) + 0.5f, fg.get(v.boneIndices(0)) + 0.5f, 0, 0)
             case 1 =>
@@ -81,7 +75,7 @@ class PMXInstance(val theModel : PMXModel) {
      * @param intoBoneSpace The matrix to apply to
      * @param bone          The bone to get the IBS of
      */
-    def createIBS(intoBoneSpace : Matrix4f, bone : PMXFile.PMXBone, inverse : Boolean) {
+    def createIBS(intoBoneSpace: Matrix4f, bone: PMXFile.PMXBone, inverse: Boolean) {
 
         // work out what we're supposed to be connected to
         var dX = bone.connectionPosOfsX
@@ -132,7 +126,7 @@ class PMXInstance(val theModel : PMXModel) {
      * @param bone The bone to get the matrix of
      * @return A matrix4f that you should not modify.
      */
-    def getBoneMatrix(bone : PMXBone) : Matrix4f = {
+    def getBoneMatrix(bone: PMXBone): Matrix4f = {
         if (boneCache(bone.boneId) != null)
             return boneCache(bone.boneId)
         // Simple enough: get what the bone wants us to transform it by...
@@ -162,7 +156,7 @@ class PMXInstance(val theModel : PMXModel) {
      * @param globalName The original globalName of the bone.
      * @return The translated bone name, or the original if it is not in the compatibility table.
      */
-    private def compatibilityCheck(globalName : String) : String = {
+    private def compatibilityCheck(globalName: String): String = {
 
         // Kagamine Rin
 
@@ -226,7 +220,7 @@ class PMXInstance(val theModel : PMXModel) {
      *
      * @param s The animation shader.
      */
-    def render(s : Shader, red : Double, green : Double, blue : Double, clippingSize : Float) {
+    def render(s: Shader, red: Double, green: Double, blue: Double, clippingSize: Float) {
         val matrix = BufferUtils.createFloatBuffer(16)
         val oldProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM)
         GL20.glUseProgram(s.program)
@@ -314,13 +308,13 @@ class PMXInstance(val theModel : PMXModel) {
         }
     }
 
-    def update(v : Double) {
+    def update(v: Double) {
         if (anim != null) anim.update(v)
         // naturally implies a change
         clearBoneCache()
     }
 
-    def renderDebug(selected : Int) {
+    def renderDebug(selected: Int) {
         theFile.boneData foreach { bone =>
             GL11.glPointSize(2)
             val v3f = doTransform(bone, new Vector3f(bone.posX, bone.posY, bone.posZ))
@@ -352,7 +346,7 @@ class PMXInstance(val theModel : PMXModel) {
         }
     }
 
-    private def doTransform(pmxBone : PMXBone, iv : Vector3f) : Vector3f = {
+    private def doTransform(pmxBone: PMXBone, iv: Vector3f): Vector3f = {
         val v = new Vector4f(iv.x, iv.y, iv.z, 1)
         Matrix4f.transform(getBoneMatrix(pmxBone), v, v)
         return new Vector3f(v.x, v.y, v.z)

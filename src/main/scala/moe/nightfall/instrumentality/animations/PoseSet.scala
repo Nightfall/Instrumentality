@@ -12,12 +12,11 @@
  */
 package moe.nightfall.instrumentality.animations
 
+import java.io.{DataInputStream, DataOutputStream, IOException}
+
 import moe.nightfall.instrumentality.PoseBoneTransform
-import java.io.DataInputStream
-import java.io.DataOutputStream
-import java.io.IOException
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.Map
+
+import scala.collection.mutable.{HashMap, Map}
 
 /**
  * A set of poses that can be parented to each other & such
@@ -26,7 +25,7 @@ import scala.collection.mutable.Map
 class PoseSet {
     val allPoses = new HashMap[String, PoseAnimation]
     val poseParents = new HashMap[String, String]
-    
+
     allPoses.put("idle", new PoseAnimation)
     allPoses.put("lookL", new PoseAnimation)
     poseParents.put("lookL", "idle")
@@ -50,36 +49,36 @@ class PoseSet {
     poseParents.put("bowPullSItem", "holdItem")
     allPoses.put("bowPullEItem", new PoseAnimation)
     poseParents.put("bowPullEItem", "bowPullSItem")
-    
+
     allPoses.put("walkStart", new PoseAnimation)
     poseParents.put("walkStart", "idle")
-    
+
     // when left foot hits ground, R ankle should be lifted but toes not actually off ground at this point
     allPoses.put("walkLFHit", new PoseAnimation)
     poseParents.put("walkLFHit", "idle")
-    
+
     // Left and right feet are both central from a top-down perspective,
     // from side, right is raised
     allPoses.put("walkLFMidpoint", new PoseAnimation)
     poseParents.put("walkLFMidpoint", "idle")
-    
+
     // right foot hits ground, (see walkLFHit)
     allPoses.put("walkRFHit", new PoseAnimation)
     poseParents.put("walkRFHit", "idle")
-    
+
     // Right foot reaches midpoint, see walkLFMidpoint but flip which feet are involved
     allPoses.put("walkRFMidpoint", new PoseAnimation)
     poseParents.put("walkRFMidpoint", "idle")
-    
+
     allPoses.put("falling", new PoseAnimation)
     poseParents.put("falling", "idle")
-    
+
     allPoses.put("sneaking", new PoseAnimation)
     poseParents.put("sneaking", "idle")
-    
+
     allPoses.put("hairL", new PoseAnimation)
     poseParents.put("hairL", "idle")
-    
+
     allPoses.put("hairR", new PoseAnimation)
     poseParents.put("hairR", "idle")
 
@@ -91,7 +90,7 @@ class PoseSet {
             var tVal = entry._2
             while (n != None) {
                 val d = hashMap get (n.get)
-                if(d == None || d.get < tVal)
+                if (d == None || d.get < tVal)
                     hashMap.put(n.get, tVal)
                 n = poseParents get (n.get)
                 if (tVal > 1.0d)
@@ -101,7 +100,7 @@ class PoseSet {
         hashMap foreach { case (key, value) =>
             rootOA.subAnimations += new StrengthMultiplyAnimation((allPoses get key).get, value.toFloat)
         }
-        
+
         rootOA
     }
 

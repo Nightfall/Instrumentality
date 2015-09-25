@@ -13,19 +13,18 @@
 package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.PMXModel
-import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.UIUtils
+import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import moe.nightfall.instrumentality.editor.control.ModelElement
 import org.lwjgl.opengl.GL11
 
 
-class BenchmarkElement(val myModel : PMXModel) extends EditElement {
+class BenchmarkElement(val myModel: PMXModel) extends EditElement {
     var time: Double = 0
     var avgTime: Double = 0
 
     override def update(dTime: Double) {
         super.update(dTime)
-	    
+
         avgTime = ((avgTime * 99) + dTime) / 100
         time += dTime
         if (time > 2.0d) {
@@ -44,9 +43,9 @@ class BenchmarkElement(val myModel : PMXModel) extends EditElement {
         }
     }
 
-    override def draw(scrWidth : Int, scrHeight : Int) {
+    override def draw(scrWidth: Int, scrHeight: Int) {
         super.draw(scrWidth, scrHeight)
-	    
+
         GL11.glPushMatrix()
         GL11.glTranslated(1, 1, 0)
         GL11.glScaled(2, 2, 2)

@@ -10,33 +10,33 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.gui;
+package moe.nightfall.instrumentality.editor.gui
+
+;
 
 import moe.nightfall.instrumentality.PoseBoneTransform
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.AdjusterElement
-import moe.nightfall.instrumentality.editor.control.CheckboxElement
-import moe.nightfall.instrumentality.editor.control.LabelElement
-import scala.collection.Iterator
-import moe.nightfall.instrumentality.editor.control.AdjusterElementData
+import moe.nightfall.instrumentality.editor.control.{AdjusterElement, AdjusterElementData, CheckboxElement, LabelElement}
+
 import scala.collection.mutable.MutableList
 
 /**
  * Created on 10/09/15.
  */
-class PoseEditParamsElement(val parentPE : PoseEditElement) extends EditElement {
+class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
     val allAdjusters = MutableList[AdjusterElement]()
-    
-//    Seq("X0", "Y0", "Z0", "X1", "Y1", null, "X2", null, null, "TX0", "TY0", "TX0") zipWithIndex {
 
-    
-    private def createElement(name : String, get: PoseBoneTransform => Double, set: (PoseBoneTransform, Double) => Unit) : AdjusterElement =
+    //    Seq("X0", "Y0", "Z0", "X1", "Y1", null, "X2", null, null, "TX0", "TY0", "TX0") zipWithIndex {
+
+
+    private def createElement(name: String, get: PoseBoneTransform => Double, set: (PoseBoneTransform, Double) => Unit): AdjusterElement =
         new AdjusterElement(name + ":", new AdjusterElementData {
             override def value_=(newValue: Double): Unit = set(parentPE.getEditPBT, newValue)
+
             override def value: Double = get(parentPE.getEditPBT)
         })
-    
-    allAdjusters += 
+
+    allAdjusters +=
         createElement("X0", _.X0, (a, b) => a.X0 = b) +=
         createElement("Y0", _.Y0, (a, b) => a.Y0 = b) +=
         createElement("Z0", _.Z0, (a, b) => a.Z0 = b) +=
@@ -47,20 +47,20 @@ class PoseEditParamsElement(val parentPE : PoseEditElement) extends EditElement 
         createElement("TY0", _.TY0, (a, b) => a.TY0 = b) +=
         createElement("TY0", _.TZ0, (a, b) => a.TZ0 = b)
     subElements ++= allAdjusters
-    
+
     // Elements
     // TODO SCALA this doesn't compile yet
     val showModel = new CheckboxElement(() => {})
     showModel.checked = true
     subElements += showModel
-    
+
     val showDebug = new CheckboxElement(() => {})
     showDebug.checked = true
     subElements += showDebug
-    
+
     val showModelText = new LabelElement("S.Mdl")
     subElements += showModelText
-    
+
     val showDebugText = new LabelElement("S.Str")
     subElements += showDebugText
 

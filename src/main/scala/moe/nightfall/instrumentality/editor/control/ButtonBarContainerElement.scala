@@ -15,33 +15,33 @@ package moe.nightfall.instrumentality.editor.control
 import moe.nightfall.instrumentality.editor.EditElement
 
 class ButtonBarContainerElement(sizeRatio: Double) extends EditElement {
-	val barCore: HBoxElement = new HBoxElement
-	subElements += barCore
-	private var underPanel: EditElement = null
-	private var noCleanupOnChange: Boolean = false
-	
-	def setUnderPanel(editElement: EditElement, noCleanup: Boolean) {
-		if (underPanel != null) {
-			if (!noCleanupOnChange)
-				underPanel.cleanup()
-			subElements -= underPanel
-		}
-		noCleanupOnChange = noCleanup
-		underPanel = editElement
-		subElements += underPanel
-		
-		layout()
-	}
-	
-	override def layout() {
-		val size: Int = (height * sizeRatio).asInstanceOf[Int]
-		if (underPanel != null) {
-			underPanel.posX = 0
-			underPanel.posY = size
-			underPanel.setSize(width, height - size)
-		}
-		barCore.setSize(width, size)
-		barCore.posX = 0
-		barCore.posY = 0
-	}
+    val barCore: HBoxElement = new HBoxElement
+    subElements += barCore
+    private var underPanel: EditElement = null
+    private var noCleanupOnChange: Boolean = false
+
+    def setUnderPanel(editElement: EditElement, noCleanup: Boolean) {
+        if (underPanel != null) {
+            if (!noCleanupOnChange)
+                underPanel.cleanup()
+            subElements -= underPanel
+        }
+        noCleanupOnChange = noCleanup
+        underPanel = editElement
+        subElements += underPanel
+
+        layout()
+    }
+
+    override def layout() {
+        val size: Int = (height * sizeRatio).asInstanceOf[Int]
+        if (underPanel != null) {
+            underPanel.posX = 0
+            underPanel.posY = size
+            underPanel.setSize(width, height - size)
+        }
+        barCore.setSize(width, size)
+        barCore.posX = 0
+        barCore.posY = 0
+    }
 }

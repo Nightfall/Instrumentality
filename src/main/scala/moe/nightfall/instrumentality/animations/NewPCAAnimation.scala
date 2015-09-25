@@ -12,9 +12,7 @@
  */
 package moe.nightfall.instrumentality.animations
 
-import moe.nightfall.instrumentality.PoseBoneTransform
-import scala.collection.mutable.Map
-import scala.collection.mutable.HashMap
+import scala.collection.mutable.{HashMap, Map}
 
 /**
  * Created on 13/09/15.
@@ -30,7 +28,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
     override def getBoneTransform(boneName: String) = poseSetResult getBoneTransform boneName
 
     def getInterpolate(time: Double, sine: Double) =
-        time*(1 - sine) + ((1 - Math.cos(time * Math.PI)) / 2)*sine
+        time * (1 - sine) + ((1 - Math.cos(time * Math.PI)) / 2) * sine
 
     def setupCycle(time: Double, subAnims: Array[String], sine: Double, strength: Double, map: Map[String, Double]) {
         val time2 =
@@ -59,12 +57,12 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
             map.put("lookR", -lookLR)
         else if (lookLR > 0)
             map.put("lookL", lookLR)
-        
+
         if (lookUD < 0)
             map.put("lookD", -lookUD)
         else if (lookUD > 0)
             map.put("lookU", lookUD)
-        
+
         setupCycle(walkCycleTime, Array("walkLFHit", "walkRFMidpoint", "walkRFHit", "walkLFMidpoint", "walkLFHit"), 0.5, walkStrength, map)
         map.put("falling", fallStrength)
         poseSetResult = poseSet.createAnimation(map)

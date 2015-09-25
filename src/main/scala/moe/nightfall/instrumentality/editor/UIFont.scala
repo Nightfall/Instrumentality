@@ -10,15 +10,13 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor;
+package moe.nightfall.instrumentality.editor
+
+;
+
+import java.io.{BufferedReader, InputStream, InputStreamReader}
 
 import org.lwjgl.opengl.GL11;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.LinkedList;
 
 /**
  * A simple no-fuss vector font renderer.
@@ -38,34 +36,34 @@ object UIFont {
      * | 8   9
      * curves can be L(oop) S(trip) or B(asic GL_LINES)
      */
-    var fontDB : Seq[String] = _
+    var fontDB: Seq[String] = _
 
-    def setFont(inp : InputStream) {
+    def setFont(inp: InputStream) {
         val br = new BufferedReader(new InputStreamReader(inp))
         fontDB = Iterator.continually {
             val s = br.readLine()
             if (s.endsWith(";"))
                 Some(s.substring(0, s.length() - 1))
-            else None    
+            else None
         }.takeWhile(_ => br.ready).flatten.toSeq
-        
+
         // TODO SCALA Test this before removal
-       /* LinkedList<String> l = new LinkedList<String>();
-        while (br.ready()) {
-            String s = br.readLine();
-            if (s.endsWith(";"))
-                l.add();
-        }
-        String[] fontData = new String[l.size()];
-        int i = 0;
-        for (String s : l)
-            fontData[i++] = s;
-        fontDB = fontData; */
+        /* LinkedList<String> l = new LinkedList<String>();
+         while (br.ready()) {
+             String s = br.readLine();
+             if (s.endsWith(";"))
+                 l.add();
+         }
+         String[] fontData = new String[l.size()];
+         int i = 0;
+         for (String s : l)
+             fontData[i++] = s;
+         fontDB = fontData; */
     }
 
     val cachedFont = new Array[Int](256)
 
-    def drawChar(c : Char) {
+    def drawChar(c: Char) {
         // bit of a hypocrite here, rendering each char individually, but strings are at a higher layer.
         // hopefully the 1 array lookup and 1 call-list is fast enough?
         var isCompiling = false
@@ -102,7 +100,7 @@ object UIFont {
             var x = new Array[Double](10)
             var y = new Array[Double](10)
             var isUsed = new Array[Boolean](10)
-            for (j <- 0 until 9) {     
+            for (j <- 0 until 9) {
                 val str = passData(passPos)
                 passPos += 1
                 for (n <- 0 until 10) {
@@ -127,7 +125,7 @@ object UIFont {
 
     val cachedPositions = new Array[Int](256)
 
-    def getCharLoc(c : Char) : Int = {
+    def getCharLoc(c: Char): Int = {
         val canCache = c < 256
         if (canCache)
             if (cachedPositions(c) != 0)

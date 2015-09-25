@@ -12,31 +12,30 @@
  */
 package moe.nightfall.instrumentality
 
-import org.lwjgl.util.vector.Matrix4f
-import org.lwjgl.util.vector.Vector3f
+import org.lwjgl.util.vector.{Matrix4f, Vector3f}
 
 /**
  * I'd replace half of this with a quaternion if I wasn't afraid it wouldn't interpolate.
  * Created on 24/07/15.
  */
 class PoseBoneTransform {
-    
+
     // TODO SCALA make this immutable / more OPS!
-    
+
     /**
      * The rotation values(applied in that order)
      * The reason for having 3 sets of values is to allow some rotations to happen after/before others.
      * (for example: rotation on one axis to raise/lower head should be applied after left/right rotation)
      */
-    var X0, Y0, Z0 : Double = _
-    var X1, Y1 : Double = _
-    var X2 : Double = _
+    var X0, Y0, Z0: Double = _
+    var X1, Y1: Double = _
+    var X2: Double = _
 
     /**
      * The translation values(applied before rotation)
      */
-    var TX0, TY0, TZ0 : Double = _
-    
+    var TX0, TY0, TZ0: Double = _
+
     /**
      * My Little Miku
      * Interpolation Is Magic
@@ -46,11 +45,12 @@ class PoseBoneTransform {
      * @param i The interpolation value.
      */
 
-    def this(A0 : PoseBoneTransform, B0 : PoseBoneTransform, i0 : Float) { this()
+    def this(A0: PoseBoneTransform, B0: PoseBoneTransform, i0: Float) {
+        this()
         val i = 1.0f - i0
         val A = if (A0 == null) new PoseBoneTransform() else A0
         val B = if (B0 == null) new PoseBoneTransform() else B0
-        
+
         X0 = (A.X0 * i) + (B.X0 * (1.0f - i))
         Y0 = (A.Y0 * i) + (B.Y0 * (1.0f - i))
         Z0 = (A.Z0 * i) + (B.Z0 * (1.0f - i))
@@ -63,7 +63,8 @@ class PoseBoneTransform {
         TZ0 = (A.TZ0 * i) + (B.TZ0 * (1.0f - i))
     }
 
-    def this(boneTransform : PoseBoneTransform) { this()
+    def this(boneTransform: PoseBoneTransform) {
+        this()
         X0 = boneTransform.X0
         Y0 = boneTransform.Y0
         Z0 = boneTransform.Z0
@@ -75,11 +76,16 @@ class PoseBoneTransform {
         TZ0 = boneTransform.TZ0
     }
 
-    def this(v : Float, v1 : Float, v2 : Float, v3 : Float, v4 : Float) { this()
-        X0 = v; Y0 = v1; Z0 = v2; X1 = v3; Y1 = v4;
+    def this(v: Float, v1: Float, v2: Float, v3: Float, v4: Float) {
+        this()
+        X0 = v;
+        Y0 = v1;
+        Z0 = v2;
+        X1 = v3;
+        Y1 = v4;
     }
-    
-    def += (other : PoseBoneTransform) : PoseBoneTransform = {
+
+    def +=(other: PoseBoneTransform): PoseBoneTransform = {
         val nt = new PoseBoneTransform
         X0 += other.X0
         Y0 += other.Y0
@@ -92,8 +98,8 @@ class PoseBoneTransform {
         TZ0 += other.TZ0
         return this
     }
-    
-    def *= (other : Double) : PoseBoneTransform = {
+
+    def *=(other: Double): PoseBoneTransform = {
         val nt = new PoseBoneTransform
         X0 *= other
         Y0 *= other
@@ -107,7 +113,7 @@ class PoseBoneTransform {
         return this
     }
 
-    def apply(boneMatrix : Matrix4f) {
+    def apply(boneMatrix: Matrix4f) {
         boneMatrix.translate(new Vector3f(TX0.toFloat, TY0.toFloat, TZ0.toFloat));
 
         boneMatrix.rotate(X0.toFloat, new Vector3f(1, 0, 0))

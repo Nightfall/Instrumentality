@@ -16,20 +16,20 @@ import moe.nightfall.instrumentality.editor.UIUtils
 import org.lwjgl.opengl.GL11
 
 class TextButtonElement(text: String, toRun: () => Unit) extends ButtonElement(toRun) {
-	def this(text: String, toRun: Runnable) = this(text, () => toRun.run())
-	
-	override def draw(scrWidth: Int, scrHeight: Int) {
-		super.draw(scrWidth, scrHeight)
-		GL11.glPushMatrix()
-		
-		var scale: Double = (height - borderWidth) / 8d
-		if (scale < 1.7) {
-			scale = height / 8d
-		} else {
-			GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
-		}
-		GL11.glScaled(scale, scale, 1)
-		UIUtils.drawText(text, 2)
-		GL11.glPopMatrix()
-	}
+    def this(text: String, toRun: Runnable) = this(text, () => toRun.run())
+
+    override def draw(scrWidth: Int, scrHeight: Int) {
+        super.draw(scrWidth, scrHeight)
+        GL11.glPushMatrix()
+
+        var scale: Double = (height - borderWidth) / 8d
+        if (scale < 1.7) {
+            scale = height / 8d
+        } else {
+            GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
+        }
+        GL11.glScaled(scale, scale, 1)
+        UIUtils.drawText(text, 2)
+        GL11.glPopMatrix()
+    }
 }

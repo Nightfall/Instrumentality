@@ -12,17 +12,15 @@
  */
 package moe.nightfall.instrumentality.mc
 
+import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel}
 import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import net.minecraft.entity.player.EntityPlayer
 import org.lwjgl.opengl.GL11
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.PMXModel
-import moe.nightfall.instrumentality.PMXInstance
 
-class PlayerInstance(file : PMXModel) {
+class PlayerInstance(file: PMXModel) {
 
-    var anim : NewPCAAnimation = null
-    
+    var anim: NewPCAAnimation = null
+
     // CONST
     val pmxInst = new PMXInstance(file)
     anim = new NewPCAAnimation(file.poses)
@@ -56,7 +54,7 @@ class PlayerInstance(file : PMXModel) {
      */
     var sneakStateTarget = 0f
     var sneakState = 0f
-    
+
     /**
      * This is used so Miku's feet don't magically turn along with her body.
      */
@@ -66,8 +64,8 @@ class PlayerInstance(file : PMXModel) {
 
     var resetFrame = true
 
-    def update(deltaTime : Double) {
-        val sChange : Float = deltaTime.toFloat * 8.0f
+    def update(deltaTime: Double) {
+        val sChange: Float = deltaTime.toFloat * 8.0f
         if (sneakStateTarget == 0) {
             if (sneakState < 0)
                 if (sneakState + sChange > 0)
@@ -98,7 +96,7 @@ class PlayerInstance(file : PMXModel) {
             clippingPoint = 1.1d
 
         if ((anim.walkStrength > 0) || (sneakState < 0)) {
-            val waChange : Float = (Math.PI * deltaTime * 10).toFloat
+            val waChange: Float = (Math.PI * deltaTime * 10).toFloat
             if (directionAdjustment < daTarget) {
                 directionAdjustment += waChange
                 if (directionAdjustment > daTarget)
@@ -111,10 +109,10 @@ class PlayerInstance(file : PMXModel) {
         }
     }
 
-    private def interpolate(last : Double, current : Double, partialTicks : Float) = last + (current - last) * partialTicks
+    private def interpolate(last: Double, current: Double, partialTicks: Float) = last + (current - last) * partialTicks
 
-    def render(player : EntityPlayer, x : Double, y : Double, z : Double, partialTick : Float) {
-        val adjustFactor = if(player.isSneaking()) 0.14f else 0.07f
+    def render(player: EntityPlayer, x: Double, y: Double, z: Double, partialTick: Float) {
+        val adjustFactor = if (player.isSneaking()) 0.14f else 0.07f
         val scale = 1F / (pmxInst.theModel.height / player.height)
 
         val rotBody = interpolate(player.prevRenderYawOffset, player.renderYawOffset, partialTick)
@@ -133,7 +131,7 @@ class PlayerInstance(file : PMXModel) {
         GL11.glPopMatrix()
     }
 
-    def apply(player : EntityPlayer, partialTick : Float) {
+    def apply(player: EntityPlayer, partialTick: Float) {
 
         val pitch = interpolate(player.prevRotationPitch, player.rotationPitch, partialTick)
         val rotBody = interpolate(player.prevRenderYawOffset, player.renderYawOffset, partialTick)
@@ -200,12 +198,12 @@ class PlayerInstance(file : PMXModel) {
         resetFrame = false
 
         if (player.isSwingInProgress) {
-//            if (libanim.getTarget() != useAnimation)
-//                libanim.setCurrentPose(useAnimation, 0.2f, false)
+            //            if (libanim.getTarget() != useAnimation)
+            //                libanim.setCurrentPose(useAnimation, 0.2f, false)
             //TODO SWING
         } else {
-//            if (libanim.getTarget() != idleAnimation)
-//                libanim.setCurrentPose(idleAnimation, 0.1f, false)
+            //            if (libanim.getTarget() != idleAnimation)
+            //                libanim.setCurrentPose(idleAnimation, 0.1f, false)
         }
 
         var spdMul = 0d
@@ -222,7 +220,7 @@ class PlayerInstance(file : PMXModel) {
         anim.fallStrength = fallVel
     }
 
-    def angleDist(totalRotation : Float, lastTotalRotation : Float) : Float = {
+    def angleDist(totalRotation: Float, lastTotalRotation: Float): Float = {
         var a = totalRotation - lastTotalRotation;
         var b = 0f
         if (totalRotation < lastTotalRotation) {
@@ -239,7 +237,7 @@ class PlayerInstance(file : PMXModel) {
         return a
     }
 
-    def adSpecial(lower : Float, upper : Float) : Float = (lower + ((Math.PI * 2) - upper)).toFloat
+    def adSpecial(lower: Float, upper: Float): Float = (lower + ((Math.PI * 2) - upper)).toFloat
 
     def cleanupGL() = pmxInst.cleanupGL()
 }

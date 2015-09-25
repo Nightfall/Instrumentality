@@ -14,60 +14,59 @@
 package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.ModelElement
-import moe.nightfall.instrumentality.editor.control.ArrowButtonElement
+import moe.nightfall.instrumentality.editor.control.{ArrowButtonElement, ModelElement}
 
 /**
  * Created on 25/08/15, ported to Scala on 2015-09-20
  */
 class ModelChooserElement(val availableModels: Seq[String]) extends EditElement {
-	private var group = Array.fill[ModelElement](3)(new ModelElement(true))
-	subElements ++= group
+    private var group = Array.fill[ModelElement](3)(new ModelElement(true))
+    subElements ++= group
 
-	private var ptrStart: Int = 0
-	private var buttonbar = Array[EditElement](
-		new ArrowButtonElement(180, () => {
-			ptrStart -= 1
-            if (ptrStart<0)
+    private var ptrStart: Int = 0
+    private var buttonbar = Array[EditElement](
+        new ArrowButtonElement(180, () => {
+            ptrStart -= 1
+            if (ptrStart < 0)
                 ptrStart = availableModels.length;
-			updatePosition()
-		}),
-		new ArrowButtonElement(0, () => {
-			ptrStart += 1
-			updatePosition()
-		}),
-		new ModelElement(false)
-	)
-	subElements ++= buttonbar
-	updatePosition()
-	
-	colourStrength = 0.5f
-	
-	override def layout() = {
-		val x = width / group.length
-		val y = height / 4
-		
-		for((element, index) <- group.view.zipWithIndex) {
-			element.posX = x * index
-			element.posY = y
-			element.setSize(x, y * 3)
-		}
-		
-		for((button, index) <- buttonbar.view.zipWithIndex) {
-			button.posX = y * index
-			button.posY = 0
-			button.setSize(y, y)
-		}
-	}
-	
-	def updatePosition() = {
-		for((element, index) <- group.view.zipWithIndex) {
+            updatePosition()
+        }),
+        new ArrowButtonElement(0, () => {
+            ptrStart += 1
+            updatePosition()
+        }),
+        new ModelElement(false)
+    )
+    subElements ++= buttonbar
+    updatePosition()
+
+    colourStrength = 0.5f
+
+    override def layout() = {
+        val x = width / group.length
+        val y = height / 4
+
+        for ((element, index) <- group.view.zipWithIndex) {
+            element.posX = x * index
+            element.posY = y
+            element.setSize(x, y * 3)
+        }
+
+        for ((button, index) <- buttonbar.view.zipWithIndex) {
+            button.posX = y * index
+            button.posY = 0
+            button.setSize(y, y)
+        }
+    }
+
+    def updatePosition() = {
+        for ((element, index) <- group.view.zipWithIndex) {
             val indi = (index + ptrStart) % (availableModels.length + 1);
             if (indi == 0) {
                 element.setModel(null);
             } else {
                 element.setModel(availableModels(indi - 1))
             }
-		}
-	}
+        }
+    }
 }

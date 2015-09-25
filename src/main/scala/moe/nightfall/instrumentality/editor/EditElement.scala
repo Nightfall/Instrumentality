@@ -13,7 +13,7 @@
 package moe.nightfall.instrumentality.editor
 
 import org.lwjgl.opengl.GL11
-import java.util.LinkedList
+
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -22,17 +22,17 @@ import scala.collection.mutable.ListBuffer
  */
 abstract class EditElement {
     // Note that posX and posY may be ignored if this is the root
-    private var sizeWidth, sizeHeight : Int = _
-    var posX, posY : Int = _
+    private var sizeWidth, sizeHeight: Int = _
+    var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
     var colourStrength = 0.25f
     var borderWidth = 8
 
-    private var lastHoverTarget : Option[EditElement] = None
-    var selectedSubelement : Option[EditElement] = None
+    private var lastHoverTarget: Option[EditElement] = None
+    var selectedSubelement: Option[EditElement] = None
 
-    protected def drawRect(x : Int, y : Int, w : Int, h : Int, r : Double, g : Double, b : Double) {
+    protected def drawRect(x: Int, y: Int, w: Int, h: Int, r: Double, g: Double, b: Double) {
         GL11.glBegin(GL11.GL_QUADS)
         GL11.glColor4d(r, g, b, 1)
         GL11.glVertex3d(x, y, 0)
@@ -42,7 +42,7 @@ abstract class EditElement {
         GL11.glEnd()
     }
 
-    protected def drawSkinnedRect(x : Int, y : Int, w : Int, h : Int, strength : Double) {
+    protected def drawSkinnedRect(x: Int, y: Int, w: Int, h: Int, strength: Double) {
         val sz = borderWidth;
 
         var str = 1.0d
@@ -53,7 +53,7 @@ abstract class EditElement {
         }
     }
 
-    def drawSubelements(scrWidth : Int, scrHeight : Int) {
+    def drawSubelements(scrWidth: Int, scrHeight: Int) {
         subElements foreach { ee =>
             GL11.glPushMatrix();
             GL11.glTranslated(ee.posX, ee.posY, 0);
@@ -62,23 +62,24 @@ abstract class EditElement {
         }
     }
 
-    def setSize(width : Int, height : Int) {
+    def setSize(width: Int, height: Int) {
         sizeWidth = width
         sizeHeight = height
         layout()
     }
 
     def width = sizeWidth
+
     def height = sizeHeight
 
-    def findElementAt(x : Int, y : Int) : Option[EditElement] = {
+    def findElementAt(x: Int, y: Int): Option[EditElement] = {
         return subElements find { ee =>
             (x >= ee.posX) && (x < ee.posX + ee.width) &&
-            (y >= ee.posY) && (y < ee.posY + ee.height)
+                (y >= ee.posY) && (y < ee.posY + ee.height)
         }
     }
 
-    def mouseMoveSubelements(x : Int, y : Int, buttons : Array[Boolean]) = {
+    def mouseMoveSubelements(x: Int, y: Int, buttons: Array[Boolean]) = {
         val targetElement = findElementAt(x, y)
         if (targetElement != lastHoverTarget) {
             lastHoverTarget.map(_.mouseEnterLeave(false))
@@ -90,15 +91,15 @@ abstract class EditElement {
         }
     }
 
-    def updateSubelements(dTime : Double) {
-        subElements foreach(_.updateSubelements(dTime))
+    def updateSubelements(dTime: Double) {
+        subElements foreach (_.updateSubelements(dTime))
     }
 
     // Functions meant for overriding
 
     def layout() = ()
 
-    def draw(scrWidth : Int, scrHeight : Int) {
+    def draw(scrWidth: Int, scrHeight: Int) {
         drawSkinnedRect(0, 0, sizeWidth, sizeHeight, colourStrength)
         drawSubelements(scrWidth, scrHeight);
     }
@@ -106,14 +107,14 @@ abstract class EditElement {
     // RANDOM NOTE II : buttons[] is used for detecting dragging,
     // without embedding the mouse state into every element // TODO Wouldn't do that, its ugly
 
-    def mouseMove(x : Int, y : Int, buttons : Array[Boolean]) {
+    def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
         mouseMoveSubelements(x, y, buttons)
     }
 
     // RANDOM NOTE: We assume people only have 2 buttons, others must be ignored.
     // This is because not all people have middle-mouse-buttons, it's unfair to assume.
 
-    def mouseStateChange(x : Int, y : Int, isDown : Boolean, isRight : Boolean) {
+    def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
         val targetElement = findElementAt(x, y)
         if (isDown)
             selectedSubelement = targetElement
@@ -122,7 +123,7 @@ abstract class EditElement {
         }
     }
 
-    def mouseEnterLeave(isInside : Boolean) {
+    def mouseEnterLeave(isInside: Boolean) {
         if (!isInside) {
             lastHoverTarget.map(_.mouseEnterLeave(false))
             lastHoverTarget = None
@@ -131,9 +132,9 @@ abstract class EditElement {
 
     // RANDOM NOTE III : Always call super if overriding this function.
 
-    def cleanup() : Unit = subElements.foreach(_.cleanup())
+    def cleanup(): Unit = subElements.foreach(_.cleanup())
 
-    def update(dTime : Double) {
+    def update(dTime: Double) {
         updateSubelements(dTime)
     }
 

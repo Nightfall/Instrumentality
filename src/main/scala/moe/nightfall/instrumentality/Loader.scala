@@ -12,11 +12,12 @@
  */
 package moe.nightfall.instrumentality
 
-import moe.nightfall.instrumentality.shader.Shader
-import moe.nightfall.instrumentality.shader.ShaderManager
+import java.awt.image.BufferedImage
+
+import moe.nightfall.instrumentality.shader.{Shader, ShaderManager}
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
-import java.awt.image.BufferedImage
+
 import scala.collection.mutable.ListBuffer
 
 object Loader {
@@ -27,10 +28,10 @@ object Loader {
     // TODO This is not convenient
     // This is the current model name for the player.
     // To be notified when this changes, put yourself on the list below :)
-    var currentFile : String = _
+    var currentFile: String = _
     var currentFileListeners = ListBuffer[() => Unit]()
 
-    var shaderBoneTransform : Shader = _
+    var shaderBoneTransform: Shader = _
 
     def setup() {
         loadModel()
@@ -41,16 +42,16 @@ object Loader {
 
     def loadModel() {
         shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert",
-                "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize)
+            "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize)
     }
 
-    def setCurrentFile(workModelName : String) {
+    def setCurrentFile(workModelName: String) {
         currentFile = workModelName
         currentFileListeners.foreach(_())
     }
 
     // No better idea where to put this
-    def writeGLTexImg(bi : BufferedImage, filter : Int) {
+    def writeGLTexImg(bi: BufferedImage, filter: Int) {
         val ib = new Array[Int](bi.getWidth() * bi.getHeight())
         bi.getRGB(0, 0, bi.getWidth(), bi.getHeight(), ib, 0, bi.getWidth())
         val inb = BufferUtils.createByteBuffer(bi.getWidth() * bi.getHeight() * 4)
@@ -63,7 +64,7 @@ object Loader {
         }
         inb.rewind()
         GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, bi.getWidth(), bi.getHeight(), 0, GL11.GL_RGBA,
-                GL11.GL_UNSIGNED_BYTE, inb)
+            GL11.GL_UNSIGNED_BYTE, inb)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter)
     }
