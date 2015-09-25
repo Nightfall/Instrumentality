@@ -77,7 +77,10 @@ class ModelElement(ib: Boolean) extends View3DElement {
         } else {
             GL11.glTranslated(-0.25, 0, 0)
             GL11.glScaled(0.01, -0.01, 0.01)
-            UIUtils.drawText("Load Fail", 1)
+            var text = "Load Fail"
+            if (workModelName == null)
+                text = "Use Steve"
+            UIUtils.drawText(text, 1)
         }
     }
 
