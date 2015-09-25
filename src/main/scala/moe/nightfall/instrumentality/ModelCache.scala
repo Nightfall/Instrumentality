@@ -36,6 +36,8 @@ object ModelCache {
 
     private val localModels = collection.concurrent.TrieMap[String, PMXModel]()
 
+    def findPMX(keys: Iterable[String]): String = keys.find(_.toLowerCase.endsWith(".pmx")).getOrElse("mdl.pmx")
+
     /**
      * Gets a PMXModel from a data manifest. Will try local FS, then try server
      *
@@ -49,7 +51,7 @@ object ModelCache {
      */
     def getByManifest(hashMap: Map[String, String], remoteServer: IPMXLocator): PMXModel = {
         // Check for eligible candidates locally
-        val targetHash = hashMap.get("mdl.pmx").get.toLowerCase()
+        val targetHash = hashMap.get(findPMX(hashMap.keys)).get.toLowerCase()
         getLocalModels() foreach { s =>
             val l = new FilePMXFilenameLocator(modelRepository + "/" + s + "/")
             if (targetHash.equalsIgnoreCase(hashBytes(l("mdl.pmx"))))
@@ -114,10 +116,10 @@ object ModelCache {
 
     // getTxt will get .txt files for legal purposes (but will not fail if they cannot be downloaded)
     private def getInternal(locator: IPMXFilenameLocator, name: String, getTxt: Boolean): PMXModel = {
-        val pm = new PMXModel(new PMXFile(locator("mdl.pmx")), Loader.groupSize)
+        val pm = new PMXModel(new PMXFile(locator(findPMX(locator.listFiles))), Loader.groupSize)
 
         try {
-            locator.listFiles.filter(k => k.toLowerCase().endsWith(".txt")).foreach(k => locator)
+            locator.listFiles.filter(k => k.toLowerCase.endsWith(".txt")).foreach(k => locator)
         } catch {
             case _: IOException =>
         }
