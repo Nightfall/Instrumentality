@@ -63,16 +63,22 @@ object UIUtils {
 
         bbce.barCore += new TextButtonElement("Mikumark 2016", new Runnable() {
             override def run() {
-                if (Loader.currentFile != null)
-                    bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false)
+                if (Loader.currentFile != null) {
+                    val mdl = ModelCache.getLocal(Loader.currentFile)
+                    if (mdl != null)
+                        bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false)
+                }
             }
         })
 
         val poseSet = new PoseSet()
         bbce.barCore += new TextButtonElement("Pose Editor", new Runnable() {
             override def run() {
-                if (Loader.currentFile != null)
-                    bbce.setUnderPanel(new PoseTreeElement(ModelCache.getLocal(Loader.currentFile).poses, bbce), false)
+                if (Loader.currentFile != null) {
+                    val mdl = ModelCache.getLocal(Loader.currentFile)
+                    if (mdl != null)
+                        bbce.setUnderPanel(new PoseTreeElement(mdl.poses, bbce), false)
+                }
             }
         })
 

@@ -68,7 +68,7 @@ class PoseEditElement(val editedPose : PoseAnimation, pm : PMXModel, editAnimati
     
         override def getChildNodes(n: Option[PMXBone]): Seq[PMXBone] = {
             var parId = -1
-            if (n != null)
+            if (n.isInstanceOf[Some[PMXBone]])
                 parId = n.get.boneId
             /*return*/ pmxInst.theFile.boneData filter { _.parentBoneIndex == parId}
         }
@@ -97,12 +97,19 @@ class PoseEditElement(val editedPose : PoseAnimation, pm : PMXModel, editAnimati
     }
 
     def getEditPBT: PoseBoneTransform = {
+        // What is going on here...?
         val mid = tView.selectedNode.globalName.toLowerCase
-        editedPose.hashMap.getOrElse(mid, () => {
+        // return needed because it *might* be implying that toLowerCase uses the return as a param
+        val opbt = editedPose.hashMap.get(mid)
+        // asInstanceOf seems to cause a lot of errors, and getOrElse is just acting weird.
+        // Practicality matters.
+        if (opbt.isEmpty) {
             val tsf = new PoseBoneTransform()
             editedPose.hashMap.put(mid, tsf)
-            tsf
-        }).asInstanceOf[PoseBoneTransform]
+            return tsf
+        } else {
+            return opbt.get;
+        }
     }
 
     override def cleanup() {

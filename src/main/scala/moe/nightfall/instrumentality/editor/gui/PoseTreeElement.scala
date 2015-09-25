@@ -14,6 +14,7 @@ package moe.nightfall.instrumentality.editor.gui;
 
 import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.ModelCache
+import moe.nightfall.instrumentality.PMXFile.PMXBone
 import moe.nightfall.instrumentality.animations.PoseSet
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control.ButtonBarContainerElement
@@ -52,16 +53,11 @@ class PoseTreeElement(val targetSet : PoseSet, whereAmI : ButtonBarContainerElem
                     ModelCache.getLocal(Loader.currentFile),
                     targetSet.createEditAnimation(n.get)),
                 noCleanup = false)
-        
-        override def getChildNodes(n: Option[String]): Iterable[String] = {
-            val map = for((k, v) <- targetSet.allPoses) yield {
-                (if (n == null) {
-                    if (!targetSet.poseParents.contains(k)) Some(k)
-                } else if (n.equals(targetSet.poseParents.get(k))) Some(k)
-                else None).asInstanceOf[Option[String]]
-            }
-            /*return*/ map.flatten.toSeq
-        }
+
+        // The nonsense that was here, I cannot understand.
+        // Now, Map - Filter - etc., I *CAN* understand!
+        override def getChildNodes(n: Option[String]): Iterable[String] =
+            targetSet.allPoses.keys.filter(k => targetSet.poseParents.get(k) == n).toSeq
     })
     
     subElements += treeviewElement

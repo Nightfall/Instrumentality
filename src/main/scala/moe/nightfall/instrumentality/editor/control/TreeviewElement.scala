@@ -68,11 +68,14 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
 			layout()
 		})
 		
-		arrowButtonElement.posX = depth * depthW
-		arrowButtonElement.posY = drawPoint * buttonH
-		arrowButtonElement.setSize(width - (myNode.posX + depthW), buttonH)
-		myNode.posY = drawPoint * buttonH
-		
+		myNode.posX = (depth+1) * depthW
+        myNode.posY = drawPoint * buttonH
+        myNode.setSize(width - (myNode.posX + depthW), buttonH)
+
+        arrowButtonElement.posX = depth * depthW
+        arrowButtonElement.posY = drawPoint * buttonH
+        arrowButtonElement.setSize(depthW, buttonH)
+
 		if (myNode.posY < 0) return p
 		if (myNode.posY > height - buttonH) return p
 		
