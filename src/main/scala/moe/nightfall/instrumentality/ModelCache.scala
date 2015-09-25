@@ -106,6 +106,8 @@ object ModelCache {
 
     def getLocalModels(): Seq[String] = {
         val out = new File(modelRepository).listFiles()
+        if (out == null)
+            return Seq()
         return out.filter(_.isDirectory()).map(_.getName)
     }
 
