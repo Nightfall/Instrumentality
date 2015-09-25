@@ -16,7 +16,7 @@ import java.io.{BufferedReader, InputStreamReader}
 
 import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
 import org.lwjgl.input.{Keyboard, Mouse}
-import org.lwjgl.opengl.{Display, DisplayMode, GL11};
+import org.lwjgl.opengl.{Display, DisplayMode, GL11}
 
 /**
  * The testbench.
@@ -30,7 +30,7 @@ class Main {
     private var currentPanel: EditElement = _
 
     def startWorkbench() {
-        val consoleReader = new BufferedReader(new InputStreamReader(System.in));
+        val consoleReader = new BufferedReader(new InputStreamReader(System.in))
 
         UIFont.setFont(Main.getClass.getResourceAsStream("/assets/instrumentality/font.txt"))
 
@@ -55,10 +55,10 @@ class Main {
 
         changePanel(UIUtils.createGui())
 
-        while (!Display.isCloseRequested()) {
+        while (!Display.isCloseRequested) {
             if (Display.wasResized()) {
-                scrWidth = Display.getWidth()
-                scrHeight = Display.getHeight()
+                scrWidth = Display.getWidth
+                scrHeight = Display.getHeight
                 onSizeChange(scrWidth, scrHeight)
             }
             val frameStart = System.currentTimeMillis()
@@ -74,7 +74,7 @@ class Main {
 
             doDraw()
 
-            Display.update();
+            Display.update()
 
             val currentTime = System.currentTimeMillis()
             // Frame start is frameEndpoint-20 (note that the delta does include
@@ -84,11 +84,11 @@ class Main {
 
             val v = frameEndpoint - currentTime
             if (v > 1)
-                Thread.sleep(v);
+                Thread.sleep(v)
             //Display.setTitle("I-PMXAW: FrameTime " + (currentTime - frameStart) + "ms");
-            frameEndpoint = currentTime + 30;
+            frameEndpoint = currentTime + 30
         }
-        Display.destroy();
+        Display.destroy()
     }
 
     def onSizeChange(scrWidth: Int, scrHeight: Int) {
@@ -109,13 +109,13 @@ class Main {
     private def doDraw() {
         GL11.glEnable(GL11.GL_CULL_FACE)
         GL11.glDisable(GL11.GL_TEXTURE_2D)
-        currentPanel.draw(Display.getWidth(), Display.getHeight())
+        currentPanel.draw(Display.getWidth, Display.getHeight)
         GL11.glEnable(GL11.GL_TEXTURE_2D)
         GL11.glDisable(GL11.GL_CULL_FACE)
     }
 
     def changePanel(newPanel: EditElement) {
         currentPanel = newPanel
-        currentPanel.setSize(Display.getWidth(), Display.getHeight())
+        currentPanel.setSize(Display.getWidth, Display.getHeight)
     }
 }
