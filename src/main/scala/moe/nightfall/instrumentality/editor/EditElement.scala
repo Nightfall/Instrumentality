@@ -92,7 +92,7 @@ abstract class EditElement {
     }
 
     def updateSubelements(dTime: Double) {
-        subElements foreach (_.updateSubelements(dTime))
+        subElements foreach (_.update(dTime))
     }
 
     // Functions meant for overriding

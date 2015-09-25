@@ -81,6 +81,7 @@ class Main {
             // the sleep)
             val delta = (currentTime - (frameEndpoint - 30)).toInt
             deltaTime = delta / 1000.0d
+            doUpdate(deltaTime)
 
             val v = frameEndpoint - currentTime
             if (v > 1)
