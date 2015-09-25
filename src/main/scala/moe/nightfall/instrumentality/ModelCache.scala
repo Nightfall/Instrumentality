@@ -62,6 +62,7 @@ object ModelCache {
             val manifestGetter = new IPMXFilenameLocator() {
                 var totalUsage = 0
 
+                override def listFiles(): Seq[String] = hashMap.keys.toSeq
                 override def apply(filename: String): Array[Byte] = {
                     val hash = hashMap.get(filename) getOrElse null
                     if (hash == null)
@@ -88,17 +89,7 @@ object ModelCache {
                 }
             }
 
-            // get all .txt files, as they are harmless and probably needed to
-            // avoid legal issues
-            // Note that the DM creator will deliberately include .txt files for
-            // this same purpose
-            for ((k, v) <- hashMap) {
-                if (k.toLowerCase().endsWith(".txt"))
-                    manifestGetter(v)
-            }
-            manifestGetter("mmcposes.dat")
-
-            return getInternal(manifestGetter, targetHash);
+            return getInternal(manifestGetter, targetHash, true);
         } catch {
             case e: IOException => return null
         }
@@ -115,14 +106,22 @@ object ModelCache {
         val mdl = localModels.get(name)
         if (mdl.isDefined) return mdl.get
         try {
-            return getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name)
+            return getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name, false)
         } catch {
             case e: IOException => return null
         }
     }
 
-    private def getInternal(locator: IPMXFilenameLocator, name: String): PMXModel = {
+    // getTxt will get .txt files for legal purposes (but will not fail if they cannot be downloaded)
+    private def getInternal(locator: IPMXFilenameLocator, name: String, getTxt: Boolean): PMXModel = {
         val pm = new PMXModel(new PMXFile(locator("mdl.pmx")), Loader.groupSize)
+
+        try {
+            locator.listFiles.filter(k => k.toLowerCase().endsWith(".txt")).foreach(k => locator)
+        } catch {
+            case _: IOException =>
+        }
+
         try {
             pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
         } catch {
@@ -181,13 +180,17 @@ object ModelCache {
         val dmcr = new DataManifestCreationResult
         val rootDir = new File(modelRepository + "/" + name)
         val rootLocator = new FilePMXFilenameLocator(modelRepository + "/" + name + "/")
-        val locator: IPMXFilenameLocator = { filename =>
-            val data = rootLocator(filename)
-            if (dmcr.filesToHashes.contains(filename)) data
-            val hash = hashBytes(data)
-            dmcr.filesToHashes.put(filename, hash)
-            dmcr.hashesToFiles.put(hash, filename)
-            data
+        val locator = new IPMXFilenameLocator() {
+            override def listFiles(): Seq[String] = rootLocator.listFiles
+
+            override def apply(filename: String): Array[Byte] = {
+                val data = rootLocator(filename)
+                if (dmcr.filesToHashes.contains(filename)) data
+                val hash = hashBytes(data)
+                dmcr.filesToHashes.put(filename, hash)
+                dmcr.hashesToFiles.put(hash, filename)
+                data
+            }
         }
         // If we already have this model in RAM, we can skip loading the PMX
         // file itself.
@@ -221,7 +224,11 @@ object ModelCache {
         return Hashing.sha1.hashBytes(data).toString.substring(0, 24)
     }
 
-    type IPMXFilenameLocator = String => Array[Byte]
+    trait IPMXFilenameLocator {
+        def apply(filename: String): Array[Byte]
+
+        def listFiles(): Seq[String]
+    }
 
     // Upload requires re-reading the files, and automatically creates a data
     // manifest.
@@ -229,7 +236,23 @@ object ModelCache {
     // for them.
 
     class FilePMXFilenameLocator(val baseDir: String) extends IPMXFilenameLocator {
+        def listFiles(base: String): Seq[String] = {
+            var strseq = Seq.empty[String]
+            val fileList = new File(baseDir).listFiles()
+            if (fileList != null) {
+                fileList.foreach(f => {
+                    if (f.isDirectory()) {
+                        val prefix = f.getName + "/"
+                        strseq = strseq ++ listFiles(base + prefix).map(v => prefix + v)
+                    } else {
+                        strseq = strseq :+ f.getName
+                    }
+                })
+            }
+            return strseq
+        }
 
+        override def listFiles(): Seq[String] = listFiles("")
         override def apply(filename: String): Array[Byte] = {
             val fis = new FileInputStream(baseDir + filename)
             val data = new Array[Byte](fis.available)
