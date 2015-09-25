@@ -83,22 +83,17 @@ object ShaderManager {
             in.read(data)
             in.close()
             var program = new String(data)
-            val matcher = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*\\$\\{").matcher(program)
+            val matcher = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*/\\*\\$\\{([a-zA-Z]*)\\*/.*?/\\*}\\*/").matcher(program)
             while (matcher.find()) {
                 val start = matcher.start()
-                val end = program.indexOf("}", matcher.end())
-                if (start == -1 || end == -1) throw new Exception("Invalid string replacement sequence found in shader \"" +
-                    filename +
-                    "\"")
-                val variable = program.substring(start + 2, end)
+                val variable = matcher.group(1)
                 if (!variables.contains(variable)) throw new Exception("Couldn't find replacement for variable \"" + variable +
                     "\" in shader \"" +
                     filename +
                     "\"")
                 program = program.substring(0, start) + variables.get(variable).get +
-                    program.substring(end + 1, program.length)
+                    program.substring(matcher.end(), program.length)
             }
-            program = program.replaceAll("\\$\\{", "\\${")
             GL20.glShaderSource(shader, program)
             GL20.glCompileShader(shader)
             if (GL20.glGetShaderi(shader, GL20.GL_COMPILE_STATUS) == GL11.GL_FALSE) throw new RuntimeException("Error creating shader: " +

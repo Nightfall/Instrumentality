@@ -18,8 +18,9 @@
  * -- gamemanj
  */
 attribute vec4 Bones; 
-attribute vec3 Tangent; 
-uniform mat4 Pose[${groupSize}];
+attribute vec3 Tangent;
+// Note: The value would be something like 12 in practice, I want to make sure that if the regex fails we know about it
+uniform mat4 Pose[/*${groupSize*/1/*}*/];
 varying vec3 T,B,N;
 varying float originalY;
 
