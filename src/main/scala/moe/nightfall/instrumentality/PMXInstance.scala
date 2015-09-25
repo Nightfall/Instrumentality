@@ -66,7 +66,7 @@ class PMXInstance(val theModel: PMXModel) {
             case 2 => Array(fg.get(v.boneIndices(0)) + v.boneWeights(0), fg.get(v.boneIndices(1)) + v.boneWeights(1), fg.get(v.boneIndices(2)) + v.boneWeights(2), fg.get(v.boneIndices(3)) + v.boneWeights(3))
             case _ =>
                 // Never fail silently... but considering this is a mod people will want to use, don't be a drama queen
-                sys.error("Unknown weight time " + v.weightType + " - assuming basic 1-bone")
+                sys.error("Unknown weight type " + v.weightType + " - assuming basic 1-bone")
                 Array(fg.get(v.boneIndices(0)) + 0.5f, fg.get(v.boneIndices(0)) + 0.5f, 0, 0)
         }
     }
