@@ -111,7 +111,7 @@ class PlayerInstance(file: PMXModel) {
 
     private def interpolate(last: Double, current: Double, partialTicks: Float) = last + (current - last) * partialTicks
 
-    def render(player: EntityPlayer, x: Double, y: Double, z: Double, partialTick: Float) {
+    def render(player: EntityPlayer, x: Double, y: Double, z: Double, zOffset : Double, partialTick: Float) {
         val adjustFactor = if (player.isSneaking()) 0.14f else 0.07f
         val scale = 1F / (pmxInst.theModel.height / player.height)
 
@@ -121,6 +121,7 @@ class PlayerInstance(file: PMXModel) {
         GL11.glTranslated(x, ((y - player.height) + player.eyeHeight) + adjustFactor, z)
         GL11.glRotated(180 - rotBody, 0, 1, 0)
         GL11.glScalef(scale, scale, scale)
+        GL11.glTranslated(0, 0, zOffset)
         // I fixed the triangle order, but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE)
         val lv = player.worldObj.getBlockLightValue_do(player.posX.toInt, player.posY.toInt, player.posZ.toInt, true)

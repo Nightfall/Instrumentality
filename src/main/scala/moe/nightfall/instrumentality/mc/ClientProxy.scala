@@ -24,6 +24,10 @@ import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.settings.KeyBinding
 import net.minecraftforge.client.event.RenderPlayerEvent
 import org.lwjgl.input.Keyboard
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraftforge.client.event.RenderHandEvent
+import org.lwjgl.opengl.GL11
+import net.minecraft.client.renderer.entity.RenderPlayer
 
 object ClientProxy {
     val protocolId = "MMC"
@@ -133,20 +137,8 @@ class ClientProxy extends CommonProxy {
         if (rte.phase == TickEvent.Phase.START)
             InstanceCache.update(rte.renderTickTime / 20d)
     }
-
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    def onPlayerRender(event: RenderPlayerEvent.Pre) {
-
-        val player = event.entityPlayer
-
-        var x = interpolate(player.lastTickPosX, player.posX, event.partialRenderTick)
-        var y = interpolate(player.lastTickPosY, player.posY, event.partialRenderTick)
-        var z = interpolate(player.lastTickPosZ, player.posZ, event.partialRenderTick)
-
-        x -= RenderManager.renderPosX
-        y -= RenderManager.renderPosY
-        z -= RenderManager.renderPosZ
-
+    
+    private def cachedModel(player : EntityPlayer) : Option[ModelCacheEntry] = {
         var mce = InstanceCache.getModel(player)
         if (mce == null) {
             if (player == Minecraft.getMinecraft.thePlayer) {
@@ -169,15 +161,51 @@ class ClientProxy extends CommonProxy {
                 }
 
                 Loader.currentFileListeners += mce.cfHook
-            } else return
+            } else return None
         }
+        return Some(mce)
+    }
 
-        val model = mce.value
-        if (model == null) return
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    def onPlayerRender(event: RenderPlayerEvent.Pre) {
+        val player = event.entityPlayer
+
+        val cache = cachedModel(player)
+        if (cache.isEmpty) return // We don't have anything to render
+        val model = cache.get.value
+        if (model == null) return // TODO I don't see why this would be needed.
+        
+        var x = interpolate(player.lastTickPosX, player.posX, event.partialRenderTick)
+        var y = interpolate(player.lastTickPosY, player.posY, event.partialRenderTick)
+        var z = interpolate(player.lastTickPosZ, player.posZ, event.partialRenderTick)
+
+        x -= RenderManager.renderPosX
+        y -= RenderManager.renderPosY
+        z -= RenderManager.renderPosZ
+
 
         model.apply(player, event.partialRenderTick)
-        model.render(player, x, y, z, event.partialRenderTick)
+        model.render(player, x, y, z, 0, event.partialRenderTick)
 
+        event.setCanceled(true)
+    }
+    
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    def onFirstPersonRender(event : RenderHandEvent) {
+        
+        val player = Minecraft.getMinecraft.thePlayer
+        if (player == null) return
+        if (Minecraft.getMinecraft.gameSettings.thirdPersonView != 0) return
+        val cache = cachedModel(player)
+        if (cache.isEmpty) return // We don't have anything to render
+        val model = cache.get.value
+        if (model == null) return // TODO I don't see why this would be needed. If the model is null, the cache should be empty as well.
+        
+        model.apply(player, event.partialTicks)
+        
+        // TODO Need to fix the camera, this differs from model to model.
+        model.render(player, 0, 0, 0, 2.25, event.partialTicks)
+        
         event.setCanceled(true)
     }
 }
