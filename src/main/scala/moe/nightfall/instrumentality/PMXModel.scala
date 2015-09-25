@@ -13,6 +13,7 @@
 package moe.nightfall.instrumentality
 
 import java.awt.image.BufferedImage
+import java.io.{PrintStream, FileOutputStream}
 
 import moe.nightfall.instrumentality.PMXModel._
 import moe.nightfall.instrumentality.animations.PoseSet
@@ -180,6 +181,7 @@ class PMXModel private {
             print(groups(i).size + " facegroups for shading on material " + i)
         }
         this.height = height
+        //debugWriteObj()
     }
 
     private def weightVertices(weightType: Int): Int = {
@@ -221,4 +223,29 @@ class PMXModel private {
         if (materials != null)
             System.err.println("WARNING: Finalize without cleanup of a PMXModel!")
     }
+
+    /**
+     * For debugging purposes, writes out an OBJ file.
+     * I'm hoping that this'll help me figure out what's wrong.
+     * (Well, it didn't, but now we know this works.
+     */
+    def debugWriteObj() {
+        System.err.println("DEBUG WRITE OBJ")
+        val tgt = new PrintStream(new FileOutputStream("debug.obj"))
+        tgt.println("# FACEGROUP DUMP : EXPORTED BY DEBUG CODE, NOT TEX'D, DO NOT USE UNLESS DEBUGGING")
+        tgt.println("# Height: " + height)
+        theFile.vertexData.foreach(vert => {
+            tgt.println("v " + vert.posX + " " + vert.posY + " " + vert.posZ)
+        })
+        for (i <- 0 until groups.length) {
+            for (j <- 0 until groups(i).length) {
+                tgt.println("g fGroup." + i + ":" + theFile.matData(i).texTex + "." + j)
+                val g = groups(i)(j)
+                for (vi <- 0 until g.vertexList.length by 3)
+                    tgt.println("f " + (g.vertexList(vi).vxId + 1) + " " + (g.vertexList(vi + 1).vxId + 1) + " " + (g.vertexList(vi + 2).vxId + 1))
+            }
+        }
+        tgt.close()
+    }
+
 }

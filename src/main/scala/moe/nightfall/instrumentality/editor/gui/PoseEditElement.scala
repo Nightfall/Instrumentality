@@ -46,8 +46,11 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
             val s = 1 / pmxInst.theModel.height
             GL11.glScaled(s, s, s)
             pmxInst.clearBoneCache()
-            if (params.showModel.checked)
+            if (params.showModel.checked) {
+                GL11.glEnable(GL11.GL_TEXTURE_2D)
                 pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 2)
+                GL11.glDisable(GL11.GL_TEXTURE_2D)
+            }
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)
             if (params.showDebug.checked)
                 pmxInst.renderDebug(tView.selectedNode.boneId)

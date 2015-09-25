@@ -49,7 +49,6 @@ class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
     subElements ++= allAdjusters
 
     // Elements
-    // TODO SCALA this doesn't compile yet
     val showModel = new CheckboxElement(() => {})
     showModel.checked = true
     subElements += showModel

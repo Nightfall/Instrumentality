@@ -130,7 +130,7 @@ class PMXInstance(val theModel: PMXModel) {
         if (boneCache(bone.boneId) != null)
             return boneCache(bone.boneId)
         // Simple enough: get what the bone wants us to transform it by...
-        val boneTransform = anim.getBoneTransform(compatibilityCheck(bone.globalName))
+        val boneTransform = anim.getBoneTransform(bone.globalName)
         val i = new Matrix4f()
         boneTransform foreach { tr =>
             // Go into bone-space, apply the transform, then leave.
@@ -143,68 +143,6 @@ class PMXInstance(val theModel: PMXModel) {
             Matrix4f.mul(getBoneMatrix(theFile.boneData(bone.parentBoneIndex)), i, i)
         boneCache(bone.boneId) = i
         return i
-    }
-
-    /**
-     * Some models use different names for what are essentially the same bones.
-     * Put checks here to find these.
-     * <p/>
-     * Note that if animations don't work correctly with the new name of a bone,
-     * it is better to put the compatibility in the affected animations
-     * (so the values can be adjusted to compensate)
-     *
-     * @param globalName The original globalName of the bone.
-     * @return The translated bone name, or the original if it is not in the compatibility table.
-     */
-    private def compatibilityCheck(globalName: String): String = {
-
-        // Kagamine Rin
-
-        // .stuff
-
-        if (globalName.equalsIgnoreCase("center"))
-            return "root"
-
-        if (globalName.equalsIgnoreCase("head_o"))
-            return "head"
-
-        if (globalName.equalsIgnoreCase("LEyeCtrl"))
-            return "L_eye_ctrl"
-        if (globalName.equalsIgnoreCase("REyeCtrl"))
-            return "R_eye_ctrl"
-
-        // .arms
-
-        if (globalName.equalsIgnoreCase("L_Arm"))
-            return "L_shouler"
-        if (globalName.equalsIgnoreCase("R_arm"))
-            return "R_shouler"
-        if (globalName.equalsIgnoreCase("L_elbow"))
-            return "L_ellbow"
-        if (globalName.equalsIgnoreCase("R_elbow"))
-            return "R_ellbow"
-        if (globalName.equalsIgnoreCase("L_wrist"))
-            return "L_hand"
-        if (globalName.equalsIgnoreCase("R_wrist"))
-            return "R_hand"
-
-        // .legs
-
-        if (globalName.equalsIgnoreCase("L_leg"))
-            return "leg_L"
-        if (globalName.equalsIgnoreCase("L_knee"))
-            return "knee_L"
-        if (globalName.equalsIgnoreCase("L_foot"))
-            return "ankle_L"
-
-        if (globalName.equalsIgnoreCase("R_leg"))
-            return "leg_R"
-        if (globalName.equalsIgnoreCase("R_knee"))
-            return "knee_R"
-        if (globalName.equalsIgnoreCase("R_foot"))
-            return "ankle_R"
-
-        return globalName
     }
 
     /**

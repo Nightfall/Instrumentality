@@ -91,7 +91,7 @@ object ShaderManager {
                     filename +
                     "\"")
                 val variable = program.substring(start + 2, end)
-                if (!variables.contains(variable)) throw new Exception("Coundn't find replacement for variable \"" + variable +
+                if (!variables.contains(variable)) throw new Exception("Couldn't find replacement for variable \"" + variable +
                     "\" in shader \"" +
                     filename +
                     "\"")
