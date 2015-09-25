@@ -42,7 +42,6 @@ object PMXModel {
         var boneMappingFileGroup: Array[Int] = _
         var boneMappingGroupFile: Array[Int] = _
 
-        // TODO SCALA Use apply?
         def get(boneIndice: Int): Int = {
             val res = boneMappingFileGroup(boneIndice)
             if (res == -1) throw new RuntimeException("Bone is being relied on that does not exist within this group.")
@@ -178,7 +177,7 @@ class PMXModel private {
                     fg.boneMappingFileGroup(k) = j
                 }
             }
-            print(groups(i).size + " facegroups for shading on material " + i)
+            println(groups(i).size + " facegroups for shading on material " + i)
         }
         this.height = height
         //debugWriteObj()

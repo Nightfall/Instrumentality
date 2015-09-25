@@ -49,8 +49,12 @@ class PMXInstance(val theModel: PMXModel) {
     var vboList = new Array[Array[Int]](theModel.groups.length)
     var boneCache = new Array[Matrix4f](theFile.boneData.length)
 
-    for (i <- 0 until vboList.length)
-        vboList(i) = Array(theModel.groups(i).size)
+    for (i <- 0 until vboList.length) {
+        vboList(i) = new Array[Int](theModel.groups(i).length)
+        for (j <- 0 until vboList(i).length) {
+            vboList(i)(j) = 0 // Why is this not the *DEFAULT* value!?!?!?!? Fuck you, Scala!
+        }
+    }
 
     private def createBoneData(fg: FaceGroup, v: PMXVertex): Array[Float] = {
         return v.weightType match {
@@ -192,10 +196,10 @@ class PMXInstance(val theModel: PMXModel) {
                         val res = createBoneData(fg, vt)
                         if (res.length != 4)
                             throw new RuntimeException("FIX CREATEBONEDATA")
-                        vboData.put(res);
-                        vboData.put(0);
-                        vboData.put(0);
-                        vboData.put(0);
+                        vboData.put(res)
+                        vboData.put(0)
+                        vboData.put(0)
+                        vboData.put(0)
                         if (vboData.position() - in != VBO_DATASIZE)
                             throw new RuntimeException("VBO_DATASIZE incorrect")
                     }
