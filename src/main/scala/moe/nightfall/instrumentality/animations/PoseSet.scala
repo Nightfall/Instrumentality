@@ -36,6 +36,7 @@ class PoseSet {
     //  Also, this being bundled with the posedata ensure that whenever we suggest a model,
     //  it's a one-click process to use it, as the posedata is where we got the URL from.)
     var downloadURL = ""
+    // Note: The value "." indicates that the PMX file is in the base folder.
     var downloadBaseFolder = ""
 
     allPoses.put("idle", new PoseAnimation)
