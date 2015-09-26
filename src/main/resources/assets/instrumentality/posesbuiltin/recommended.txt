@@ -1,3 +1,0 @@
-;This file serves as a database for models. All values are trimmed of whitespace.
-;SHA-1                                   :Name                            :Model Author    :Poser
-:147141dcb5dbffde2e887bdd439379c153306c1f:Hatsune Miku (Project DIVA)     :AndreehXD       :gamemanj
