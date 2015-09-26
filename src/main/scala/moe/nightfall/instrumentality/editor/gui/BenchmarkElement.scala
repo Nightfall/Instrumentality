@@ -38,8 +38,11 @@ class BenchmarkElement(val myModel: PMXModel) extends EditElement {
 
     override def layout() {
         for ((element, index) <- subElements.view.zipWithIndex) {
-            element.posX = width % (index * 50)
-            element.posY = height % ((element.posX / width) * 50)
+            val rowLen = width / 50
+            element.posX = (index % rowLen) * 50
+            if (width == 0)
+                return
+            element.posY = ((index / rowLen) * 50) % height
         }
     }
 
