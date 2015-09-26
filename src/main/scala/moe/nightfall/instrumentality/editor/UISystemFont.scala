@@ -27,6 +27,7 @@ import org.lwjgl.util.vector.Vector2f;
 object UISystemFont {
     // We're /NOT/ uploading this to the GPU every frame just to copy it back down again as a UI draw.
     private var textTextures = scala.collection.mutable.HashMap[String, TextTexture]()
+
     // Used to avoid textTextures getting too big
     // (this is a ring, freeTextPtr goes around the ring as textures are alloc'd,
     //  when it runs into old text, it deletes it)
@@ -67,21 +68,19 @@ object UISystemFont {
             freeTextRing(freeTextPtr) = str
             freeTextPtr += 1
             freeTextPtr = freeTextPtr % freeTextRing.length
-            fontTestRender.setFont(targetFont)
-            val fm = fontTestRender.getFontMetrics()
             // Work out what we need
-            val neededSize = fm.getStringBounds(str, fontTestRender)
-            val mainImage = new BufferedImage((neededSize.getWidth() + 1).toInt, (neededSize.getHeight() + 1).toInt, BufferedImage.TYPE_INT_ARGB)
+            val neededSize = sizeSystemLine(str, targetFont)
+            val mainImage = new BufferedImage(neededSize._1.x.toInt, neededSize._1.x.toInt, BufferedImage.TYPE_INT_ARGB)
             val g = mainImage.createGraphics()
             g.setFont(targetFont)
             g.setColor(Color.BLACK)
-            g.drawString(str, -neededSize.getX().toInt, -neededSize.getY().toInt)
+            g.drawString(str, -neededSize._2.x.toInt, -neededSize._2.y.toInt)
             g.dispose()
             Loader.writeGLTexImg(mainImage, GL11.GL_LINEAR)
             tex.w = mainImage.getWidth()
             tex.h = mainImage.getHeight()
 
-            tex.scale = 9d / fm.getHeight()
+            tex.scale = neededSize._3
         }
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
@@ -104,6 +103,19 @@ object UISystemFont {
         GL11.glDisable(GL11.GL_BLEND)
         GL11.glDisable(GL11.GL_TEXTURE_2D)
         return new Vector2f((tex.w * tex.scale).toFloat, (tex.h * tex.scale).toFloat)
+    }
+
+    // The Vector2f is the size in pixels, the second v2f is the offset in pixels, the double is the scale relative to the original size.
+    // (The second v2f can be ignored outside of here,
+    // but if you *want* to draw your text with the offsets, then feel free to.)
+    // To get the size in GL units, just multiply the first v2f by the scale.
+    def sizeSystemLine(str: String, targetFont: Font): (Vector2f, Vector2f, Double) = {
+        fontTestRender.setFont(targetFont)
+        val fm = fontTestRender.getFontMetrics()
+        // Work out what we need
+        val neededSize = fm.getStringBounds(str, fontTestRender)
+        val scale = 9d / fm.getHeight()
+        (new Vector2f(neededSize.getWidth.toFloat + 1, neededSize.getHeight.toFloat + 1), new Vector2f(neededSize.getX.toFloat, neededSize.getY.toFloat), scale)
     }
 
     /**

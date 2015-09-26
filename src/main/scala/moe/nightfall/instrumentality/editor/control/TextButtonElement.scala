@@ -20,16 +20,6 @@ class TextButtonElement(text: String, toRun: () => Unit) extends ButtonElement(t
 
     override def draw(scrWidth: Int, scrHeight: Int) {
         super.draw(scrWidth, scrHeight)
-        GL11.glPushMatrix()
-
-        var scale: Double = (height - borderWidth) / 8d
-        if (scale < 1.7) {
-            scale = height / 8d
-        } else {
-            GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
-        }
-        GL11.glScaled(scale, scale, 1)
-        UIUtils.drawText(text, 2)
-        GL11.glPopMatrix()
+        UIUtils.drawBoundedText(text, width, height, borderWidth)
     }
 }

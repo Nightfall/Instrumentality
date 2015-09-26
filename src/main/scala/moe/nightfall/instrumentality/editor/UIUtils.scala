@@ -17,15 +17,12 @@ import java.awt.Font
 import moe.nightfall.instrumentality.{Loader, ModelCache}
 import moe.nightfall.instrumentality.animations.PoseSet
 import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement}
-import moe.nightfall.instrumentality.editor.gui.{BenchmarkElement, ModelChooserElement, PoseTreeElement}
+import moe.nightfall.instrumentality.editor.gui.{DownloaderElement, BenchmarkElement, ModelChooserElement, PoseTreeElement}
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
 import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
-    // use when adding new chars to the internal font
-    val debugDisableSysFont = false
-
     // TODO Couldn't this just be two variables?
     var state = new Array[Boolean](2)
 
@@ -44,7 +41,7 @@ object UIUtils {
     }
 
     def createGui(): EditElement = {
-        val bbce = new ButtonBarContainerElement(0.05d)
+        val bbce = new ButtonBarContainerElement(0.025d)
 
         // TODO SCALA If this ain't compiling, just wait...
         val mce = new ModelChooserElement(ModelCache.getLocalModels())
@@ -57,7 +54,7 @@ object UIUtils {
             }
         })
 
-        bbce.barCore += new TextButtonElement("Mikumark 2016", new Runnable() {
+        bbce.barCore += new TextButtonElement("Benchmark", new Runnable() {
             override def run() {
                 if (Loader.currentFile != null) {
                     val mdl = ModelCache.getLocal(Loader.currentFile)
@@ -67,8 +64,7 @@ object UIUtils {
             }
         })
 
-        val poseSet = new PoseSet()
-        bbce.barCore += new TextButtonElement("Pose Editor", new Runnable() {
+        bbce.barCore += new TextButtonElement("PoseEdit!", new Runnable() {
             override def run() {
                 if (Loader.currentFile != null) {
                     val mdl = ModelCache.getLocal(Loader.currentFile)
@@ -78,11 +74,52 @@ object UIUtils {
             }
         })
 
+        bbce.barCore += new TextButtonElement("Get PMXs", new Runnable() {
+            override def run() {
+                bbce.setUnderPanel(new DownloaderElement(), false)
+            }
+        })
+
         /*return*/ bbce
     }
 
     private var sysFont: Font = _
     private var sysFontCreationThread: Thread = _
+
+    def useSystemFont(str: String): Boolean = {
+        val ca = str.toCharArray()
+        for (c <- ca) {
+            if (c == 10) {
+                // NOP
+            } else if (c == 13) {
+                // NOP
+            } else if (c == 32) {
+                // more NOP
+            } else if (UIFont.getCharLoc(c) == -1) {
+                // welp, we have an unknown char, assume it's an evil diacritic
+                if (sysFont == null) {
+                    if (sysFontCreationThread == null) {
+                        sysFontCreationThread = new Thread {
+                            try {
+                                // did I mention: this call is SLOW. Seriously.
+                                val f = new Font(null, 0, 24)
+                                UISystemFont.scratchFont(f)
+                                sysFont = f
+                            } catch {
+                                case e: Exception =>
+                                    System.err.println("Cannot load a international font... nippon gomen nasai... :(")
+                                    // TODO: This would be the perfect place to turn on a romanizer as a last resort.
+                                    e.printStackTrace()
+                            }
+                        }
+                        sysFontCreationThread.start()
+                    }
+                    // *sigh* NOP it for now while we load a international char-supporting font
+                } else return true
+            }
+        }
+        false
+    }
 
     // yes, this is scalable (in one way or another). TODO: second parameter controls stroke width
     // the default size will be around 6x9u(where u is whatever your opengl perspective says), with 1u spacing on both axis.
@@ -90,42 +127,11 @@ object UIUtils {
     // however, if unknown chars appear, then it will NOT WORK!
     def drawLine(str: String, strokeWidth: Int): Vector2f = {
         val ca = str.toCharArray()
-        if (!debugDisableSysFont) {
-            for (c <- ca) {
-                if (c == 10) {
-                    // NOP
-                } else if (c == 13) {
-                    // NOP
-                } else if (c == 32) {
-                    // more NOP
-                } else if (UIFont.getCharLoc(c) == -1) {
-                    // welp, we have an unknown char, assume it's an evil diacritic
-                    if (sysFont == null) {
-                        if (sysFontCreationThread == null) {
-                            sysFontCreationThread = new Thread {
-                                try {
-                                    // did I mention: this call is SLOW. Seriously.
-                                    val f = new Font(null, 0, 24)
-                                    UISystemFont.scratchFont(f)
-                                    sysFont = f
-                                } catch {
-                                    case e: Exception =>
-                                        System.err.println("Cannot load a international font... nippon gomen nasai... :(")
-                                        // TODO: This would be the perfect place to turn on a romanizer as a last resort.
-                                        e.printStackTrace()
-                                }
-                            }
-                            sysFontCreationThread.start()
-                        }
-                        // *sigh* NOP it for now while we load a international char-supporting font
-                    } else return UISystemFont.drawSystemLine(str, sysFont)
-                }
-            }
-        }
+        if (useSystemFont(str))
+            return UISystemFont.drawSystemLine(str, sysFont)
         GL11.glPushMatrix()
         var lineX = 0
         for (c <- ca) {
-            // TODO SCALA 'to' or 'until'? Nobody knows (>= 0)
             for (thick <- strokeWidth to 0 by -1) {
                 GL11.glColor3d(0, thick / 8d, thick / 5d)
                 GL11.glLineWidth(thick + 1)
@@ -135,7 +141,15 @@ object UIUtils {
             lineX += 7
         }
         GL11.glPopMatrix()
-        return new Vector2f(lineX, 10)
+        return new Vector2f(lineX, 8)
+    }
+
+    def sizeLine(str: String): Vector2f = {
+        if (useSystemFont(str)) {
+            val v = UISystemFont.sizeSystemLine(str, sysFont)
+            return new Vector2f(v._1.x * v._3.toFloat, v._1.y * v._3.toFloat)
+        }
+        new Vector2f(7 * str.length, 8)
     }
 
     def drawText(str0: String, i: Int) {
@@ -147,10 +161,30 @@ object UIUtils {
             str = str.substring(str.indexOf(10) + 1)
 
             totalSize.x = Math.max(totalSize.x, lineSize.x)
-            totalSize.y += lineSize.y
+            totalSize.y += lineSize.y + 1
             GL11.glTranslated(0, lineSize.y, 0)
         }
         totalSize.x = Math.max(totalSize.x, drawLine(str, i).x)
+        GL11.glPopMatrix()
+    }
+
+    def drawBoundedText(text: String, width: Int, height: Int, borderWidth: Int) {
+        GL11.glPushMatrix()
+        val textSize = sizeLine(text)
+        var scale: Double = (height - borderWidth) / textSize.getY
+        var scaleW: Double = (width - borderWidth) / textSize.getX
+        if (scaleW < scale)
+            scale = scaleW
+        if (scale < 1.7) {
+            scale = height / textSize.getY
+            scaleW = width / textSize.getX
+            if (scaleW < scale)
+                scale = scaleW
+        } else {
+            GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
+        }
+        GL11.glScaled(scale, scale, 1)
+        drawText(text, 2)
         GL11.glPopMatrix()
     }
 }

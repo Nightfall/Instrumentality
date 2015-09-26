@@ -59,12 +59,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
         if (isButton) {
             var text: String = "<null>"
             if (workModelName != null) text = workModelName
-            GL11.glPushMatrix()
-            GL11.glTranslated(borderWidth, borderWidth, 0)
-            val textScale: Double = (width - (borderWidth * 2)) / (text.length * 7.0d)
-            GL11.glScaled(textScale, textScale, 1)
-            UIUtils.drawText(text, 2)
-            GL11.glPopMatrix()
+            UIUtils.drawBoundedText(text, width, height, borderWidth)
         }
     }
 
