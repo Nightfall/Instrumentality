@@ -20,6 +20,9 @@ import org.lwjgl.opengl.{Display, DisplayMode, GL11}
 
 /**
  * The testbench.
+ * Minecraft takes way too long to start for UI testing to be done reasonably under it.
+ * So: Test the majority of code under this, and use Minecraft occasionally and make sure everything matches up.
+ * Ofc, this method doesn't work for the integration code, so test that using Minecraft.
  * Created on 24/07/15.
  */
 object Main extends App {

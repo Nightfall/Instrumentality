@@ -23,38 +23,41 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
 
     override def layout() {
         subElements.clear()
-        val buttonH = height / 12
-        val depthW = width / 16
 
-        upButton.posX = width - depthW
+        var buttonH = height / 12.0
+        if (buttonH > 24)
+            buttonH = buttonH / ((((buttonH / 24.0) - 1) / 2) + 1)
+        val depthW = width / 16.0
+
+        upButton.posX = (width - depthW).toInt
         downButton.posX = upButton.posX
 
         upButton.posY = 0
-        downButton.posY = buttonH
+        downButton.posY = buttonH.toInt
 
-        upButton.setSize(depthW, buttonH)
-        downButton.setSize(depthW, buttonH)
+        upButton.setSize(depthW.toInt, buttonH.toInt)
+        downButton.setSize(depthW.toInt, buttonH.toInt)
 
         subElements ++= Array(upButton, downButton)
 
         var dp = scrollPoint
 
         for (node <- nodeStructurer.getChildNodes(None)) {
-            dp = createElement(dp, 0, node, buttonH, depthW)
+            dp = createElement(dp, 0, node, buttonH.toInt, depthW.toInt)
         }
     }
 
     def createElement(drawPoint: Int, depth: Int, node: Node, buttonH: Int, depthW: Int): Int = {
         var p = drawPoint + 1
 
-        // TODO: Remove recursion!!!
+        val childNodes = nodeStructurer.getChildNodes(Option(node));
         if (!sealedTrees.contains(node))
-            for (node2 <- nodeStructurer.getChildNodes(Option(node)))
+            for (node2 <- childNodes)
                 p = createElement(p, depth + 1, node2, buttonH, depthW)
 
-        val myNode = new TextButtonElement(nodeStructurer.getNodeName(Option(node)), () => {
+        val myNode = new TextButtonElement(nodeStructurer.getNodeName(node), () => {
             selectedNode = node
-            nodeStructurer.onNodeClick(Option(node))
+            nodeStructurer.onNodeClick(node)
             layout()
         })
         myNode.baseStrength = if (node == selectedNode) 0.25f else 0.5f
@@ -66,27 +69,36 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
             layout()
         })
 
-        myNode.posX = (depth + 1) * depthW
-        myNode.posY = drawPoint * buttonH
-        myNode.setSize(width - (myNode.posX + depthW), buttonH)
-
         arrowButtonElement.posX = depth * depthW
         arrowButtonElement.posY = drawPoint * buttonH
         arrowButtonElement.setSize(depthW, buttonH)
 
+        myNode.posX = (depth + 1) * depthW
+        myNode.posY = drawPoint * buttonH
+        if (childNodes.isEmpty)
+            myNode.posX -= depthW
+        myNode.setSize(width - (myNode.posX + depthW), buttonH)
+
         if (myNode.posY < 0) return p
         if (myNode.posY > height - buttonH) return p
 
-        subElements ++= Array(arrowButtonElement, myNode)
+        if (childNodes.isEmpty) {
+            subElements ++= Array(myNode)
+        } else {
+            subElements ++= Array(arrowButtonElement, myNode)
+        }
+
         /*return*/ p
     }
 }
 
 trait TreeviewElementStructurer[Node] {
-    // note: "null" is the Root Node, and is invisible (only it's children are seen)
-    def getNodeName(n: Option[Node]): String
+    // note: None is the Root Node, and is invisible (only it's children are seen)
+    // As only the children are seen, any function about seeing or clicking obviously can't receive it
+
+    def getNodeName(n: Node): String
 
     def getChildNodes(n: Option[Node]): Iterable[Node]
 
-    def onNodeClick(n: Option[Node])
+    def onNodeClick(n: Node)
 }

@@ -61,7 +61,7 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
 
     val tView = new TreeviewElement[PMXBone](new TreeviewElementStructurer[PMXBone] {
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
-        override def getNodeName(n: Option[PMXBone]): String = n.get.globalName
+        override def getNodeName(n: PMXBone): String = n.globalName
 
         override def getChildNodes(n: Option[PMXBone]): Seq[PMXBone] = {
             var parId = -1
@@ -72,7 +72,7 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
             }
         }
 
-        override def onNodeClick(n: Option[PMXBone]) {
+        override def onNodeClick(n: PMXBone) {
             /* do nothing */
         }
     })

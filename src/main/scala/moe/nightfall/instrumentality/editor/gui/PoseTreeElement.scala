@@ -42,14 +42,14 @@ class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElemen
         }
         */
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
-        override def getNodeName(n: Option[String]): String = n.get
+        override def getNodeName(n: String): String = n
 
-        override def onNodeClick(n: Option[String]): Unit =
+        override def onNodeClick(n: String): Unit =
             whereAmI.setUnderPanel(
                 new PoseEditElement(
-                    PoseTreeElement.this.targetSet.allPoses.get(n.get).get,
+                    PoseTreeElement.this.targetSet.allPoses.get(n).get,
                     ModelCache.getLocal(Loader.currentFile),
-                    targetSet.createEditAnimation(n.get)),
+                    targetSet.createEditAnimation(n)),
                 noCleanup = false)
 
         // The nonsense that was here, I cannot understand.

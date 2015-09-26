@@ -23,6 +23,7 @@ import com.google.common.hash.Hashing
  * other operations that can't be multithreaded) Created on 19/08/15.
  */
 object ModelCache {
+
     // Maximum total usage. Setting this to 0 effectively disables remote server
     // downloading.
     // Setting this to -1 means "unlimited" (NOT RECOMMENDED : this makes it a
@@ -35,8 +36,24 @@ object ModelCache {
     var modelRepository = "mdl/"
 
     private val localModels = collection.concurrent.TrieMap[String, PMXModel]()
+    private val localFromHashCache = collection.concurrent.TrieMap[String, Option[String]]()
 
     def findPMX(keys: Iterable[String]): String = keys.find(_.toLowerCase.endsWith(".pmx")).getOrElse("mdl.pmx")
+
+    def localFromHash(hash: String): Option[String] = {
+        if (localFromHashCache.contains(hash))
+            return localFromHashCache(hash)
+        val v = {
+            getLocalModels() foreach { s =>
+                val l = new FilePMXFilenameLocator(modelRepository + "/" + s + "/")
+                if (hash.equalsIgnoreCase(hashBytes(l(findPMX(l.listFiles)))))
+                    return Some(s)
+            }
+            None
+        }
+        localFromHashCache(hash) = v
+        v
+    }
 
     /**
      * Gets a PMXModel from a data manifest. Will try local FS, then try server
@@ -52,46 +69,25 @@ object ModelCache {
     def getByManifest(hashMap: Map[String, String], remoteServer: IPMXLocator): PMXModel = {
         // Check for eligible candidates locally
         val targetHash = hashMap.get(findPMX(hashMap.keys)).get.toLowerCase()
-        getLocalModels() foreach { s =>
-            val l = new FilePMXFilenameLocator(modelRepository + "/" + s + "/")
-            if (targetHash.equalsIgnoreCase(hashBytes(l("mdl.pmx"))))
-                return getLocal(s)
-        }
+        val local = localFromHash(targetHash)
+        if (local.isDefined)
+            return getLocal(local.get)
+
         if (remoteServer == null)
             return null
 
         try {
             val manifestGetter = new IPMXFilenameLocator() {
-                var totalUsage = 0
-
                 override def listFiles(): Seq[String] = hashMap.keys.toSeq
                 override def apply(filename: String): Array[Byte] = {
                     val hash = hashMap.get(filename) getOrElse null
                     if (hash == null)
                         throw new IOException("No file " + filename)
-                    val b = remoteServer.getData(hash)
-                    totalUsage += b.length
-                    if (maxTotalUsage >= 0 && totalUsage > maxTotalUsage)
-                        throw new IOException(
-                            "Potential Denial Of Service attack via HDD usage, download will not be continued.")
-                    val targ = new File(modelRepository + "/" + targetHash + "/" + filename)
-                    // one final sanity check (lowercase'd because of potential
-                    // case madness on Windows, etc.)
-                    if (!targ.getAbsolutePath().toLowerCase()
-                        .startsWith(new File(modelRepository).getAbsolutePath().toLowerCase()))
-                    // terminal abusers are not welcome here
-                        throw new IOException(
-                            "Target path outside model repository, a model is dangerous, offensive filename : "
-                                + filename.replace("\u001B", "(REALLY DODGY: ^[)"))
-                    targ.getParentFile().mkdirs()
-                    val fos = new FileOutputStream(targ)
-                    fos.write(b)
-                    fos.close()
-                    return b
+                    return remoteServer.getData(hash)
                 }
             }
 
-            return getInternal(manifestGetter, targetHash, true);
+            return getInternal(new DownloadingPMXFilenameLocator(manifestGetter, targetHash, maxTotalUsage), targetHash, true);
         } catch {
             case e: IOException => return null
         }
@@ -115,7 +111,7 @@ object ModelCache {
     }
 
     // getTxt will get .txt files for legal purposes (but will not fail if they cannot be downloaded)
-    private def getInternal(locator: IPMXFilenameLocator, name: String, getTxt: Boolean): PMXModel = {
+    def getInternal(locator: IPMXFilenameLocator, name: String, getTxt: Boolean): PMXModel = {
         val pmxData = locator(findPMX(locator.listFiles))
         val pmxHash = hashBytes(pmxData)
         val pm = new PMXModel(new PMXFile(pmxData), Loader.groupSize)
@@ -130,13 +126,7 @@ object ModelCache {
             pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
         } catch {
             case _: IOException => {
-                try {
-                    val stream = classOf[Main].getClassLoader.getResourceAsStream("assets/instrumentality/posesbuiltin/" + pmxHash + ".dat")
-                    if (stream != null)
-                        pm.poses.load(new DataInputStream(stream))
-                } catch {
-                    case _: IOException =>
-                }
+                pm.poses.loadForHash(pmxHash);
             }
         }
 
@@ -254,6 +244,34 @@ object ModelCache {
             fis.read(data)
             fis.close()
             return data
+        }
+    }
+
+    class DownloadingPMXFilenameLocator(val rootFilenameLocator: IPMXFilenameLocator, val targetName: String, val maxTotalUsage: Long) extends IPMXFilenameLocator {
+        var totalUsage = 0
+
+        override def listFiles(): Seq[String] = rootFilenameLocator.listFiles
+
+        override def apply(filename: String): Array[Byte] = {
+            val b = rootFilenameLocator(filename)
+            totalUsage += b.length
+            if (maxTotalUsage >= 0 && totalUsage > maxTotalUsage)
+                throw new IOException(
+                    "Potential Denial Of Service attack via HDD usage, download will not be continued.")
+            val targ = new File(modelRepository + "/" + targetName + "/" + filename)
+            // one final sanity check (lowercase'd because of potential
+            // case madness on Windows, etc.)
+            if (!targ.getAbsolutePath().toLowerCase()
+                .startsWith(new File(modelRepository).getAbsolutePath().toLowerCase()))
+            // terminal abusers are not welcome here
+                throw new IOException(
+                    "Target path outside model repository, a model is dangerous, offensive filename : "
+                        + filename.replace("\u001B", "(REALLY DODGY: ^[)"))
+            targ.getParentFile().mkdirs()
+            val fos = new FileOutputStream(targ)
+            fos.write(b)
+            fos.close()
+            return b
         }
     }
 

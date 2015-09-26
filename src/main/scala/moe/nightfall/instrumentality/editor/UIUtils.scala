@@ -45,12 +45,13 @@ object UIUtils {
 
         // TODO SCALA If this ain't compiling, just wait...
         val mce = new ModelChooserElement(ModelCache.getLocalModels())
-        bbce.setUnderPanel(mce, true)
+        bbce.setUnderPanel(mce, false)
 
         // TODO SCALA No
         bbce.barCore += new TextButtonElement("MdlChoose", new Runnable() {
             override def run() {
-                bbce.setUnderPanel(mce, true)
+                // also serves as refresh!
+                bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
             }
         })
 
@@ -76,7 +77,7 @@ object UIUtils {
 
         bbce.barCore += new TextButtonElement("Get PMXs", new Runnable() {
             override def run() {
-                bbce.setUnderPanel(new DownloaderElement(), false)
+                bbce.setUnderPanel(new DownloaderElement(bbce), false)
             }
         })
 
@@ -164,13 +165,31 @@ object UIUtils {
             totalSize.y += lineSize.y + 1
             GL11.glTranslated(0, lineSize.y, 0)
         }
-        totalSize.x = Math.max(totalSize.x, drawLine(str, i).x)
+        val lineSize = drawLine(str, i)
+        totalSize.x = Math.max(totalSize.x, lineSize.x)
+        totalSize.y += lineSize.y
         GL11.glPopMatrix()
+    }
+
+    def sizeText(text: String) = {
+        var str = text
+        val totalSize = new Vector2f()
+        while (str.indexOf(10) != -1) {
+            val lineSize = sizeLine(str.substring(0, str.indexOf(10)))
+            str = str.substring(str.indexOf(10) + 1)
+
+            totalSize.x = Math.max(totalSize.x, lineSize.x)
+            totalSize.y += lineSize.y + 1
+        }
+        val lineSize = sizeLine(str)
+        totalSize.x = Math.max(totalSize.x, lineSize.x)
+        totalSize.y += lineSize.y
+        totalSize
     }
 
     def drawBoundedText(text: String, width: Int, height: Int, borderWidth: Int) {
         GL11.glPushMatrix()
-        val textSize = sizeLine(text)
+        val textSize = sizeText(text)
         var scale: Double = (height - borderWidth) / textSize.getY
         var scaleW: Double = (width - borderWidth) / textSize.getX
         if (scaleW < scale)

@@ -18,7 +18,8 @@ class ButtonBarContainerElement(sizeRatio: Double) extends EditElement {
     val barCore: HBoxElement = new HBoxElement
     subElements += barCore
     private var underPanel: EditElement = null
-    private var noCleanupOnChange: Boolean = false
+    // Sometimes this needs to be overridden.
+    var noCleanupOnChange: Boolean = false
 
     def setUnderPanel(editElement: EditElement, noCleanup: Boolean) {
         if (underPanel != null) {

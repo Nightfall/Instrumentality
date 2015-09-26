@@ -32,9 +32,9 @@ abstract class EditElement {
     private var lastHoverTarget: Option[EditElement] = None
     var selectedSubelement: Option[EditElement] = None
 
-    protected def drawRect(x: Int, y: Int, w: Int, h: Int, r: Double, g: Double, b: Double) {
+    protected def drawRect(x: Int, y: Int, w: Int, h: Int, r: Double, g: Double, b: Double, a: Double) {
         GL11.glBegin(GL11.GL_QUADS)
-        GL11.glColor4d(r, g, b, 1)
+        GL11.glColor4d(r, g, b, a)
         GL11.glVertex3d(x, y, 0)
         GL11.glVertex3d(x, y + h, 0)
         GL11.glVertex3d(x + w, y + h, 0)
@@ -48,7 +48,7 @@ abstract class EditElement {
         var str = 1.0d
         val step = (1.0f - strength) / (sz * 2)
         for (i <- 0 until sz) {
-            drawRect(x + i, y + i, w - (i * 2), h - (i * 2), 0, str * 0.5f, str)
+            drawRect(x + i, y + i, w - (i * 2), h - (i * 2), 0, str * 0.5f, str, 1)
             str -= step
         }
     }

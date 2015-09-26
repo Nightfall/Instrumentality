@@ -15,7 +15,7 @@ package moe.nightfall.instrumentality.animations
 import java.io.{ByteArrayOutputStream, DataInputStream, DataOutputStream, IOException}
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
-import moe.nightfall.instrumentality.PoseBoneTransform
+import moe.nightfall.instrumentality.{Main, PoseBoneTransform}
 
 import scala.collection.mutable.{HashMap, Map}
 
@@ -180,7 +180,19 @@ class PoseSet {
         }
     }
 
-    def loadMain(ver: Int, dis: DataInputStream): Unit = {
+    def loadForHash(pmxHash: String) = {
+        try {
+            val stream = classOf[Main].getClassLoader.getResourceAsStream("assets/instrumentality/posesbuiltin/" + pmxHash + ".dat")
+            if (stream != null) {
+                load(new DataInputStream(stream))
+                stream.close()
+            }
+        } catch {
+            case _: IOException =>
+        }
+    }
+
+    private def loadMain(ver: Int, dis: DataInputStream): Unit = {
         while (dis.read() != 0) {
             val poseName = dis.readUTF()
             val pa = new PoseAnimation
