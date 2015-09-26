@@ -52,7 +52,7 @@ class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditEl
                                 if (fakeIt) {
                                     Thread.sleep(5000)
                                 } else {
-                                    val fakeIt2 = true
+                                    val fakeIt2 = false
                                     var f = new File("nodos.zip")
                                     if (!fakeIt2) {
                                         val uc = new URL(ps.downloadURL).openConnection()
