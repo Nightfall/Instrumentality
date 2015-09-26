@@ -198,12 +198,20 @@ class PMXModel private {
      * only call from the render thread)
      */
     def setupMaterials() {
+        // Sometimes images are reused. The ModelCache stage will ensure that the reused images use the same BufferedImage.
+        var imgmap = Map[BufferedImage, Int]()
         val map = for ((k, v) <- materialData) yield {
-            val bTex = GL11.glGenTextures()
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex)
-            Loader.writeGLTexImg(v, GL11.GL_NEAREST)
-            (k, bTex)
+            if (imgmap.contains(v)) {
+                (k, imgmap(v))
+            } else {
+                val bTex = GL11.glGenTextures()
+                imgmap += v -> bTex
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, bTex)
+                Loader.writeGLTexImg(v, GL11.GL_NEAREST)
+                (k, bTex)
+            }
         }
+
         // Convert to immutable map
         materials = map.toMap
     }

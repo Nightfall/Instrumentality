@@ -12,6 +12,7 @@
  */
 package moe.nightfall.instrumentality
 
+import java.awt.image.BufferedImage
 import java.io.{ByteArrayInputStream, DataInputStream, File, FileInputStream, FileOutputStream, IOException}
 import javax.imageio.ImageIO
 
@@ -118,10 +119,12 @@ object ModelCache {
         val pmxHash = hashBytes(pmxData)
         val pm = new PMXModel(new PMXFile(pmxData), Loader.groupSize)
 
-        try {
-            locator.listFiles.filter(k => k.toLowerCase.endsWith(".txt")).foreach(k => locator)
-        } catch {
-            case _: IOException =>
+        if (getTxt) {
+            try {
+                locator.listFiles.filter(k => k.toLowerCase.endsWith(".txt")).foreach(k => locator(k))
+            } catch {
+                case _: IOException =>
+            }
         }
 
         try {
@@ -139,6 +142,7 @@ object ModelCache {
     }
 
     private def loadTextures(mdl: PMXModel, pf: PMXFile, fl: IPMXFilenameLocator) {
+        val mapping = collection.mutable.Map[String, BufferedImage]()
         pf.matData foreach { mat =>
             var str = mat.texTex
             if (str != null) {
@@ -169,9 +173,13 @@ object ModelCache {
                     throw new IOException("Potentially security-threatening string found (weirdness)");
 
                 try {
-                    val bi = ImageIO.read(new ByteArrayInputStream(fl(str)))
+                    var bi = mapping.get(str)
+                    if (bi.isEmpty) {
+                        bi = Some(ImageIO.read(new ByteArrayInputStream(fl(str))))
+                        mapping += str -> bi.get
+                    }
                     if (mdl != null)
-                        mdl.materialData += str -> bi
+                        mdl.materialData += str -> bi.get
                 } catch {
                     case e: Exception => throw new IOException(str, e)
                 }

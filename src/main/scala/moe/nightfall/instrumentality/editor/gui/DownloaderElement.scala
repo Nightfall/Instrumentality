@@ -96,7 +96,7 @@ class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditEl
                                         override def listFiles(): Seq[String] = {
                                             return za.filter(_.getName.toLowerCase.startsWith(root))
                                                 .filter(!_.isDirectory)
-                                                .map(af => af.getName.substring(root.length)).toSeq
+                                                .map(af => af.getName.toLowerCase.substring(root.length))
                                         }
 
                                         override def apply(filename: String): Array[Byte] = {
