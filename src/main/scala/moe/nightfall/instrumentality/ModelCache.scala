@@ -38,6 +38,8 @@ object ModelCache {
     private val localModels = collection.concurrent.TrieMap[String, PMXModel]()
     private val localFromHashCache = collection.concurrent.TrieMap[String, Option[String]]()
 
+    def notifyModelsAdded = localFromHashCache.filter(_._2.isEmpty).foreach(kv => localFromHashCache.remove(kv._1))
+
     def findPMX(keys: Iterable[String]): String = keys.find(_.toLowerCase.endsWith(".pmx")).getOrElse("mdl.pmx")
 
     def localFromHash(hash: String): Option[String] = {

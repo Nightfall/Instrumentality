@@ -35,6 +35,7 @@ class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditEl
                     val tpe = new TaskProgressElement(rootPanel, DownloaderElement.this, false)
                     tpe.label.text = "Downloading " + ps.downloadURL + "..."
                     tpe.addReturnTask((tpe) => {
+                        ModelCache.notifyModelsAdded
                         RecommendedInfoCache.refreshAvailable
                     })
                     // override our own settings
@@ -51,7 +52,7 @@ class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditEl
                                 if (fakeIt) {
                                     Thread.sleep(5000)
                                 } else {
-                                    val fakeIt2 = false
+                                    val fakeIt2 = true
                                     var f = new File("nodos.zip")
                                     if (!fakeIt2) {
                                         val uc = new URL(ps.downloadURL).openConnection()
@@ -69,7 +70,7 @@ class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditEl
                                             if (readLen < 0)
                                                 throw new IOException("Download failure")
                                             todoLen -= readLen
-                                            fos.write(buffer)
+                                            fos.write(buffer, 0, readLen)
                                         }
                                         fis.close()
                                         fos.close()

@@ -21,8 +21,9 @@ class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempte
     subElements += label
 
     def performReturn() = {
-        rootPanel.setUnderPanel(preempted, noCleanupPreempted)
+        // done here so stuff that would be done on layout will work
         tasksOnReturn.foreach(_(this))
+        rootPanel.setUnderPanel(preempted, noCleanupPreempted)
     }
 
     override def draw(scrwidth: Int, scrheight: Int) = {
