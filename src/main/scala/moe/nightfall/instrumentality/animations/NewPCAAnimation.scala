@@ -27,10 +27,19 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
 
     override def getBoneTransform(boneName: String) = poseSetResult getBoneTransform boneName
 
-    def getInterpolate(time: Double, sine: Double) =
-        time * (1 - sine) + ((1 - Math.cos(time * Math.PI)) / 2) * sine
+    def getInterpolate(time: Double, sine: Double, sineRepeat: Int) = {
+        val sineSegment = 1d / sineRepeat
+        // position within current sine segment (0 to 1)
+        val sinePoint = (time % sineSegment) * sineRepeat
+        // base of current sine segment
+        val sineBase = Math.floor(time / sineSegment) * sineSegment
+        // current sine value within current segment (0 to 1)
+        val sineCurrent = (1 - Math.cos(sinePoint * Math.PI)) / 2
+        val sineComponent = (sineCurrent * sineSegment) + sineBase
+        (time * (1 - sine)) + (sineComponent * sine)
+    }
 
-    def setupCycle(time: Double, subAnims: Array[String], sine: Double, strength: Double, map: Map[String, Double]) {
+    def setupCycle(time: Double, subAnims: Array[String], sine: Double, sineRepeat: Int, strength: Double, map: Map[String, Double]) {
         val time2 =
             if (time >= 0)
                 time % 1.0
@@ -39,7 +48,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
         val segment = 1.0d / (subAnims.length - 1)
         var currentStart = Math.floor(time2 / segment).toInt
         var currentEnd = currentStart + 1
-        var strengthEnd = getInterpolate((time2 - (currentStart * segment)) / segment, sine)
+        var strengthEnd = getInterpolate((time2 - (currentStart * segment)) / segment, sine, sineRepeat)
         currentStart %= subAnims.length
         currentEnd %= subAnims.length
         var strengthStart = 1.0d - strengthEnd
@@ -63,7 +72,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
         else if (lookUD > 0)
             map.put("lookU", lookUD)
 
-        setupCycle(walkCycleTime, Array("walkLFHit", "walkRFMidpoint", "walkRFHit", "walkLFMidpoint", "walkLFHit"), 0.5, walkStrength, map)
+        setupCycle(walkCycleTime, Array("walkLFHit", "walkRFMidpoint", "walkRFHit", "walkLFMidpoint", "walkLFHit"), 1, 2, walkStrength, map)
         map.put("falling", fallStrength)
         poseSetResult = poseSet.createAnimation(map)
     }

@@ -26,6 +26,7 @@ import org.lwjgl.opengl.{Display, GL11};
  */
 class EditorHostGui extends GuiScreen {
 
+    var lastTime = System.currentTimeMillis()
     var hostedElement: EditElement = null
 
     override def initGui() {
@@ -40,6 +41,15 @@ class EditorHostGui extends GuiScreen {
     }
 
     override def drawScreen(xCoord: Int, yCoord: Int, partialTick: Float) {
+        // Here's why the FPS was so low - we were limiting ourselves to MC time.
+        // Which looks AWFUL.
+        val thisTime = System.currentTimeMillis()
+        val deltaTime = thisTime - lastTime
+        lastTime = thisTime
+
+        UIUtils.update(hostedElement)
+        hostedElement.update(deltaTime / 1000f)
+
         GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glLoadIdentity()
@@ -54,11 +64,6 @@ class EditorHostGui extends GuiScreen {
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glEnable(GL11.GL_TEXTURE_2D)
-    }
-
-    override def updateScreen() {
-        UIUtils.update(hostedElement)
-        hostedElement.update(0.05d)
     }
 
     def changePanel(newPanel: EditElement) {
