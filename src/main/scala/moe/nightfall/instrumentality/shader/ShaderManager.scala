@@ -16,6 +16,7 @@ package moe.nightfall.instrumentality.shader
 
 import java.util.regex.Pattern
 
+import moe.nightfall.instrumentality.Loader
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.{GL11, GL20}
 
@@ -78,7 +79,7 @@ object ShaderManager {
         try {
             shader = GL20.glCreateShader(shaderType)
             if (shader == 0) return 0
-            val in = getClass.getResourceAsStream(filename)
+            val in = Loader.applicationHost.getResource(filename)
             val data = Array.ofDim[Byte](in.available())
             in.read(data)
             in.close()

@@ -14,6 +14,7 @@ package moe.nightfall.instrumentality.mc.gui
 
 ;
 
+import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
@@ -28,8 +29,6 @@ class EditorHostGui extends GuiScreen {
     var hostedElement: EditElement = null
 
     override def initGui() {
-        if (UIFont.fontDB == null)
-            UIFont.setFont(Minecraft.getMinecraft.mcDefaultResourcePack.getInputStream(new ResourceLocation("instrumentality:/font.txt")))
         if (hostedElement == null)
             changePanel(UIUtils.createGui())
     }

@@ -47,7 +47,7 @@ class ClientProxy extends CommonProxy {
         ClientProxy.editorBinding = new KeyBinding("key.mmc_editor", Keyboard.KEY_EQUALS, "key.categories.mikumikucraft")
         ClientRegistry.registerKeyBinding(ClientProxy.editorBinding)
 
-        Loader.setup()
+        Loader.setup(new MinecraftApplicationHost)
     }
 
     /*

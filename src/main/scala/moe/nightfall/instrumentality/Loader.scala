@@ -14,6 +14,7 @@ package moe.nightfall.instrumentality
 
 import java.awt.image.BufferedImage
 
+import moe.nightfall.instrumentality.editor.UIFont
 import moe.nightfall.instrumentality.shader.{Shader, ShaderManager}
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
@@ -21,6 +22,8 @@ import org.lwjgl.opengl.GL11
 import scala.collection.mutable.ListBuffer
 
 object Loader {
+
+    var applicationHost: ApplicationHost = null
 
     // TODO Move
     val groupSize = 12
@@ -33,16 +36,17 @@ object Loader {
 
     var shaderBoneTransform: Shader = _
 
-    def setup() {
-        loadModel()
+    def setup(host: ApplicationHost) {
+        applicationHost = host
         loadShaders()
+        UIFont.setFont(applicationHost.getResource("font.txt"))
+        RecommendedInfoCache.loadRecommended
     }
 
-    def loadShaders() = ShaderManager.loadShaders()
-
-    def loadModel() {
-        shaderBoneTransform = ShaderManager.createProgram("/assets/instrumentality/shader/bone_transform.vert",
-            "/assets/instrumentality/shader/bone_transform.frag").set("groupSize", groupSize)
+    def loadShaders() = {
+        shaderBoneTransform = ShaderManager.createProgram("shader/bone_transform.vert",
+            "shader/bone_transform.frag").set("groupSize", groupSize)
+        ShaderManager.loadShaders()
     }
 
     def setCurrentFile(workModelName: String) {
@@ -68,4 +72,5 @@ object Loader {
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter)
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter)
     }
+
 }

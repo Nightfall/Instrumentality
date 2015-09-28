@@ -4,10 +4,16 @@ package moe.nightfall.instrumentality
  * Created on 26/09/15.
  */
 object RecommendedInfoCache {
-    val recommended = scala.io.Source.fromInputStream(classOf[Main].getClassLoader.getResourceAsStream("assets/instrumentality/posesbuiltin/recommended.csv"))
-    val allEntries = recommended.getLines.toList.tail.map(new DownloadableEntry(_))
-    recommended.close()
-    var availableEntries = allEntries.filter(!_.isInstalled)
+
+    var allEntries = Seq[DownloadableEntry]()
+    var availableEntries = allEntries
+
+    def loadRecommended = {
+        val recommended = scala.io.Source.fromInputStream(Loader.applicationHost.getResource("posesbuiltin/recommended.csv"))
+        allEntries = recommended.getLines.toList.tail.map(new DownloadableEntry(_))
+        recommended.close
+        refreshAvailable
+    }
 
     def refreshAvailable = availableEntries = allEntries.filter(!_.isInstalled)
 

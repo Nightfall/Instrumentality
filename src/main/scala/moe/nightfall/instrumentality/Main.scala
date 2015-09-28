@@ -12,7 +12,7 @@
  */
 package moe.nightfall.instrumentality
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io.{InputStream, BufferedReader, InputStreamReader}
 
 import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
 import org.lwjgl.input.{Keyboard, Mouse}
@@ -29,13 +29,11 @@ object Main extends App {
     new Main().startWorkbench()
 }
 
-class Main {
+class Main extends ApplicationHost {
     private var currentPanel: EditElement = _
 
     def startWorkbench() {
         val consoleReader = new BufferedReader(new InputStreamReader(System.in))
-
-        UIFont.setFont(Main.getClass.getResourceAsStream("/assets/instrumentality/font.txt"))
 
         var (scrWidth, scrHeight) = (800, 600)
         Display.setTitle("Instrumentality: PMX Animation Workbench")
@@ -44,7 +42,7 @@ class Main {
         Display.create()
         Mouse.create()
 
-        Loader.setup()
+        Loader.setup(this)
 
         GL11.glEnable(GL11.GL_DEPTH_TEST)
         GL11.glDepthFunc(GL11.GL_LEQUAL)
@@ -122,4 +120,7 @@ class Main {
         currentPanel = newPanel
         currentPanel.setSize(Display.getWidth, Display.getHeight)
     }
+
+    // Gets a file from assets/instrumentality/.
+    override def getResource(resource: String): InputStream = getClass.getResourceAsStream("/assets/instrumentality/" + resource)
 }
