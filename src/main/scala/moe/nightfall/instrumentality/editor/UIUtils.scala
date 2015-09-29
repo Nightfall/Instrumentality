@@ -41,7 +41,7 @@ object UIUtils {
     }
 
     def createGui(): EditElement = {
-        val bbce = new ButtonBarContainerElement(0.025d)
+        val bbce = new ButtonBarContainerElement(0.0355d)
 
         // TODO SCALA If this ain't compiling, just wait...
         val mce = new ModelChooserElement(ModelCache.getLocalModels())

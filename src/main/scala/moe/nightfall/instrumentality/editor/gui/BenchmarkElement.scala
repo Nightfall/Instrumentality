@@ -25,7 +25,7 @@ class BenchmarkElement(val myModel: PMXModel) extends EditElement {
     override def update(dTime: Double) {
         super.update(dTime)
 
-        avgTime = ((avgTime * 99) + dTime) / 100
+        avgTime = ((avgTime * 9) + dTime) / 10
         time += dTime
         if (time > 2.0d) {
             val modelElement = new ModelElement(false)
