@@ -12,11 +12,11 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
 
     var selectedNode: Node = _
 
-    val upButton: ArrowButtonElement = new ArrowButtonElement(-90, () => {
+    val upButton: ArrowButtonElement = new ArrowButtonElement(-90, {
         scrollPoint += 1
         layout()
     })
-    val downButton: ArrowButtonElement = new ArrowButtonElement(+90, () => {
+    val downButton: ArrowButtonElement = new ArrowButtonElement(+90, {
         scrollPoint -= 1
         layout()
     })
@@ -55,14 +55,14 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
             for (node2 <- childNodes)
                 p = createElement(p, depth + 1, node2, buttonH, depthW)
 
-        val myNode = new TextButtonElement(nodeStructurer.getNodeName(node), () => {
+        val myNode = new TextButtonElement(nodeStructurer.getNodeName(node), {
             selectedNode = node
             nodeStructurer.onNodeClick(node)
             layout()
         })
         myNode.baseStrength = if (node == selectedNode) 0.25f else 0.5f
 
-        val arrowButtonElement = new ArrowButtonElement(if (sealedTrees.contains(node)) 0 else 45, () => {
+        val arrowButtonElement = new ArrowButtonElement(if (sealedTrees.contains(node)) 0 else 45, {
             if (sealedTrees.contains(node))
                 sealedTrees -= node
             else sealedTrees += node

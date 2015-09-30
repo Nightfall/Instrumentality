@@ -48,38 +48,30 @@ object UIUtils {
         bbce.setUnderPanel(mce, false)
 
         // TODO SCALA No
-        bbce.barCore += new TextButtonElement("MdlChoose", new Runnable() {
-            override def run() {
-                // also serves as refresh!
-                bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
-            }
-        })
+        bbce.barCore += new TextButtonElement("MdlChoose", 
+            // also serves as refresh!
+            bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
+        )
 
-        bbce.barCore += new TextButtonElement("Benchmark", new Runnable() {
-            override def run() {
-                if (Loader.currentFile != null) {
-                    val mdl = ModelCache.getLocal(Loader.currentFile)
-                    if (mdl != null)
-                        bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false)
-                }
+        bbce.barCore += new TextButtonElement("Benchmark",
+            if (Loader.currentFile != null) {
+                val mdl = ModelCache.getLocal(Loader.currentFile)
+                if (mdl != null)
+                    bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false)
             }
-        })
+        )
 
-        bbce.barCore += new TextButtonElement("PoseEdit!", new Runnable() {
-            override def run() {
-                if (Loader.currentFile != null) {
-                    val mdl = ModelCache.getLocal(Loader.currentFile)
-                    if (mdl != null)
-                        bbce.setUnderPanel(new PoseTreeElement(mdl.poses, bbce), false)
-                }
+        bbce.barCore += new TextButtonElement("PoseEdit!", 
+            if (Loader.currentFile != null) {
+                val mdl = ModelCache.getLocal(Loader.currentFile)
+                if (mdl != null)
+                    bbce.setUnderPanel(new PoseTreeElement(mdl.poses, bbce), false)
             }
-        })
+        )
 
-        bbce.barCore += new TextButtonElement("Get PMXs", new Runnable() {
-            override def run() {
-                bbce.setUnderPanel(new DownloaderElement(bbce), false)
-            }
-        })
+        bbce.barCore += new TextButtonElement("Get PMXs", 
+            bbce.setUnderPanel(new DownloaderElement(bbce), false)
+        )
 
         /*return*/ bbce
     }

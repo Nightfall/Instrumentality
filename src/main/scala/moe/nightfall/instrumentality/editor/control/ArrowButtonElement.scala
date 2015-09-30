@@ -3,8 +3,7 @@ package moe.nightfall.instrumentality.editor.control
 import org.lwjgl.opengl.GL11
 
 
-class ArrowButtonElement(arrowAngle: Double, toRun: () => Unit) extends ButtonElement(toRun) {
-    def this(arrowAngle: Double, toRun: Runnable) = this(arrowAngle, () => toRun.run())
+class ArrowButtonElement(arrowAngle: Double, toRun: => Unit) extends ButtonElement(toRun) {
 
     override def draw(scrWidth: Int, scrHeight: Int) {
         super.draw(scrWidth, scrHeight)

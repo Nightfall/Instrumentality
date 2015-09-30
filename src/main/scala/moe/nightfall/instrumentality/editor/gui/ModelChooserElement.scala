@@ -25,13 +25,13 @@ class ModelChooserElement(val availableModels: Seq[String]) extends EditElement 
 
     private var ptrStart: Int = 0
     private var buttonbar = Array[EditElement](
-        new ArrowButtonElement(180, () => {
+        new ArrowButtonElement(180, {
             ptrStart -= 1
             if (ptrStart < 0)
                 ptrStart = availableModels.length;
             updatePosition()
         }),
-        new ArrowButtonElement(0, () => {
+        new ArrowButtonElement(0, {
             ptrStart += 1
             updatePosition()
         }),

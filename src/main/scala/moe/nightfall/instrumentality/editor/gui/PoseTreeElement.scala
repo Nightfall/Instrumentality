@@ -60,13 +60,12 @@ class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElemen
 
     subElements += treeviewElement
 
-    val saveButton = new TextButtonElement("Save", () => {
+    val saveButton = new TextButtonElement("Save", {
         val fos = new FileOutputStream(ModelCache.modelRepository + "/" + Loader.currentFile + "/mmcposes.dat")
         val dos = new DataOutputStream(fos)
         targetSet.save(dos)
         dos.close()
-    }
-    )
+    })
 
     subElements += saveButton
 

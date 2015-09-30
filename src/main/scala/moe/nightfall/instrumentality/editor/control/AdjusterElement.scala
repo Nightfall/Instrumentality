@@ -18,10 +18,10 @@ class AdjusterElement(valuePrefix: String, toAdjust: AdjusterElementData) extend
     val adjustmentValue = 0.05d
     val valueDisplay = new LabelElement("?")
 
-    val incButton = new ArrowButtonElement(0, () =>
+    val incButton = new ArrowButtonElement(0,
         toAdjust.value = correct(toAdjust.value + adjustmentValue)
     )
-    val decButton = new ArrowButtonElement(180, () =>
+    val decButton = new ArrowButtonElement(180,
         toAdjust.value = correct(toAdjust.value - adjustmentValue)
     )
 
