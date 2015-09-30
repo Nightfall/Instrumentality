@@ -22,7 +22,7 @@ import scala.collection.mutable.ListBuffer
  */
 abstract class EditElement {
     // Note that posX and posY may be ignored if this is the root
-    private var sizeWidth, sizeHeight: Int = _
+    protected var sizeWidth, sizeHeight: Int = _
     var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
@@ -32,6 +32,7 @@ abstract class EditElement {
     private var lastHoverTarget: Option[EditElement] = None
     var selectedSubelement: Option[EditElement] = None
 
+    // Move those to utility object
     protected def drawRect(x: Int, y: Int, w: Int, h: Int, r: Double, g: Double, b: Double, a: Double) {
         GL11.glBegin(GL11.GL_QUADS)
         GL11.glColor4d(r, g, b, a)

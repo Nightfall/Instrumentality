@@ -43,11 +43,9 @@ object UIUtils {
     def createGui(): EditElement = {
         val bbce = new ButtonBarContainerElement(0.0355d)
 
-        // TODO SCALA If this ain't compiling, just wait...
         val mce = new ModelChooserElement(ModelCache.getLocalModels())
         bbce.setUnderPanel(mce, false)
 
-        // TODO SCALA No
         bbce.barCore += new TextButtonElement("MdlChoose", 
             // also serves as refresh!
             bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
@@ -73,7 +71,7 @@ object UIUtils {
             bbce.setUnderPanel(new DownloaderElement(bbce), false)
         )
 
-        /*return*/ bbce
+        return bbce
     }
 
     private var sysFont: Font = _
@@ -153,12 +151,12 @@ object UIUtils {
             val lineSize = drawLine(str.substring(0, str.indexOf(10)), i)
             str = str.substring(str.indexOf(10) + 1)
 
-            totalSize.x = Math.max(totalSize.x, lineSize.x)
+            totalSize.x = math.max(totalSize.x, lineSize.x)
             totalSize.y += lineSize.y + 1
             GL11.glTranslated(0, lineSize.y, 0)
         }
         val lineSize = drawLine(str, i)
-        totalSize.x = Math.max(totalSize.x, lineSize.x)
+        totalSize.x = math.max(totalSize.x, lineSize.x)
         totalSize.y += lineSize.y
         GL11.glPopMatrix()
     }
@@ -170,11 +168,11 @@ object UIUtils {
             val lineSize = sizeLine(str.substring(0, str.indexOf(10)))
             str = str.substring(str.indexOf(10) + 1)
 
-            totalSize.x = Math.max(totalSize.x, lineSize.x)
+            totalSize.x = math.max(totalSize.x, lineSize.x)
             totalSize.y += lineSize.y + 1
         }
         val lineSize = sizeLine(str)
-        totalSize.x = Math.max(totalSize.x, lineSize.x)
+        totalSize.x = math.max(totalSize.x, lineSize.x)
         totalSize.y += lineSize.y
         totalSize
     }

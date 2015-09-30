@@ -25,7 +25,7 @@ import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, 
  * Created on 11/09/15.
  */
 class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElement) extends EditElement {
-    val treeviewElement = new TreeviewElement[String](new TreeviewElementStructurer[String] {
+    val treeviewElement = new TreeviewElement(new TreeviewElementStructurer[String] {
         /*
         override def getNodeName(n : String) = n
         override def getChildNodes(n : String) : Seq[String] = {
@@ -55,10 +55,12 @@ class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElemen
         // The nonsense that was here, I cannot understand.
         // Now, Map - Filter - etc., I *CAN* understand!
         override def getChildNodes(n: Option[String]): Iterable[String] =
-            targetSet.allPoses.keys.filter(k => targetSet.poseParents.get(k) == n).toSeq
+            targetSet.allPoses.keys.filter(targetSet.poseParents.get(_) == n).toSeq
     })
+    
+    val scrollArea = new ScrollAreaElement(treeviewElement)
 
-    subElements += treeviewElement
+    subElements += scrollArea
 
     val saveButton = new TextButtonElement("Save", {
         val fos = new FileOutputStream(ModelCache.modelRepository + "/" + Loader.currentFile + "/mmcposes.dat")
@@ -74,7 +76,7 @@ class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElemen
         treeviewElement.posX = 0
         treeviewElement.posY = 0
         val bbarHeight = (height * 0.1d).toInt
-        treeviewElement.setSize(width, height - bbarHeight)
+        scrollArea.setSize(width, height - bbarHeight)
         saveButton.posX = 0
         saveButton.posY = height - bbarHeight
         saveButton.setSize(width, bbarHeight)

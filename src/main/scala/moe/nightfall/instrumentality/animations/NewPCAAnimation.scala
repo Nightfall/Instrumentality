@@ -32,9 +32,9 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
         // position within current sine segment (0 to 1)
         val sinePoint = (time % sineSegment) * sineRepeat
         // base of current sine segment
-        val sineBase = Math.floor(time / sineSegment) * sineSegment
+        val sineBase = math.floor(time / sineSegment) * sineSegment
         // current sine value within current segment (0 to 1)
-        val sineCurrent = (1 - Math.cos(sinePoint * Math.PI)) / 2
+        val sineCurrent = (1 - math.cos(sinePoint * Math.PI)) / 2
         val sineComponent = (sineCurrent * sineSegment) + sineBase
         (time * (1 - sine)) + (sineComponent * sine)
     }
@@ -46,7 +46,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
             else
                 1 + (time % 1.0)
         val segment = 1.0d / (subAnims.length - 1)
-        var currentStart = Math.floor(time2 / segment).toInt
+        var currentStart = math.floor(time2 / segment).toInt
         var currentEnd = currentStart + 1
         var strengthEnd = getInterpolate((time2 - (currentStart * segment)) / segment, sine, sineRepeat)
         currentStart %= subAnims.length

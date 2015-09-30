@@ -30,7 +30,8 @@ class EditorHostGui extends GuiScreen {
     var hostedElement: EditElement = null
 
     override def initGui() {
-        if (hostedElement == null)
+        //TODO Uncomment, this is for testing only!
+        //if (hostedElement == null)
             changePanel(UIUtils.createGui())
     }
 

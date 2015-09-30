@@ -1,94 +1,79 @@
 package moe.nightfall.instrumentality.editor.control
 
 import moe.nightfall.instrumentality.editor.EditElement
-
 import scala.collection.immutable
+import moe.nightfall.instrumentality.editor.UIUtils
 
 class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditElement {
-    val nodeStructurer: TreeviewElementStructurer[Node] = ns
+    val nodeStructurer = ns
 
-    var sealedTrees: immutable.HashSet[Node] = new immutable.HashSet[Node]
-    var scrollPoint: Int = 0
-
+    var sealedTrees = new immutable.HashSet[Node]
     var selectedNode: Node = _
-
-    val upButton: ArrowButtonElement = new ArrowButtonElement(-90, {
-        scrollPoint += 1
-        layout()
-    })
-    val downButton: ArrowButtonElement = new ArrowButtonElement(+90, {
-        scrollPoint -= 1
-        layout()
-    })
 
     override def layout() {
         subElements.clear()
 
-        var buttonH = height / 12.0
-        if (buttonH > 24)
-            buttonH = buttonH / ((((buttonH / 24.0) - 1) / 2) + 1)
-        val depthW = width / 16.0
-
-        upButton.posX = (width - depthW).toInt
-        downButton.posX = upButton.posX
-
-        upButton.posY = 0
-        downButton.posY = buttonH.toInt
-
-        upButton.setSize(depthW.toInt, buttonH.toInt)
-        downButton.setSize(depthW.toInt, buttonH.toInt)
-
-        subElements ++= Array(upButton, downButton)
-
-        var dp = scrollPoint
-
+        var buttonH = 24
+        var depthW = 24
+        var dp, numNodes, width = 0
+        
         for (node <- nodeStructurer.getChildNodes(None)) {
-            dp = createElement(dp, 0, node, buttonH.toInt, depthW.toInt)
+            dp = createElement(dp, 0, node)
         }
-    }
-
-    def createElement(drawPoint: Int, depth: Int, node: Node, buttonH: Int, depthW: Int): Int = {
-        var p = drawPoint + 1
-
-        val childNodes = nodeStructurer.getChildNodes(Option(node));
-        if (!sealedTrees.contains(node))
-            for (node2 <- childNodes)
-                p = createElement(p, depth + 1, node2, buttonH, depthW)
-
-        val myNode = new TextButtonElement(nodeStructurer.getNodeName(node), {
-            selectedNode = node
-            nodeStructurer.onNodeClick(node)
-            layout()
-        })
-        myNode.baseStrength = if (node == selectedNode) 0.25f else 0.5f
-
-        val arrowButtonElement = new ArrowButtonElement(if (sealedTrees.contains(node)) 0 else 45, {
-            if (sealedTrees.contains(node))
-                sealedTrees -= node
-            else sealedTrees += node
-            layout()
-        })
-
-        arrowButtonElement.posX = depth * depthW
-        arrowButtonElement.posY = drawPoint * buttonH
-        arrowButtonElement.setSize(depthW, buttonH)
-
-        myNode.posX = (depth + 1) * depthW
-        myNode.posY = drawPoint * buttonH
-        if (childNodes.isEmpty)
-            myNode.posX -= depthW
-        myNode.setSize(width - (myNode.posX + depthW), buttonH)
-
-        if (myNode.posY < 0) return p
-        if (myNode.posY > height - buttonH) return p
-
-        if (childNodes.isEmpty) {
-            subElements ++= Array(myNode)
-        } else {
-            subElements ++= Array(arrowButtonElement, myNode)
+        
+        sizeWidth = width
+        sizeHeight = numNodes * buttonH
+        
+        def createElement(drawPoint: Int, depth: Int, node: Node): Int = {
+            
+            // increment node pointer
+            numNodes += 1
+            
+            var p = drawPoint + 1
+    
+            val childNodes = nodeStructurer.getChildNodes(Option(node));
+            if (!sealedTrees.contains(node))
+                for (node2 <- childNodes)
+                    p = createElement(p, depth + 1, node2)
+    
+            val nodeName = nodeStructurer.getNodeName(node)
+            val myNode = new TextButtonElement(nodeName, {
+                selectedNode = node
+                nodeStructurer.onNodeClick(node)
+                layout()
+            })
+            myNode.baseStrength = if (node == selectedNode) 0.25f else 0.5f
+    
+            val arrowButtonElement = new ArrowButtonElement(if (sealedTrees.contains(node)) 0 else 45, {
+                if (sealedTrees.contains(node))
+                    sealedTrees -= node
+                else sealedTrees += node
+                layout()
+            })
+    
+            arrowButtonElement.posX = depth * depthW
+            arrowButtonElement.posY = drawPoint * buttonH
+            arrowButtonElement.setSize(depthW, buttonH)
+    
+            myNode.posX = (depth + 1) * depthW
+            myNode.posY = drawPoint * buttonH
+            if (childNodes.isEmpty)
+                myNode.posX -= depthW
+            myNode.setSize(math.ceil(UIUtils.sizeLine(nodeName).getX * 1.5f).toInt, buttonH)
+            
+            width = math.max(width, myNode.width + myNode.posX)
+    
+            if (myNode.posY < 0) return p
+            if (myNode.posY > height - buttonH) return p
+    
+            if (childNodes.isEmpty) {
+                subElements += myNode
+            } else {
+                subElements += arrowButtonElement += myNode
+            }
+    
+            return p
         }
-
-        /*return*/ p
     }
 }
 

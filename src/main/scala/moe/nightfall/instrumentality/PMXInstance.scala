@@ -95,7 +95,7 @@ class PMXInstance(val theModel: PMXModel) {
             }
         }
         // now work out how far that is so the later maths works correctly
-        val magnitude = Math.sqrt((dX * dX) + (dY * dY) + (dZ * dZ));
+        val magnitude = math.sqrt((dX * dX) + (dY * dY) + (dZ * dZ));
         // work out our direction...
         // Note: There was a forum post. It contained the maths that I translated to this code.
         // I have no idea how it would handle dX==0. It could involve explosions.

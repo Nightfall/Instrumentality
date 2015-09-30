@@ -96,7 +96,7 @@ class PlayerInstance(file: PMXModel) {
             clippingPoint = 1.1d
 
         if ((anim.walkStrength > 0) || (sneakState < 0)) {
-            val waChange: Float = (Math.PI * deltaTime * 10).toFloat
+            val waChange: Float = (math.Pi * deltaTime * 10).toFloat
             if (directionAdjustment < daTarget) {
                 directionAdjustment += waChange
                 if (directionAdjustment > daTarget)
@@ -125,7 +125,7 @@ class PlayerInstance(file: PMXModel) {
         // I fixed the triangle order, but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE)
         val lv = player.worldObj.getBlockLightValue_do(player.posX.toInt, player.posY.toInt, player.posZ.toInt, true)
-        GL11.glRotated(Math.toDegrees(directionAdjustment), 0, 1, 0)
+        GL11.glRotated(math.toDegrees(directionAdjustment), 0, 1, 0)
         pmxInst.render(Loader.shaderBoneTransform, lv / 15f, lv / 15f, lv / 15f, clippingPoint.toFloat)
 
         GL11.glEnable(GL11.GL_CULL_FACE)
@@ -152,12 +152,12 @@ class PlayerInstance(file: PMXModel) {
          * lookDir is the input look value
          */
 
-        var bRotation = Math.toRadians(rotBody)
+        var bRotation = math.toRadians(rotBody)
         // Normalize between 0 and PI*2
         while (bRotation < 0)
-            bRotation += Math.PI * 2
-        while (bRotation > (Math.PI * 2))
-            bRotation -= Math.PI * 2
+            bRotation += math.Pi * 2
+        while (bRotation > (math.Pi * 2))
+            bRotation -= math.Pi * 2
         var distRotation = angleDist(bRotation.toFloat, lastTotalRotation);
         lastTotalRotation = bRotation.toFloat
 
@@ -233,12 +233,12 @@ class PlayerInstance(file: PMXModel) {
             // LTR+(1-TR)=0.80
             b = adSpecial(lastTotalRotation, totalRotation);
         }
-        if (Math.abs(a) > Math.abs(b))
+        if (math.abs(a) > math.abs(b))
             return b
         return a
     }
 
-    def adSpecial(lower: Float, upper: Float): Float = (lower + ((Math.PI * 2) - upper)).toFloat
+    def adSpecial(lower: Float, upper: Float): Float = (lower + ((math.Pi * 2) - upper)).toFloat
 
     def cleanupGL() = pmxInst.cleanupGL()
 }
