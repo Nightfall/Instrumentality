@@ -46,8 +46,8 @@ class BenchmarkElement(val myModel: PMXModel) extends EditElement {
         }
     }
 
-    override def draw(scrWidth: Int, scrHeight: Int) {
-        super.draw(scrWidth, scrHeight)
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        super.draw(ox, oy, scrWidth, scrHeight)
 
         GL11.glPushMatrix()
         GL11.glTranslated(1, 1, 0)

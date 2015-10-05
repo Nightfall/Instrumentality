@@ -22,7 +22,9 @@ import scala.collection.mutable.ListBuffer
  */
 abstract class EditElement {
     // Note that posX and posY may be ignored if this is the root
-    protected var sizeWidth, sizeHeight: Int = _
+
+    // No! Do not direct access to sizeWidth and sizeHeight!
+    private var sizeWidth, sizeHeight: Int = _
     var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
@@ -54,11 +56,11 @@ abstract class EditElement {
         }
     }
 
-    def drawSubelements(scrWidth: Int, scrHeight: Int) {
+    def drawSubelements(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         subElements foreach { ee =>
             GL11.glPushMatrix();
             GL11.glTranslated(ee.posX, ee.posY, 0);
-            ee.draw(scrWidth, scrHeight);
+            ee.draw(ox + ee.posX, oy + ee.posY, scrWidth, scrHeight);
             GL11.glPopMatrix();
         }
     }
@@ -74,7 +76,7 @@ abstract class EditElement {
     def height = sizeHeight
 
     def findElementAt(x: Int, y: Int): Option[EditElement] = {
-        return subElements find { ee =>
+        return subElements.reverse find { ee =>
             (x >= ee.posX) && (x < ee.posX + ee.width) &&
                 (y >= ee.posY) && (y < ee.posY + ee.height)
         }
@@ -98,11 +100,24 @@ abstract class EditElement {
 
     // Functions meant for overriding
 
+    /**
+     * Layout the element.
+     * This cannot change the element's size.
+     */
     def layout() = ()
 
-    def draw(scrWidth: Int, scrHeight: Int) {
+    /**
+     * Draws the element.
+     * Keep in mind that scrWidth and scrHeight are NOT the size of the element!!!
+     * They are the size of the root display, used for calculating some special transforms.
+     * @param ox The absolute top-left X position on the screen, in pixels.
+     * @param oy The absolute top-left Y position on the screen, in pixels.
+     * @param scrWidth The absolute X size of the screen, in pixels.
+     * @param scrHeight The absolute Y size of the screen, in pixels.
+     */
+    def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         drawSkinnedRect(0, 0, sizeWidth, sizeHeight, colourStrength)
-        drawSubelements(scrWidth, scrHeight);
+        drawSubelements(ox, oy, scrWidth, scrHeight)
     }
 
     // RANDOM NOTE II : buttons[] is used for detecting dragging,

@@ -16,7 +16,7 @@ import moe.nightfall.instrumentality.PMXFile.PMXBone
 import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel, PoseBoneTransform}
 import moe.nightfall.instrumentality.animations.{Animation, PoseAnimation}
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{TreeviewElement, TreeviewElementStructurer, View3DElement}
+import moe.nightfall.instrumentality.editor.control.{ScrollAreaElement, TreeviewElement, TreeviewElementStructurer, View3DElement}
 import org.lwjgl.opengl.GL11
 
 class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation: Animation) extends EditElement {
@@ -77,10 +77,12 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
         }
     })
 
+    val tViewScroll = new ScrollAreaElement(tView)
+
     val params: PoseEditParamsElement = new PoseEditParamsElement(this)
 
     tView.selectedNode = pmxInst.theFile.boneData(0)
-    subElements += tView
+    subElements += tViewScroll
     subElements += params
 
     override def layout() {
@@ -89,9 +91,9 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
         val hSplit = (width * 0.40d).toInt
         val vSplit = (height * 0.8d).toInt
         model.setSize(hSplit, height)
-        tView.posX = hSplit
-        tView.posY = 0
-        tView.setSize(width - hSplit, vSplit)
+        tViewScroll.posX = hSplit
+        tViewScroll.posY = 0
+        tViewScroll.setSize(width - hSplit, vSplit)
         params.posX = hSplit
         params.posY = vSplit
         params.setSize(width - hSplit, height - vSplit)

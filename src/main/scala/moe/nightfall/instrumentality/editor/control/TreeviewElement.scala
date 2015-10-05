@@ -12,32 +12,55 @@
  */
 package moe.nightfall.instrumentality.editor.control
 
-import moe.nightfall.instrumentality.editor.EditElement
+import moe.nightfall.instrumentality.editor.{SelfResizable, EditElement, UIUtils}
 import scala.collection.immutable
-import moe.nightfall.instrumentality.editor.UIUtils
 
-class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditElement {
+class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditElement with SelfResizable {
+    var depthW = 32
+    var buttonH = 32
+    var numNodes = 1
+    var maxWidth = 1
+
+    var suggestionChanged = true
+
+    override def getSuggestedSize: (Int, Int) = {
+        (maxWidth, buttonH * numNodes)
+    }
+
+    override def hasSuggestionChanged: Boolean = suggestionChanged
+
+    /**
+     * Sets the "suggestion changed" flag to false.
+     * Perform this after the setSize in response to the suggestion.
+     */
+    override def clearSuggestionChanged = suggestionChanged = false
+
     val nodeStructurer = ns
 
     var sealedTrees = new immutable.HashSet[Node]
     var selectedNode: Node = _
 
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        // Do not draw a containing panel.
+        drawSubelements(ox, oy, scrWidth, scrHeight)
+    }
+
     override def layout() {
         subElements.clear()
 
-        var buttonH = 24
-        var depthW = 24
-        var dp, numNodes, width = 0
-        
+        var dp, width = 0
+
+        numNodes = 0
+        maxWidth = 24
+
         for (node <- nodeStructurer.getChildNodes(None)) {
             dp = createElement(dp, 0, node)
         }
-        
-        sizeWidth = width
-        sizeHeight = numNodes * buttonH
-        
+
+        suggestionChanged = true
+
         def createElement(drawPoint: Int, depth: Int, node: Node): Int = {
-            
+
             // increment node pointer
             numNodes += 1
             
@@ -49,6 +72,7 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
                     p = createElement(p, depth + 1, node2)
     
             val nodeName = nodeStructurer.getNodeName(node)
+
             val myNode = new TextButtonElement(nodeName, {
                 selectedNode = node
                 nodeStructurer.onNodeClick(node)
@@ -71,8 +95,15 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
             myNode.posY = drawPoint * buttonH
             if (childNodes.isEmpty)
                 myNode.posX -= depthW
-            myNode.setSize(math.ceil(UIUtils.sizeLine(nodeName).getX * 1.5f).toInt, buttonH)
-            
+
+            val textsize = UIUtils.sizeLine(nodeName)
+            val textsizemul = (buttonH - myNode.borderWidth) / textsize.getY
+            myNode.setSize(math.ceil(textsize.getX * textsizemul).toInt, buttonH)
+
+            val endDepth = (depth * depthW) + myNode.width
+            if (maxWidth < endDepth)
+                maxWidth = endDepth
+
             width = math.max(width, myNode.width + myNode.posX)
     
             if (myNode.posY < 0) return p

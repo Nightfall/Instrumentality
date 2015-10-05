@@ -18,7 +18,7 @@ import java.io.{DataOutputStream, FileOutputStream}
 import moe.nightfall.instrumentality.{Loader, ModelCache}
 import moe.nightfall.instrumentality.animations.PoseSet
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement, TreeviewElement, TreeviewElementStructurer}
+import moe.nightfall.instrumentality.editor.control._
 
 /**
  * Created on 11/09/15.
@@ -72,8 +72,6 @@ class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElemen
 
     override def layout() {
         super.layout()
-        treeviewElement.posX = 0
-        treeviewElement.posY = 0
         val bbarHeight = (height * 0.1d).toInt
         scrollArea.setSize(width, height - bbarHeight)
         saveButton.posX = 0

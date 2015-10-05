@@ -57,7 +57,7 @@ class EditorHostGui extends GuiScreen {
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glPushMatrix()
         GL11.glLoadIdentity()
-        hostedElement.draw(Display.getWidth(), Display.getHeight())
+        hostedElement.draw(0, 0, Display.getWidth(), Display.getHeight())
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glPopMatrix()

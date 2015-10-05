@@ -29,8 +29,9 @@ abstract class View3DElement extends EditElement {
     private var dragY = 0
     private var ignoreFirstDrag = false;
 
-    override def draw(scrWidth: Int, scrHeight: Int) {
-        super.draw(scrWidth, scrHeight)
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        super.draw(ox, oy, scrWidth, scrHeight)
+        // This probably isn't repairable, and TBH, it handles arbitrary transforms.
         val fb: FloatBuffer = BufferUtils.createFloatBuffer(16)
         GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb)
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)

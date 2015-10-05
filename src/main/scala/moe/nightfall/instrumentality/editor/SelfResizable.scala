@@ -10,35 +10,28 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+package moe.nightfall.instrumentality.editor
 
-package moe.nightfall.instrumentality.editor.control
+/**
+ * Created on 05/10/15.
+ */
+trait SelfResizable extends EditElement {
+    /**
+     * Suggests a good size for this element.
+     * Can base it's information on the current size of the element.
+     * @return suggested size in pixels
+     */
+    def getSuggestedSize: (Int, Int)
 
-import moe.nightfall.instrumentality.editor.EditElement
-import org.lwjgl.input.Mouse
+    /**
+     * Gets the "suggestion changed" flag.
+     * @return Has the suggestion changed?
+     */
+    def hasSuggestionChanged: Boolean
 
-class ButtonElement(toRun : => Unit) extends EditElement {
-
-    // So this can be changed...
-    var onClick = () => toRun
-
-    var isHover = false
-    var baseStrength = 0.5f
-
-    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
-        super.mouseStateChange(x, y, isDown, isRight)
-        if (!isRight && !isDown && onClick != null) onClick()
-    }
-
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        if (isHover && Mouse.isButtonDown(0))
-            colourStrength = baseStrength / 2
-        else
-            colourStrength = baseStrength * (if (isHover) 1.50f else 1.0f)
-
-        super.draw(ox, oy, scrWidth, scrHeight)
-    }
-
-    override def mouseEnterLeave(isIn: Boolean) {
-        isHover = isIn
-    }
+    /**
+     * Sets the "suggestion changed" flag to false.
+     * Perform this after the setSize in response to the suggestion.
+     */
+    def clearSuggestionChanged
 }

@@ -18,8 +18,8 @@ import org.lwjgl.opengl.GL11
 class LabelElement(initial: String) extends EditElement {
     var text = initial
 
-    override def draw(scrWidth: Int, scrHeight: Int) {
-        super.draw(scrWidth, scrHeight)
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        super.draw(ox, oy, scrWidth, scrHeight)
         UIUtils.drawBoundedText(text, width, height, borderWidth)
     }
 }

@@ -38,14 +38,14 @@ class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempte
         rootPanel.setUnderPanel(preempted, noCleanupPreempted)
     }
 
-    override def draw(scrwidth: Int, scrheight: Int) = {
+    override def draw(ox: Int, oy: Int, scrwidth: Int, scrheight: Int) = {
         // This does entirely custom draw logic!
-        preempted.draw(scrwidth, scrheight)
+        preempted.draw(ox, oy, scrwidth, scrheight)
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         drawRect(0, 0, width, height, 0.1, 0.1, 0.1, 0.5)
         GL11.glDisable(GL11.GL_BLEND)
-        drawSubelements(scrwidth, scrheight)
+        drawSubelements(ox, oy, scrwidth, scrheight)
     }
 
     override def layout() = {

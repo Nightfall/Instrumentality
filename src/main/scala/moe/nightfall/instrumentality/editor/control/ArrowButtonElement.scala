@@ -17,8 +17,8 @@ import org.lwjgl.opengl.GL11
 
 class ArrowButtonElement(arrowAngle: Double, toRun: => Unit) extends ButtonElement(toRun) {
 
-    override def draw(scrWidth: Int, scrHeight: Int) {
-        super.draw(scrWidth, scrHeight)
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        super.draw(ox, oy, scrWidth, scrHeight)
         val w: Double = 1 / 8.0
         val h: Double = 1 / 8.0
         val wu = 3
