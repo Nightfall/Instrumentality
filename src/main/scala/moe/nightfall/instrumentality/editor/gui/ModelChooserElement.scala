@@ -40,8 +40,6 @@ class ModelChooserElement(val availableModels: Seq[String]) extends EditElement 
     subElements ++= buttonbar
     updatePosition()
 
-    colourStrength = 0.5f
-
     override def layout() = {
         val x = width / group.length
         val y = height / 4

@@ -33,9 +33,9 @@ object UIUtils {
         val x = Mouse.getX()
         val y = Display.getHeight() - (Mouse.getY() + 1)
         if (newState(0) != state(0))
-            targetPanel.mouseStateChange(x, y, newState(0), false)
+            targetPanel.mouseStateChange(x, y, newState(0), 0)
         if (newState(1) != state(1))
-            targetPanel.mouseStateChange(x, y, newState(1), true)
+            targetPanel.mouseStateChange(x, y, newState(1), 1)
         targetPanel.mouseMove(x, y, newState)
         state = newState
     }

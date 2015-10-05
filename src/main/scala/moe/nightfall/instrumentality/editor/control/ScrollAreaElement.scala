@@ -24,7 +24,7 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
 
     def this(child: EditElement) = this(child, 64, 64)
 
-    colourStrength = 0.25f
+    colourStrength = 0.8f
 
     val buttonSize = 32
     private var scrollX = 0
@@ -55,7 +55,13 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
     // In the end, it's not worth using it specifically on the child.
 
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        GL11.glScissor(ox, scrHeight - (oy + height), width, height)
+        if (width > 0)
+            if (height > 0) {
+                GL11.glScissor(ox, scrHeight - (oy + height), width, height)
+            } else {
+                // glScissor likes to crash given an opportunity
+                return
+            }
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
         super.draw(ox, oy, scrWidth, scrHeight)
         GL11.glDisable(GL11.GL_SCISSOR_TEST)

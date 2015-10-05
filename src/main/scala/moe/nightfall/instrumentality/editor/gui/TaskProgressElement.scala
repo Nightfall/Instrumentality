@@ -43,7 +43,7 @@ class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempte
         preempted.draw(ox, oy, scrwidth, scrheight)
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
-        drawRect(0, 0, width, height, 0.1, 0.1, 0.1, 0.5)
+        drawRect(0, 0, width, height, 0.1f, 0.1f, 0.1f, 0.5f)
         GL11.glDisable(GL11.GL_BLEND)
         drawSubelements(ox, oy, scrwidth, scrheight)
     }

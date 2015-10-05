@@ -20,6 +20,6 @@ class LabelElement(initial: String) extends EditElement {
 
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         super.draw(ox, oy, scrWidth, scrHeight)
-        UIUtils.drawBoundedText(text, width, height, borderWidth)
+        UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
     }
 }

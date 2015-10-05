@@ -16,7 +16,7 @@ import moe.nightfall.instrumentality.PMXFile.PMXBone
 import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel, PoseBoneTransform}
 import moe.nightfall.instrumentality.animations.{Animation, PoseAnimation}
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{ScrollAreaElement, TreeviewElement, TreeviewElementStructurer, View3DElement}
+import moe.nightfall.instrumentality.editor.control._
 import org.lwjgl.opengl.GL11
 
 class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation: Animation) extends EditElement {
@@ -57,7 +57,6 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
             GL11.glPopMatrix()
         }
     }
-    subElements += model
 
     val tView = new TreeviewElement[PMXBone](new TreeviewElementStructurer[PMXBone] {
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
@@ -82,21 +81,15 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
     val params: PoseEditParamsElement = new PoseEditParamsElement(this)
 
     tView.selectedNode = pmxInst.theFile.boneData(0)
-    subElements += tViewScroll
-    subElements += params
 
-    override def layout() {
-        model.posX = 0
-        model.posY = 0
-        val hSplit = (width * 0.40d).toInt
-        val vSplit = (height * 0.8d).toInt
-        model.setSize(hSplit, height)
-        tViewScroll.posX = hSplit
-        tViewScroll.posY = 0
-        tViewScroll.setSize(width - hSplit, vSplit)
-        params.posX = hSplit
-        params.posY = vSplit
-        params.setSize(width - hSplit, height - vSplit)
+    val udSplitPane = new SplitPaneElement(tViewScroll, params, false, 1d)
+    val lrSplitPane = new SplitPaneElement(model, udSplitPane, true, 1d)
+    subElements += lrSplitPane
+
+    override def layout(): Unit = {
+        lrSplitPane.posX = 0
+        lrSplitPane.posY = 0
+        lrSplitPane.setSize(width, height)
     }
 
     def getEditPBT: PoseBoneTransform = {
@@ -111,7 +104,7 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
             editedPose.hashMap.put(mid, tsf)
             return tsf
         } else {
-            return opbt.get;
+            return opbt.get
         }
     }
 

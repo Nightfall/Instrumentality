@@ -46,20 +46,20 @@ class ModelElement(ib: Boolean) extends View3DElement {
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         if (isButton) {
             if (workModelName == null) {
-                colourStrength = 0.25f
+                colourStrength = 0.6f
                 colourStrength *= (if (isHover) 1.4f else 1f)
             }
             else {
-                colourStrength = 0.5f
-                if (workModelName.equalsIgnoreCase(Loader.currentFile)) colourStrength = 0.75f
-                colourStrength *= (if (isHover) 1.2f else 1f)
+                colourStrength = 0.9f
+                if (workModelName.equalsIgnoreCase(Loader.currentFile)) colourStrength = 0.8f
+                colourStrength *= (if (isHover) 1.1f else 1f)
             }
         }
         super.draw(ox, oy, scrWidth, scrHeight)
         if (isButton) {
             var text: String = "<null>"
             if (workModelName != null) text = workModelName
-            UIUtils.drawBoundedText(text, width, height, borderWidth)
+            UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
         }
     }
 
@@ -79,11 +79,12 @@ class ModelElement(ib: Boolean) extends View3DElement {
         }
     }
 
-    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
-        super.mouseStateChange(x, y, isDown, isRight)
-        if (isButton) {
-            Loader.setCurrentFile(workModelName)
-        }
+    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
+        super.mouseStateChange(x, y, isDown, button)
+        if (isButton)
+            if (isDown)
+                if (button == 0)
+                    Loader.setCurrentFile(workModelName)
     }
 
     override def update(dTime: Double) {

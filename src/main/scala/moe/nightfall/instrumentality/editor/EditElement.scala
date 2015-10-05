@@ -13,6 +13,7 @@
 package moe.nightfall.instrumentality.editor
 
 import org.lwjgl.opengl.GL11
+import org.lwjgl.util.vector.Vector4f
 
 import scala.collection.mutable.ListBuffer
 
@@ -28,14 +29,56 @@ abstract class EditElement {
     var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
-    var colourStrength = 0.25f
-    var borderWidth = 8
+    var colourStrength = 0.9f
+    var borderWidth = 6
 
     private var lastHoverTarget: Option[EditElement] = None
     var selectedSubelement: Option[EditElement] = None
 
     // Move those to utility object
-    protected def drawRect(x: Int, y: Int, w: Int, h: Int, r: Double, g: Double, b: Double, a: Double) {
+    protected def drawQRect(x: Int, y: Int, w: Int, h: Int, c_tl: Vector4f, c_ll: Vector4f, c_lr: Vector4f, c_tr: Vector4f) {
+        GL11.glBegin(GL11.GL_QUADS)
+        GL11.glColor4d(c_tl.x, c_tl.y, c_tl.z, c_tl.w)
+        GL11.glVertex3d(x, y, 0)
+        GL11.glColor4d(c_ll.x, c_ll.y, c_ll.z, c_ll.w)
+        GL11.glVertex3d(x, y + h, 0)
+        GL11.glColor4d(c_lr.x, c_lr.y, c_lr.z, c_lr.w)
+        GL11.glVertex3d(x + w, y + h, 0)
+        GL11.glColor4d(c_tr.x, c_tr.y, c_tr.z, c_tr.w)
+        GL11.glVertex3d(x + w, y, 0)
+        GL11.glEnd()
+    }
+
+    protected def drawRect(x: Int, y: Int, w: Int, h: Int, c_tl: Vector4f, c_ll: Vector4f, c_lr: Vector4f, c_tr: Vector4f) {
+        // some GPUs render this as 2 tris, doesn't look good, try to define a saner way
+        val central = Vector4f.add(Vector4f.add(c_tl, c_ll, null), Vector4f.add(c_lr, c_tr, null), null)
+
+        GL11.glBegin(GL11.GL_TRIANGLE_FAN)
+
+        GL11.glColor4d(central.x / 4, central.y / 4, central.z / 4, central.w / 4)
+        GL11.glVertex3d(x + (w / 2), y + (h / 2), 0)
+
+        GL11.glColor4d(c_tl.x, c_tl.y, c_tl.z, c_tl.w)
+        GL11.glVertex3d(x, y, 0)
+        GL11.glColor4d(c_ll.x, c_ll.y, c_ll.z, c_ll.w)
+        GL11.glVertex3d(x, y + h, 0)
+
+        GL11.glVertex3d(x, y + h, 0)
+        GL11.glColor4d(c_lr.x, c_lr.y, c_lr.z, c_lr.w)
+        GL11.glVertex3d(x + w, y + h, 0)
+
+        GL11.glVertex3d(x + w, y + h, 0)
+        GL11.glColor4d(c_tr.x, c_tr.y, c_tr.z, c_tr.w)
+        GL11.glVertex3d(x + w, y, 0)
+
+        GL11.glVertex3d(x + w, y, 0)
+        GL11.glColor4d(c_tl.x, c_tl.y, c_tl.z, c_tl.w)
+        GL11.glVertex3d(x, y, 0)
+
+        GL11.glEnd()
+    }
+
+    protected def drawRect(x: Int, y: Int, w: Int, h: Int, r: Float, g: Float, b: Float, a: Float): Unit = {
         GL11.glBegin(GL11.GL_QUADS)
         GL11.glColor4d(r, g, b, a)
         GL11.glVertex3d(x, y, 0)
@@ -45,15 +88,53 @@ abstract class EditElement {
         GL11.glEnd()
     }
 
-    protected def drawSkinnedRect(x: Int, y: Int, w: Int, h: Int, strength: Double) {
-        val sz = borderWidth;
+    protected def drawSkinnedRect(x: Int, y: Int, w: Int, h: Int, strength: Float) {
 
-        var str = 1.0d
-        val step = (1.0f - strength) / (sz * 2)
-        for (i <- 0 until sz) {
-            drawRect(x + i, y + i, w - (i * 2), h - (i * 2), 0, str * 0.5f, str, 1)
-            str -= step
-        }
+        val str = strength
+        val step = 0.3f
+        val shadow = 0.4f
+        val outerColour = new Vector4f(0, shadow * 0.5f, shadow, 0)
+        val innerColour = new Vector4f(0, shadow * 0.5f, shadow, 1)
+        val bkgInnerColour = new Vector4f(0, (str - step) * 0.5f, str - step, 1)
+        val bkgOuterColour = new Vector4f(0, str * 0.5f, str, 1)
+
+        // Main panels
+
+        val w2 = (w / 2) - borderWidth
+        val h2 = (h / 2) - borderWidth
+        // UL
+        drawRect(x + borderWidth, y + borderWidth, w2, h2, bkgOuterColour, bkgOuterColour, bkgInnerColour, bkgOuterColour)
+        // LL
+        drawRect(x + borderWidth, y + (h / 2), w2, h2, bkgOuterColour, bkgOuterColour, bkgOuterColour, bkgInnerColour)
+        // UR
+        drawRect(x + (w / 2), y + borderWidth, w2, h2, bkgOuterColour, bkgInnerColour, bkgOuterColour, bkgOuterColour)
+        // LR
+        drawRect(x + (w / 2), y + (h / 2), w2, h2, bkgInnerColour, bkgOuterColour, bkgOuterColour, bkgOuterColour)
+
+        // Edges
+
+        GL11.glEnable(GL11.GL_BLEND)
+        // top
+        drawQRect(x + borderWidth, y, w - (borderWidth * 2), borderWidth, outerColour, innerColour, innerColour, outerColour)
+
+        // left
+        drawQRect(x, y + borderWidth, borderWidth, h - (borderWidth * 2), outerColour, outerColour, innerColour, innerColour)
+
+        // bottom
+        drawQRect(x + borderWidth, (y + h) - borderWidth, w - (borderWidth * 2), borderWidth, innerColour, outerColour, outerColour, innerColour)
+
+        // right
+        drawQRect((x + w) - borderWidth, y + borderWidth, borderWidth, h - (borderWidth * 2), innerColour, innerColour, outerColour, outerColour)
+
+        // UL
+        drawQRect(x, y, borderWidth, borderWidth, outerColour, outerColour, innerColour, outerColour)
+        // LL
+        drawQRect(x, (y + h) - borderWidth, borderWidth, borderWidth, outerColour, outerColour, outerColour, innerColour)
+        // UR
+        drawQRect((x + w) - borderWidth, y, borderWidth, borderWidth, outerColour, innerColour, outerColour, outerColour)
+        // LR
+        drawQRect((x + w) - borderWidth, (y + h) - borderWidth, borderWidth, borderWidth, innerColour, outerColour, outerColour, outerColour)
+        GL11.glDisable(GL11.GL_BLEND)
     }
 
     def drawSubelements(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
@@ -130,12 +211,12 @@ abstract class EditElement {
     // RANDOM NOTE: We assume people only have 2 buttons, others must be ignored.
     // This is because not all people have middle-mouse-buttons, it's unfair to assume.
 
-    def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
+    def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
         val targetElement = findElementAt(x, y)
         if (isDown)
             selectedSubelement = targetElement
         targetElement.map { el =>
-            el.mouseStateChange(x - el.posX, y - el.posY, isDown, isRight)
+            el.mouseStateChange(x - el.posX, y - el.posY, isDown, button)
         }
     }
 

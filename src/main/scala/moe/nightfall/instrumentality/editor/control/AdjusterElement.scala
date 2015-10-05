@@ -43,12 +43,15 @@ class AdjusterElement(valuePrefix: String, toAdjust: AdjusterElementData) extend
     override def layout() {
         super.layout()
         val du = height
-        decButton.posX = 0
-        decButton.posY = 0
-        decButton.setSize(du, du)
-        incButton.posX = width - du
-        incButton.posY = 0
-        incButton.setSize(du, du)
+        // dec/inc buttons are inset by half of the border's size.
+        // Thus, where I write "du - borderWidth", that's because I *would* write borderWidth * 2,
+        // but it's *half* of the border's size, so it's just borderWidth
+        decButton.posX = borderWidth / 2
+        decButton.posY = borderWidth / 2
+        decButton.setSize(du - borderWidth, du - borderWidth)
+        incButton.posX = (width + (borderWidth / 2)) - du
+        incButton.posY = borderWidth / 2
+        incButton.setSize(du - borderWidth, du - borderWidth)
         valueDisplay.posX = du
         valueDisplay.posY = 0
         valueDisplay.setSize(width - (du * 2), du)

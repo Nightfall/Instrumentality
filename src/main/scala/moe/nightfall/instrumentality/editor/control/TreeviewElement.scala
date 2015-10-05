@@ -78,7 +78,7 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
                 nodeStructurer.onNodeClick(node)
                 layout()
             })
-            myNode.baseStrength = if (node == selectedNode) 0.25f else 0.5f
+            myNode.baseStrength = if (node == selectedNode) 0.9f else 1.0f
     
             val arrowButtonElement = new ArrowButtonElement(if (sealedTrees.contains(node)) 0 else 45, {
                 if (sealedTrees.contains(node))

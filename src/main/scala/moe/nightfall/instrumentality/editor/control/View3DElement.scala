@@ -87,9 +87,9 @@ abstract class View3DElement extends EditElement {
         dragY = y
     }
 
-    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, isRight: Boolean) {
-        super.mouseStateChange(x, y, isDown, isRight)
-        if (isDown && !isRight) {
+    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
+        super.mouseStateChange(x, y, isDown, button)
+        if (isDown && (button == 0)) {
             ignoreFirstDrag = true
         }
     }

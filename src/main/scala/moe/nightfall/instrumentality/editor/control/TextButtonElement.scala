@@ -18,6 +18,6 @@ import org.lwjgl.opengl.GL11
 class TextButtonElement(text: String, toRun: => Unit) extends ButtonElement(toRun) {
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         super.draw(ox, oy, scrWidth, scrHeight)
-        UIUtils.drawBoundedText(text, width, height, borderWidth)
+        UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
     }
 }
