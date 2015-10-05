@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.mc.gui
 
-;
-
 import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
 import net.minecraft.client.Minecraft

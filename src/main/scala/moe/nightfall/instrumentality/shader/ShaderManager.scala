@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.shader
 
-;
-
 import java.util.regex.Pattern
 
 import moe.nightfall.instrumentality.Loader

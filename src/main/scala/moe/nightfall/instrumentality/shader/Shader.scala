@@ -12,9 +12,6 @@
  */
 package moe.nightfall.instrumentality.shader
 
-;
-;
-
 /**
  * A shader.
  * A holder for the GL program ID.

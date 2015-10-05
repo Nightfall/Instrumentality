@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.editor.gui
 
-;
-
 import moe.nightfall.instrumentality.PoseBoneTransform
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control.{AdjusterElement, AdjusterElementData, CheckboxElement, LabelElement}

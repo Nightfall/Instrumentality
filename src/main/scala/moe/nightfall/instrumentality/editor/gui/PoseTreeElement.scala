@@ -12,7 +12,6 @@
  */
 package moe.nightfall.instrumentality.editor.gui
 
-;
 
 import java.io.{DataOutputStream, FileOutputStream}
 

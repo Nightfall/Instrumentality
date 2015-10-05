@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.mc
 
-;
-
 import cpw.mods.fml.common.FMLCommonHandler
 import moe.nightfall.instrumentality.Loader
 import net.minecraftforge.common.MinecraftForge;

@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.animations
 
-;
-
 import moe.nightfall.instrumentality.PoseBoneTransform
 
 import scala.collection.mutable.MutableList

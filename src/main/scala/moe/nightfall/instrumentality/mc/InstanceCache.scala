@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.mc
 
-;
-
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentLinkedQueue
 

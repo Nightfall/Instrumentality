@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.mc
 
-;
-
 import cpw.mods.fml.common.Mod.EventHandler
 import cpw.mods.fml.common.{Mod, SidedProxy}
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;

@@ -12,8 +12,6 @@
  */
 package moe.nightfall.instrumentality.mc
 
-;
-
 import cpw.mods.fml.client.registry.ClientRegistry
 import cpw.mods.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import cpw.mods.fml.common.gameevent.{InputEvent, TickEvent}

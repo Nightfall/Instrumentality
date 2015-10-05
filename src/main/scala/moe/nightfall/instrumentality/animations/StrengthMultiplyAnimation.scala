@@ -12,9 +12,7 @@
  */
 package moe.nightfall.instrumentality.animations
 
-;
-
-import moe.nightfall.instrumentality.PoseBoneTransform;
+import moe.nightfall.instrumentality.PoseBoneTransform
 
 /**
  * Created on 25/07/15.
