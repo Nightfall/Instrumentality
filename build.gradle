@@ -15,6 +15,12 @@ buildscript {
     }
 }
 
+repositories {
+   	flatDir {
+        dirs 'libs'
+   	}
+}
+
 apply plugin: "scala"
 apply plugin: "forge"
 
@@ -28,6 +34,11 @@ if (System.env.BUILD_NUMBER != null) version = "$version.$System.env.BUILD_NUMBE
 
 minecraft {
     version = "${mcVersion}-latest"
+}
+
+dependencies {
+	compile name: "TWL"
+	compile name: "xpp3-1.1.4c"
 }
 
 processResources {
