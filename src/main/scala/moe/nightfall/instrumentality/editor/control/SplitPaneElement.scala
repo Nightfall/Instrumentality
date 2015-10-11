@@ -21,14 +21,21 @@ import org.lwjgl.opengl.GL11
 class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val horizontal: Boolean, var resizeWeight: Double) extends EditElement {
     subElements += panelA += panelB
     var splitPix = 0
+    // Used for tracking resizes
     var lastAxisLen = 1
     var firstResize = true
+    // This is used to ensure border manipulation only manipulates the border
     var movingBorder = false
+    // Makes manipulating multi-split environments easier :)
+    var elementLock: Option[EditElement] = None
 
     def axisLen = if (horizontal) width else height
 
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         drawSubelements(ox, oy, scrWidth, scrHeight)
+        GL11.glLineWidth(1)
+        GL11.glLineStipple(1, 0xF0F0.toShort)
+        GL11.glEnable(GL11.GL_LINE_STIPPLE)
         GL11.glBegin(GL11.GL_LINES)
         GL11.glColor3d(1, 0, 0)
         if (horizontal) {
@@ -39,6 +46,7 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
             GL11.glVertex2d(width, splitPix)
         }
         GL11.glEnd()
+        GL11.glDisable(GL11.GL_LINE_STIPPLE)
     }
 
     override def layout() {
@@ -68,29 +76,41 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
     }
 
     override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]): Unit = {
-        if (!movingBorder) {
-            super.mouseMove(x, y, buttons)
-        } else {
-            if (!buttons(0)) {
-                movingBorder = false
+        if (elementLock.isEmpty) {
+            if (!movingBorder) {
+                super.mouseMove(x, y, buttons)
             } else {
-                splitPix = if (horizontal) x else y
-                layout()
+                if (!buttons(0)) {
+                    movingBorder = false
+                } else {
+                    splitPix = if (horizontal) x else y
+                    layout()
+                }
             }
+        } else {
+            elementLock.get.mouseMove(x - elementLock.get.posX, y - elementLock.get.posY, buttons)
         }
     }
 
     override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int): Unit = {
-        if (button == 0)
-            if (isDown) {
-                val axis = if (horizontal) x else y
-                if (axis > (splitPix - borderWidth))
-                    if (axis < (splitPix + borderWidth))
-                        movingBorder = true
-            } else {
-                movingBorder = false
+        if (elementLock.isEmpty) {
+            if (button == 0)
+                if (isDown) {
+                    val axis = if (horizontal) x else y
+                    if (axis > (splitPix - borderWidth))
+                        if (axis < (splitPix + borderWidth))
+                            movingBorder = true
+                } else {
+                    movingBorder = false
+                }
+            if (!movingBorder) {
+                super.mouseStateChange(x, y, isDown, button)
+                elementLock = selectedSubelement
             }
-        if (!movingBorder)
-            super.mouseStateChange(x, y, isDown, button)
+        } else {
+            elementLock.get.mouseStateChange(x - elementLock.get.posX, y - elementLock.get.posY, isDown, button)
+            if (!isDown)
+                elementLock = None
+        }
     }
 }

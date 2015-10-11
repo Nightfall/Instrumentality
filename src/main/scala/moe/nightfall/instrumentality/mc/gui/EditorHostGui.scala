@@ -50,6 +50,7 @@ class EditorHostGui extends GuiScreen {
         hostedElement.update(deltaTime / 1000f)
 
         GL11.glDisable(GL11.GL_TEXTURE_2D)
+        GL11.glShadeModel(GL11.GL_SMOOTH)
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glLoadIdentity()
         GL11.glOrtho(0, Display.getWidth(), Display.getHeight(), 0, 0, 1024)
@@ -62,6 +63,7 @@ class EditorHostGui extends GuiScreen {
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
+        GL11.glShadeModel(GL11.GL_FLAT)
         GL11.glEnable(GL11.GL_TEXTURE_2D)
     }
 

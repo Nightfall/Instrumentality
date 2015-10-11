@@ -12,42 +12,34 @@
  */
 package moe.nightfall.instrumentality.editor.control
 
-import org.lwjgl.opengl.GL11
+import moe.nightfall.instrumentality.editor.EditElement
 
-// TODO: Is there a better way to do this?
-class CheckboxElement(toRun: => Unit) extends ButtonElement {
+/**
+ * Created on 11/10/15.
+ */
+class ProgressBarElement extends EditElement {
+    var progressValue = 0.0d
+    var interpolatedProgressValue = 0.0d
+    colourStrength = 0.0f
 
-    // so this can be changed...
-    var checked = false
-
-    onClick = () => {
-        checked = !checked
-        toRun
+    override def update(dt: Double) {
+        super.update(dt)
+        if (progressValue > interpolatedProgressValue) {
+            interpolatedProgressValue += dt
+            if (interpolatedProgressValue > progressValue)
+                interpolatedProgressValue = progressValue
+        } else {
+            interpolatedProgressValue -= dt
+            if (interpolatedProgressValue < progressValue)
+                interpolatedProgressValue = progressValue
+        }
     }
 
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         super.draw(ox, oy, scrWidth, scrHeight)
-        GL11.glColor3d(0, 0, 0)
-        val xL = width / 8
-        val xM = width / 2
-        val xR = (width / 8) * 7
-
-        val yU = height / 8
-        val yM = height / 2
-        val yL = (height / 8) * 7
-        if (checked) {
-            GL11.glBegin(GL11.GL_LINE_STRIP)
-            GL11.glVertex2d(xL, yM)
-            GL11.glVertex2d(xM, yL)
-            GL11.glVertex2d(xR, yU)
-            GL11.glEnd()
-        } else {
-            GL11.glBegin(GL11.GL_LINES)
-            GL11.glVertex2d(xL, yU)
-            GL11.glVertex2d(xR, yL)
-            GL11.glVertex2d(xR, yU)
-            GL11.glVertex2d(xL, yL)
-            GL11.glEnd()
-        }
+        val areaWidth = width - (borderWidth * 2)
+        val progressPoint = (areaWidth * interpolatedProgressValue).toInt
+        drawSkinnedRect(borderWidth, borderWidth, progressPoint, height - (borderWidth * 2), 1)
+        drawSkinnedRect(borderWidth + progressPoint, borderWidth, areaWidth - progressPoint, height - (borderWidth * 2), 0.5f)
     }
 }

@@ -12,16 +12,16 @@
  */
 package moe.nightfall.instrumentality.editor.gui
 
+import moe.nightfall.instrumentality.{TaskState, MeasurableTask}
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{LabelElement, ButtonBarContainerElement}
+import moe.nightfall.instrumentality.editor.control.{ProgressBarElement, LabelElement, ButtonBarContainerElement}
 import org.lwjgl.opengl.GL11
 
 /**
  * For long-running tasks.
  * Created on 26/09/15.
  */
-class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempted: EditElement, val noCleanupPreempted: Boolean) extends EditElement {
-
+class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempted: EditElement, val noCleanupPreempted: Boolean, val task: MeasurableTask) extends EditElement {
     var returnPlease = false
     var tasksOnReturn = Seq[(TaskProgressElement) => Unit]()
 
@@ -30,7 +30,10 @@ class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempte
     }
 
     val label = new LabelElement("Following the indeterminable brightness-rabbit...")
+    val progressBar = new ProgressBarElement()
+
     subElements += label
+    subElements += progressBar
 
     def performReturn() = {
         // done here so stuff that would be done on layout will work
@@ -52,11 +55,19 @@ class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempte
         preempted.setSize(width, height)
         label.posX = width / 16
         label.posY = height / 32
-        label.setSize(width - (width / 8), height / 16)
+        label.setSize(width - (width / 8), (height / 2) - (height / 16))
+
+        progressBar.posX = width / 16
+        progressBar.posY = height / 2
+        progressBar.setSize(width - (width / 8), height / 8)
     }
 
     override def update(time: Double) = {
         super.update(time)
+        label.text = task.generalTask + "\r\n" + task.subTask
+        progressBar.progressValue = task.progress
+        if (task.state == TaskState.Success)
+            returnPlease = true
         if (returnPlease)
             performReturn()
     }

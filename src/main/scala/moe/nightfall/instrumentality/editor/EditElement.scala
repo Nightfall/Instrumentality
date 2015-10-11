@@ -29,7 +29,7 @@ abstract class EditElement {
     var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
-    var borderWidth = 3
+    var borderWidth = 4
 
     var colourR = 0.9f
     var colourG = 0.9f
@@ -96,17 +96,21 @@ abstract class EditElement {
 
         val str = strength
         val step = 0.3f
-        val shadow = 0.4f
+        val shadow = 0.3f
 
-        val outerColour = new Vector4f(shadow * colourR, shadow * colourG, shadow * colourB, 0)
-        val innerColour = new Vector4f(shadow * colourR, shadow * colourG, shadow * colourB, 1)
-        val bkgInnerColour = new Vector4f((str - step) * colourR, (str - step) * colourG, (str - step) * colourB, 1)
-        val bkgOuterColour = new Vector4f(str * colourR, str * colourG, str * colourB, 1)
+        val outerColour = new Vector4f(shadow, shadow, shadow, 0)
+        val innerColour = new Vector4f(shadow, shadow, shadow, 0.5f)
+        val bkgInnerColour = new Vector4f((str - step) * colourR, (str - step) * colourG, (str - step) * colourB, 0.85f)
+        val bkgOuterColour = new Vector4f(str * colourR, str * colourG, str * colourB, 0.85f)
 
         // Main panels
 
         val w2 = (w / 2) - borderWidth
         val h2 = (h / 2) - borderWidth
+
+        GL11.glEnable(GL11.GL_BLEND)
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+
         // UL
         drawRect(x + borderWidth, y + borderWidth, w2, h2, bkgOuterColour, bkgOuterColour, bkgInnerColour, bkgOuterColour)
         // LL
@@ -118,7 +122,6 @@ abstract class EditElement {
 
         // Edges
 
-        GL11.glEnable(GL11.GL_BLEND)
         // top
         drawQRect(x + borderWidth, y, w - (borderWidth * 2), borderWidth, outerColour, innerColour, innerColour, outerColour)
 

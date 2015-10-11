@@ -10,44 +10,30 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.control
+package moe.nightfall.instrumentality
 
-import org.lwjgl.opengl.GL11
+object TaskState {
+    // See: Running. This state exists as a reasonable default value.
+    val Prestart = 0
+    // The monitor should simply report on the current state of the task.
+    val Running = 1
+    // The monitor should report success, or disappear (to indicate the task has completed)
+    val Success = 2
+    // The monitor should report failure.
+    val Failure = 3
+}
 
-// TODO: Is there a better way to do this?
-class CheckboxElement(toRun: => Unit) extends ButtonElement {
+/**
+ * A task, likely being executed on another thread.
+ * Created on 09/10/15.
+ */
+trait MeasurableTask {
+    def generalTask: String
 
-    // so this can be changed...
-    var checked = false
+    def subTask: String
 
-    onClick = () => {
-        checked = !checked
-        toRun
-    }
+    def progress: Double
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        super.draw(ox, oy, scrWidth, scrHeight)
-        GL11.glColor3d(0, 0, 0)
-        val xL = width / 8
-        val xM = width / 2
-        val xR = (width / 8) * 7
+    def state: Int
 
-        val yU = height / 8
-        val yM = height / 2
-        val yL = (height / 8) * 7
-        if (checked) {
-            GL11.glBegin(GL11.GL_LINE_STRIP)
-            GL11.glVertex2d(xL, yM)
-            GL11.glVertex2d(xM, yL)
-            GL11.glVertex2d(xR, yU)
-            GL11.glEnd()
-        } else {
-            GL11.glBegin(GL11.GL_LINES)
-            GL11.glVertex2d(xL, yU)
-            GL11.glVertex2d(xR, yL)
-            GL11.glVertex2d(xR, yU)
-            GL11.glVertex2d(xL, yL)
-            GL11.glEnd()
-        }
-    }
 }

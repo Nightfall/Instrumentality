@@ -41,7 +41,7 @@ object UIUtils {
     }
 
     def createGui(): EditElement = {
-        val bbce = new ButtonBarContainerElement(0.0355d)
+        val bbce = new ButtonBarContainerElement(0.06d)
 
         val mce = new ModelChooserElement(ModelCache.getLocalModels())
         bbce.setUnderPanel(mce, false)
@@ -93,7 +93,7 @@ object UIUtils {
                         sysFontCreationThread = new Thread {
                             try {
                                 // did I mention: this call is SLOW. Seriously.
-                                val f = new Font(null, 0, 24)
+                                val f = new Font(null, 0, 48)
                                 UISystemFont.scratchFont(f)
                                 sysFont = f
                             } catch {
@@ -124,7 +124,7 @@ object UIUtils {
         var lineX = 0
         for (c <- ca) {
             GL11.glColor3d(0, 0, 0)
-            GL11.glLineWidth(1)
+            GL11.glLineWidth(2)
             UIFont.drawChar(c)
             GL11.glTranslated(7, 0, 0)
             lineX += 7
