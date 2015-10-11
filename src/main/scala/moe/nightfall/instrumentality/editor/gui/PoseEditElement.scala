@@ -25,6 +25,11 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
     pmxInst.anim = editAnimation
 
     var model: View3DElement = new View3DElement {
+        colourR = 1
+        colourG = 1
+        colourB = 1
+        colourStrength = 1
+        
         override protected def draw3D() {
             GL11.glPushMatrix()
             GL11.glTranslated(0, -0.5, 0)

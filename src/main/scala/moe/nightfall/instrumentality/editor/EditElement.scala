@@ -29,8 +29,12 @@ abstract class EditElement {
     var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
+    var borderWidth = 3
+
+    var colourR = 0.9f
+    var colourG = 0.9f
+    var colourB = 1f
     var colourStrength = 0.9f
-    var borderWidth = 6
 
     private var lastHoverTarget: Option[EditElement] = None
     var selectedSubelement: Option[EditElement] = None
@@ -93,10 +97,11 @@ abstract class EditElement {
         val str = strength
         val step = 0.3f
         val shadow = 0.4f
-        val outerColour = new Vector4f(0, shadow * 0.5f, shadow, 0)
-        val innerColour = new Vector4f(0, shadow * 0.5f, shadow, 1)
-        val bkgInnerColour = new Vector4f(0, (str - step) * 0.5f, str - step, 1)
-        val bkgOuterColour = new Vector4f(0, str * 0.5f, str, 1)
+
+        val outerColour = new Vector4f(shadow * colourR, shadow * colourG, shadow * colourB, 0)
+        val innerColour = new Vector4f(shadow * colourR, shadow * colourG, shadow * colourB, 1)
+        val bkgInnerColour = new Vector4f((str - step) * colourR, (str - step) * colourG, (str - step) * colourB, 1)
+        val bkgOuterColour = new Vector4f(str * colourR, str * colourG, str * colourB, 1)
 
         // Main panels
 

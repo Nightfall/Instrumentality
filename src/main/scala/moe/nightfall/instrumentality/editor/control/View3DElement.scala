@@ -27,7 +27,7 @@ abstract class View3DElement extends EditElement {
 
     private var dragX = 0
     private var dragY = 0
-    private var ignoreFirstDrag = false;
+    private var ignoreFirstDrag = false
 
     override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
         super.draw(ox, oy, scrWidth, scrHeight)

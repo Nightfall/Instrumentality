@@ -12,6 +12,8 @@
  */
 package moe.nightfall.instrumentality.editor.control
 
+import org.lwjgl.opengl.GL11
+
 // TODO: Is there a better way to do this?
 class CheckboxElement(toRun: => Unit) extends ButtonElement {
 
@@ -21,5 +23,31 @@ class CheckboxElement(toRun: => Unit) extends ButtonElement {
     onClick = () => {
         checked = !checked
         toRun
+    }
+
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        super.draw(ox, oy, scrWidth, scrHeight)
+        GL11.glColor3d(0, 0, 0)
+        val xL = width / 4
+        val xM = width / 2
+        val xR = (width / 4) * 3
+
+        val yU = height / 4
+        val yM = height / 2
+        val yL = (height / 4) * 3
+        if (checked) {
+            GL11.glBegin(GL11.GL_LINE_STRIP)
+            GL11.glVertex2d(xL, yM)
+            GL11.glVertex2d(xM, yL)
+            GL11.glVertex2d(xR, yU)
+            GL11.glEnd()
+        } else {
+            GL11.glBegin(GL11.GL_LINES)
+            GL11.glVertex2d(xL, yU)
+            GL11.glVertex2d(xR, yL)
+            GL11.glVertex2d(xR, yU)
+            GL11.glVertex2d(xL, yL)
+            GL11.glEnd()
+        }
     }
 }

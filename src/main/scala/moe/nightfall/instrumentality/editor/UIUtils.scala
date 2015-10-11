@@ -123,11 +123,9 @@ object UIUtils {
         GL11.glPushMatrix()
         var lineX = 0
         for (c <- ca) {
-            for (thick <- strokeWidth to 0 by -1) {
-                GL11.glColor3d(0, thick / 8d, thick / 5d)
-                GL11.glLineWidth(thick + 1)
-                UIFont.drawChar(c)
-            }
+            GL11.glColor3d(0, 0, 0)
+            GL11.glLineWidth(1)
+            UIFont.drawChar(c)
             GL11.glTranslated(7, 0, 0)
             lineX += 7
         }
