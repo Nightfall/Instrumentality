@@ -55,7 +55,7 @@ class BenchmarkElement(val myModel: PMXModel) extends EditElement {
         GL11.glColor3d(1, 1, 1)
 
         UIUtils.drawText(
-            subElements.size + " elems/" + (((1 / avgTime) * 10).toInt / 10d) + " FPS", 3)
+            subElements.size + " elems/" + (((1 / avgTime) * 10).toInt / 10d) + " FPS")
 
         GL11.glPopMatrix()
     }

@@ -112,11 +112,11 @@ object UIUtils {
         false
     }
 
-    // yes, this is scalable (in one way or another). TODO: second parameter controls stroke width
+    // yes, this is scalable (in one way or another).
     // the default size will be around 6x9u(where u is whatever your opengl perspective says), with 1u spacing on both axis.
     // spaces are 1x9u + the normal spacing on top
     // however, if unknown chars appear, then it will NOT WORK!
-    def drawLine(str: String, strokeWidth: Int): Vector2f = {
+    def drawLine(str: String): Vector2f = {
         val ca = str.toCharArray()
         if (useSystemFont(str))
             return UISystemFont.drawSystemLine(str, sysFont)
@@ -141,19 +141,19 @@ object UIUtils {
         new Vector2f(7 * str.length, 8)
     }
 
-    def drawText(str0: String, i: Int) {
+    def drawText(str0: String) {
         var str = str0
         val totalSize = new Vector2f()
         GL11.glPushMatrix()
         while (str.indexOf(10) != -1) {
-            val lineSize = drawLine(str.substring(0, str.indexOf(10)), i)
+            val lineSize = drawLine(str.substring(0, str.indexOf(10)))
             str = str.substring(str.indexOf(10) + 1)
 
             totalSize.x = math.max(totalSize.x, lineSize.x)
             totalSize.y += lineSize.y + 1
             GL11.glTranslated(0, lineSize.y, 0)
         }
-        val lineSize = drawLine(str, i)
+        val lineSize = drawLine(str)
         totalSize.x = math.max(totalSize.x, lineSize.x)
         totalSize.y += lineSize.y
         GL11.glPopMatrix()
@@ -191,7 +191,7 @@ object UIUtils {
             GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
         }
         GL11.glScaled(scale, scale, 1)
-        drawText(text, 2)
+        drawText(text)
         GL11.glPopMatrix()
     }
 }

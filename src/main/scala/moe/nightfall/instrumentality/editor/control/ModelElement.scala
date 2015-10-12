@@ -75,7 +75,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
             var text = "Load Fail"
             if (workModelName == null)
                 text = "Use Steve"
-            UIUtils.drawText(text, 1)
+            UIUtils.drawText(text)
         }
     }
 
