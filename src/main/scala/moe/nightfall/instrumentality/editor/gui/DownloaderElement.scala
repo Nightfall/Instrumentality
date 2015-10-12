@@ -20,7 +20,7 @@ import java.util.zip.{ZipInputStream, ZipEntry, ZipFile}
 import moe.nightfall.instrumentality.ModelCache.{DownloadingPMXFilenameLocator, IPMXFilenameLocator}
 import moe.nightfall.instrumentality.{ModelDownloadTask, ModelCache, RecommendedInfoCache}
 import moe.nightfall.instrumentality.RecommendedInfoCache.DownloadableEntry
-import moe.nightfall.instrumentality.animations.PoseSet
+import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TreeviewElement, TreeviewElementStructurer}
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
@@ -36,7 +36,7 @@ class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditEl
         override def getNodeName(n: DownloadableEntry): String = n.name + ":" + n.author
 
         override def onNodeClick(n: DownloadableEntry) = {
-            val ps = new PoseSet
+            val ps = new AnimSet
             ps.loadForHash(n.sha)
             if (ps.downloadURL == "") {
 

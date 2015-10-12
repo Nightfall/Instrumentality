@@ -18,7 +18,7 @@ import scala.collection.mutable.{HashMap, Map}
 /**
  * Created on 13/09/15.
  */
-class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
+class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
 
     private var walkCycleTime: Double = _
     var walkSpeed, lookLR, lookUD, fallStrength: Double = _
@@ -114,7 +114,7 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
             }
         }
 
-        poseSetResult = poseSet.createAnimation(map)
+        poseSetResult = poseSet.createEditAnimation("walk", walkCycleTime % 1.0f)._2
 
 
     }

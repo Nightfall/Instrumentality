@@ -16,14 +16,14 @@ package moe.nightfall.instrumentality.editor.gui
 import java.io.{DataOutputStream, FileOutputStream}
 
 import moe.nightfall.instrumentality.{Loader, ModelCache}
-import moe.nightfall.instrumentality.animations.PoseSet
+import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control._
 
 /**
  * Created on 11/09/15.
  */
-class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElement) extends EditElement {
+class PoseTreeElement(val targetSet: AnimSet, whereAmI: ButtonBarContainerElement) extends EditElement {
     val treeviewElement = new TreeviewElement(new TreeviewElementStructurer[String] {
         /*
         override def getNodeName(n : String) = n
@@ -45,10 +45,7 @@ class PoseTreeElement(val targetSet: PoseSet, whereAmI: ButtonBarContainerElemen
 
         override def onNodeClick(n: String): Unit =
             whereAmI.setUnderPanel(
-                new PoseEditElement(
-                    PoseTreeElement.this.targetSet.allPoses.get(n).get,
-                    ModelCache.getLocal(Loader.currentFile),
-                    targetSet.createEditAnimation(n)),
+                new PoseEditElement(n, ModelCache.getLocal(Loader.currentFile)),
                 noCleanup = false)
 
         // The nonsense that was here, I cannot understand.

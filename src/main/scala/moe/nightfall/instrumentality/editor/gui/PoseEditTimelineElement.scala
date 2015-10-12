@@ -10,27 +10,19 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality
+package moe.nightfall.instrumentality.editor.gui
 
-import java.io.{FileOutputStream, DataOutputStream}
+import moe.nightfall.instrumentality.editor.EditElement
+import org.lwjgl.util.vector.Vector4f
 
 /**
- * Makes editing the URLs in PoseSets easier.
- * Created on 26/09/15.
+ * Created on 12/10/15.
  */
-object URLEditorMain extends App {
-    print("Enter modelname with poseset to edit URL data in: ")
-    val mdl = ModelCache.getLocal(scala.io.StdIn.readLine())
-    print("Enter new URL: ")
-    mdl.anims.downloadURL = scala.io.StdIn.readLine()
-    print("Enter folder within ZIP, or blank for web-link. Must end with '/' unless blank: ")
-    mdl.anims.downloadBaseFolder = scala.io.StdIn.readLine()
-    println("Stop the process now to cancel writing to cfgpose.dat in the current directory.")
-    println("Otherwise, press enter.")
-    scala.io.StdIn.readLine()
-    println("Saving...")
-    val fos = new FileOutputStream("cfgpose.dat")
-    mdl.anims.save(new DataOutputStream(fos))
-    fos.close()
-    println("Saved.")
+class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
+
+    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+        //        for (i <- 0 until pe.getEditAnim) {
+        //            pe.drawQRect(0, 0, 0, 0, col, col, col, col)
+        //        }
+    }
 }

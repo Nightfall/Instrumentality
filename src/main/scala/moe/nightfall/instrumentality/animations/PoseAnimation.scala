@@ -22,5 +22,17 @@ import scala.collection.mutable.HashMap
 class PoseAnimation extends Animation {
     val hashMap = new HashMap[String, PoseBoneTransform]
 
+    def this(a: PoseAnimation, b: PoseAnimation, i: Float) {
+        this()
+        // Handle all cases where A contains the key
+        a.hashMap.toSeq.foreach { case (key, value) =>
+            hashMap(key) = new PoseBoneTransform(value, b.hashMap(key), i)
+        }
+        // Handle the remaining cases where only B contains the key
+        b.hashMap.toSeq.filter((t: (String, PoseBoneTransform)) => !a.hashMap.contains(t._1)).foreach { case (key, value) =>
+            hashMap(key) = new PoseBoneTransform(null, value, i)
+        }
+    }
+
     override def getBoneTransform(boneName: String) = hashMap get (boneName.toLowerCase)
 }

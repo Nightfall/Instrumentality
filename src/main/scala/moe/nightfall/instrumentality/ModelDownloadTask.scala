@@ -17,12 +17,12 @@ import java.net.URL
 import java.util.zip.{ZipEntry, ZipInputStream}
 
 import moe.nightfall.instrumentality.ModelCache.{DownloadingPMXFilenameLocator, IPMXFilenameLocator}
-import moe.nightfall.instrumentality.animations.PoseSet
+import moe.nightfall.instrumentality.animations.AnimSet
 
 /**
  * Created on 09/10/15.
  */
-class ModelDownloadTask(val ps: PoseSet, val downloadName: String) extends MeasurableTask with Runnable {
+class ModelDownloadTask(val ps: AnimSet, val downloadName: String) extends MeasurableTask with Runnable {
 
     // Scala is magic...
     var generalTask = "Starting download thread..."

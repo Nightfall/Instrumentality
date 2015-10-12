@@ -109,7 +109,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
 object ModelElement {
     def makeTestInstance(pm: PMXModel): PMXInstance = {
         val pi: PMXInstance = new PMXInstance(pm)
-        val npca = new NewPCAAnimation(pm.poses)
+        val npca = new NewPCAAnimation(pm.anims)
         npca.walkStrength = 1
         npca.walkSpeed = 1
         pi.anim = npca

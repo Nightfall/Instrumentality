@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage
 import java.io.{PrintStream, FileOutputStream}
 
 import moe.nightfall.instrumentality.PMXModel._
-import moe.nightfall.instrumentality.animations.PoseSet
+import moe.nightfall.instrumentality.animations.AnimSet
 import org.lwjgl.opengl.GL11
 
 import scala.collection.mutable.MutableList
@@ -53,7 +53,7 @@ object PMXModel {
 
 class PMXModel private {
     var theFile: PMXFile = _
-    val poses = new PoseSet()
+    val anims = new AnimSet()
 
     // This is null'd once setupMaterials is called. Don't modify after this goes into the ModelCache.
     var materialData = collection.mutable.Map[String, BufferedImage]()

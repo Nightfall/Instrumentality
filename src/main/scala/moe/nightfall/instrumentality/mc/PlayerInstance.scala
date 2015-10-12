@@ -23,7 +23,7 @@ class PlayerInstance(file: PMXModel) {
 
     // CONST
     val pmxInst = new PMXInstance(file)
-    anim = new NewPCAAnimation(file.poses)
+    anim = new NewPCAAnimation(file.anims)
     pmxInst.anim = anim
 
     var clippingPoint = 0d
@@ -224,16 +224,16 @@ class PlayerInstance(file: PMXModel) {
     }
 
     def angleDist(totalRotation: Float, lastTotalRotation: Float): Float = {
-        var a = totalRotation - lastTotalRotation;
+        var a = totalRotation - lastTotalRotation
         var b = 0f
         if (totalRotation < lastTotalRotation) {
             // given a TR of 0.20, a LTR of 0.80 and a L of 1:
             // TR+(1-LTR)=0.40
-            b = -adSpecial(totalRotation, lastTotalRotation);
+            b = -adSpecial(totalRotation, lastTotalRotation)
         } else {
             // given a LTR of 0.20, a TR of 0.80 and a L of 1:
             // LTR+(1-TR)=0.80
-            b = adSpecial(lastTotalRotation, totalRotation);
+            b = adSpecial(lastTotalRotation, totalRotation)
         }
         if (math.abs(a) > math.abs(b))
             return b

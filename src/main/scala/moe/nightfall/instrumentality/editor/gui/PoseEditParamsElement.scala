@@ -29,7 +29,10 @@ class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
 
     private def createElement(name: String, get: PoseBoneTransform => Double, set: (PoseBoneTransform, Double) => Unit): AdjusterElement =
         new AdjusterElement(name + ":", new AdjusterElementData {
-            override def value_=(newValue: Double): Unit = set(parentPE.getEditPBT, newValue)
+            override def value_=(newValue: Double) {
+                set(parentPE.getEditPBT, newValue)
+                parentPE.editMade
+            }
 
             override def value: Double = get(parentPE.getEditPBT)
         })
@@ -43,7 +46,7 @@ class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
         createElement("X2", _.X2, (a, b) => a.X2 = b) +=
         createElement("TX0", _.TX0, (a, b) => a.TX0 = b) +=
         createElement("TY0", _.TY0, (a, b) => a.TY0 = b) +=
-        createElement("TY0", _.TZ0, (a, b) => a.TZ0 = b)
+        createElement("TZ0", _.TZ0, (a, b) => a.TZ0 = b)
     subElements ++= allAdjusters
 
     // Elements

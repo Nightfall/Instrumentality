@@ -14,15 +14,31 @@ package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.PMXFile.PMXBone
 import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel, PoseBoneTransform}
-import moe.nightfall.instrumentality.animations.{Animation, PoseAnimation}
+import moe.nightfall.instrumentality.animations.{KeyframeAnimationData, Animation, PoseAnimation}
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control._
 import org.lwjgl.opengl.GL11
 
-class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation: Animation) extends EditElement {
+class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement {
 
     val pmxInst: PMXInstance = new PMXInstance(pm)
-    pmxInst.anim = editAnimation
+
+    def getEditAnim: KeyframeAnimationData = pm.anims.allPoses.get(editedPose).get
+
+    // Read-only except in resetFrame.
+    // This data exists to simplify calculations like "which frame are we on" and things like that.
+    // It is: The current frame as an Int, the PoseAnimation for this frame (even if none exists, it'll be interpolated),
+    //        and the Animation object used for the 3D display, based on the PoseAnimation.
+    var editingData: (Int, PoseAnimation, Animation) = _
+
+    var editingPoint = 0.0d
+
+    def resetFrame {
+        editingData = pm.anims.createEditAnimation(editedPose, editingPoint)
+        pmxInst.anim = editingData._3
+    }
+
+    resetFrame
 
     var model: View3DElement = new View3DElement {
         colourR = 1
@@ -83,33 +99,47 @@ class PoseEditElement(val editedPose: PoseAnimation, pm: PMXModel, editAnimation
 
     val tViewScroll = new ScrollAreaElement(tView)
 
-    val params: PoseEditParamsElement = new PoseEditParamsElement(this)
+    val params = new PoseEditParamsElement(this)
+
+    val timeline = new PoseEditTimelineElement(this)
 
     tView.selectedNode = pmxInst.theFile.boneData(0)
 
     val udSplitPane = new SplitPaneElement(tViewScroll, params, false, 1d)
     val lrSplitPane = new SplitPaneElement(model, udSplitPane, true, 1d)
-    subElements += lrSplitPane
+    val timelineSplitPane = new SplitPaneElement(lrSplitPane, timeline, false, 1d)
+    subElements += timelineSplitPane
 
     override def layout(): Unit = {
-        lrSplitPane.posX = 0
-        lrSplitPane.posY = 0
-        lrSplitPane.setSize(width, height)
+        timelineSplitPane.posX = 0
+        timelineSplitPane.posY = 0
+        timelineSplitPane.setSize(width, height)
     }
 
     def getEditPBT: PoseBoneTransform = {
         // What is going on here...?
         val mid = tView.selectedNode.globalName.toLowerCase
         // return needed because it *might* be implying that toLowerCase uses the return as a param
-        val opbt = editedPose.hashMap.get(mid)
+        val opbt = editingData._2.hashMap.get(mid)
         // asInstanceOf seems to cause a lot of errors, and getOrElse is just acting weird.
         // Practicality matters.
         if (opbt.isEmpty) {
             val tsf = new PoseBoneTransform()
-            editedPose.hashMap.put(mid, tsf)
+            editingData._2.hashMap.put(mid, tsf)
             return tsf
         } else {
             return opbt.get
+        }
+    }
+
+    // This is the code which automatically puts the PoseAnimation into the kfanim.
+    // That is all.
+    def editMade {
+        val anim = getEditAnim
+        if (!anim.frameMap.contains(editingData._1)) {
+            // Add this as a keyframe based upon what we have
+            // (which as you know can be an interpolated state, this is normal for this style of animation program)
+            anim.frameMap = anim.frameMap + (editingData._1 -> editingData._2)
         }
     }
 

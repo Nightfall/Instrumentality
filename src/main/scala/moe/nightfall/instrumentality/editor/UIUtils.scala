@@ -15,7 +15,7 @@ package moe.nightfall.instrumentality.editor
 import java.awt.Font
 
 import moe.nightfall.instrumentality.{Loader, ModelCache}
-import moe.nightfall.instrumentality.animations.PoseSet
+import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement}
 import moe.nightfall.instrumentality.editor.gui.{DownloaderElement, BenchmarkElement, ModelChooserElement, PoseTreeElement}
 import org.lwjgl.input.Mouse
@@ -63,7 +63,7 @@ object UIUtils {
             if (Loader.currentFile != null) {
                 val mdl = ModelCache.getLocal(Loader.currentFile)
                 if (mdl != null)
-                    bbce.setUnderPanel(new PoseTreeElement(mdl.poses, bbce), false)
+                    bbce.setUnderPanel(new PoseTreeElement(mdl.anims, bbce), false)
             }
         )
 

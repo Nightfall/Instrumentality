@@ -128,10 +128,10 @@ object ModelCache {
         }
 
         try {
-            pm.poses.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
+            pm.anims.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
         } catch {
             case _: IOException => {
-                pm.poses.loadForHash(pmxHash);
+                pm.anims.loadForHash(pmxHash);
             }
         }
 
