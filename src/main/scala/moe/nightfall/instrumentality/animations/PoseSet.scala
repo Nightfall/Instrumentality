@@ -101,17 +101,22 @@ class PoseSet {
         poseStrengths foreach { entry =>
             var n = Option(entry._1)
             var tVal = entry._2
-            while (n != None) {
-                val d = hashMap get (n.get)
-                if (d == None || d.get < tVal)
+            while (n.isDefined) {
+                val d = hashMap get n.get
+                if (d.isEmpty || d.get < tVal)
                     hashMap.put(n.get, tVal)
-                n = poseParents get (n.get)
+                n = poseParents get n.get
                 if (tVal > 1.0d)
                     tVal = 1.0d
             }
         }
         hashMap foreach { case (key, value) =>
-            rootOA.subAnimations += new StrengthMultiplyAnimation((allPoses get key).get, value.toFloat)
+            val optVal = allPoses get key
+            if (optVal.isDefined) {
+                rootOA.subAnimations += new StrengthMultiplyAnimation(optVal.get, value.toFloat)
+            } else {
+                System.err.println("Warning: Missing pose " + key)
+            }
         }
 
         rootOA

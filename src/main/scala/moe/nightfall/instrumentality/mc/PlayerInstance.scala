@@ -90,13 +90,13 @@ class PlayerInstance(file: PMXModel) {
         hairSway += (hairSwayVel * deltaTime * 4.0f).toFloat
         hairSwayVel -= (hairSwayVel * (deltaTime / 1.0f)).toFloat
 
-        pmxInst.update(deltaTime);
+        pmxInst.update(deltaTime)
         clippingPoint += deltaTime / 2.0d
         if (clippingPoint >= 1.1d)
             clippingPoint = 1.1d
 
         if ((anim.walkStrength > 0) || (sneakState < 0)) {
-            val waChange: Float = (math.Pi * deltaTime * 10).toFloat
+            val waChange: Float = (math.Pi * deltaTime * 2).toFloat
             if (directionAdjustment < daTarget) {
                 directionAdjustment += waChange
                 if (directionAdjustment > daTarget)
@@ -111,7 +111,7 @@ class PlayerInstance(file: PMXModel) {
 
     private def interpolate(last: Double, current: Double, partialTicks: Float) = last + (current - last) * partialTicks
 
-    def render(player: EntityPlayer, x: Double, y: Double, z: Double, zOffset : Double, partialTick: Float) {
+    def render(player: EntityPlayer, x: Double, y: Double, z: Double, zOffset: Double, partialTick: Float, firstPerson: Boolean) {
         val adjustFactor = if (player.isSneaking()) 0.14f else 0.07f
         val scale = 1F / (pmxInst.theModel.height / player.height)
 
@@ -126,7 +126,11 @@ class PlayerInstance(file: PMXModel) {
         GL11.glDisable(GL11.GL_CULL_FACE)
         val lv = player.worldObj.getBlockLightValue_do(player.posX.toInt, player.posY.toInt, player.posZ.toInt, true)
         GL11.glRotated(math.toDegrees(directionAdjustment), 0, 1, 0)
-        pmxInst.render(Loader.shaderBoneTransform, lv / 15f, lv / 15f, lv / 15f, clippingPoint.toFloat)
+
+        var renderClip = clippingPoint
+        if (firstPerson)
+            renderClip = Math.min(renderClip, 0.7d)
+        pmxInst.render(Loader.shaderBoneTransform, lv / 15f, lv / 15f, lv / 15f, renderClip.toFloat)
 
         GL11.glEnable(GL11.GL_CULL_FACE)
         GL11.glPopMatrix()
@@ -158,13 +162,13 @@ class PlayerInstance(file: PMXModel) {
             bRotation += math.Pi * 2
         while (bRotation > (math.Pi * 2))
             bRotation -= math.Pi * 2
-        var distRotation = angleDist(bRotation.toFloat, lastTotalRotation);
+        var distRotation = angleDist(bRotation.toFloat, lastTotalRotation)
         lastTotalRotation = bRotation.toFloat
 
         if (resetFrame)
             distRotation = 0
 
-        directionAdjustment += distRotation;
+        directionAdjustment += distRotation
         while (directionAdjustment < -Math.PI)
             directionAdjustment += (Math.PI * 2).toFloat
         while (directionAdjustment > Math.PI)
@@ -179,32 +183,30 @@ class PlayerInstance(file: PMXModel) {
             daTarget -= (Math.PI * 2).toFloat
 
         if (resetFrame)
-            directionAdjustment = daTarget;
+            directionAdjustment = daTarget
 
-        var finalRot = (-bRotation) + directionAdjustment;
+        var finalRot = (-bRotation) + directionAdjustment
 
-        finalRot = lookDir + finalRot;
+        finalRot = lookDir + finalRot
 
         while (finalRot < -Math.PI)
-            finalRot += Math.PI * 2;
+            finalRot += Math.PI * 2
         while (finalRot > Math.PI)
-            finalRot -= Math.PI * 2;
+            finalRot -= Math.PI * 2
 
         anim.lookLR = (-finalRot / Math.PI).toFloat
 
-        val lrValue = (anim.lookLR * 1.2f)
+        val lrValue = anim.lookLR * 1.2f
         hairSwayVel += (distRotation / 2.0f) + ((lrValue - lastLRValue) * 2).toFloat
         lastLRValue = lrValue
 
         resetFrame = false
 
         if (player.isSwingInProgress) {
-            //            if (libanim.getTarget() != useAnimation)
-            //                libanim.setCurrentPose(useAnimation, 0.2f, false)
-            //TODO SWING
+            if (anim.swingTime == -1)
+                anim.swingTime = 0
         } else {
-            //            if (libanim.getTarget() != idleAnimation)
-            //                libanim.setCurrentPose(idleAnimation, 0.1f, false)
+            anim.swingTime = -1
         }
 
         var spdMul = 0d
@@ -215,10 +217,10 @@ class PlayerInstance(file: PMXModel) {
             spdMul = dist * 10.0d
         }
         anim.walkSpeed = spdMul
-        anim.walkStrength = 1.0d
-
+        anim.walkStrengthTarget = Math.min(1.0d, spdMul * 10.0d)
         val fallVel = player.lastTickPosY - player.posY
         anim.fallStrength = fallVel
+        anim.itemHoldStrengthTarget = if (player.getHeldItem == null) 0 else 1
     }
 
     def angleDist(totalRotation: Float, lastTotalRotation: Float): Float = {

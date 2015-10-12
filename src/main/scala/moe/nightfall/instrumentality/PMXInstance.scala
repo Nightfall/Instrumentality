@@ -167,7 +167,7 @@ class PMXInstance(val theModel: PMXModel) {
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeIn"), clippingSize * theModel.height)
-        GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeInDiscard"), (clippingSize + 0.5f) * theModel.height)
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeInDiscard"), (clippingSize + 0.1f) * theModel.height)
         for (i <- 0 until theModel.groups.length) {
             val mat = theFile.matData(i)
             GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(mat.texTex.toLowerCase()).get)

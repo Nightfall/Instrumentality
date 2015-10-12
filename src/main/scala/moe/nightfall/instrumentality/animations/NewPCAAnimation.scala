@@ -12,14 +12,21 @@
  */
 package moe.nightfall.instrumentality.animations
 
+import scala.collection.mutable
 import scala.collection.mutable.{HashMap, Map}
 
 /**
  * Created on 13/09/15.
  */
 class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
+
     private var walkCycleTime: Double = _
-    var walkStrength, walkSpeed, lookLR, lookUD, fallStrength: Double = _
+    var walkSpeed, lookLR, lookUD, fallStrength: Double = _
+    var walkStrength = 0d
+    var walkStrengthTarget = 0d
+    var swingTime = -1d
+    var itemHoldStrengthTarget = 0d
+    var itemHoldStrength = 0d
 
     var poseSetResult: Animation = new Animation {
         override def getBoneTransform(boneName: String) = None
@@ -39,6 +46,20 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
         (time * (1 - sine)) + (sineComponent * sine)
     }
 
+    def strengthChange(deltaTime: Double, in: Double, targ: Double) = {
+        var res = in
+        if (res < targ) {
+            res += deltaTime
+            if (res > targ)
+                res = targ
+        } else {
+            res -= deltaTime
+            if (res < targ)
+                res = targ
+        }
+        res
+    }
+
     def setupCycle(time: Double, subAnims: Array[String], sine: Double, sineRepeat: Int, strength: Double, map: Map[String, Double]) {
         val time2 =
             if (time >= 0)
@@ -54,14 +75,20 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
         var strengthStart = 1.0d - strengthEnd
         strengthStart *= strength
         strengthEnd *= strength
-        map.put(subAnims(currentStart), strengthStart)
-        map.put(subAnims(currentEnd), strengthEnd)
+
+        val startAnim = subAnims(currentStart)
+        val endAnim = subAnims(currentEnd)
+        if (startAnim != null)
+            map.put(startAnim, strengthStart)
+        if (endAnim != null)
+            map.put(endAnim, strengthEnd)
     }
 
     override def update(deltaTime: Double) {
         walkCycleTime += deltaTime * walkSpeed
-        val map = new HashMap[String, Double]
+        val map = new mutable.HashMap[String, Double]
         map.put("idle", 1d)
+        map.put("falling", fallStrength)
         if (lookLR < 0)
             map.put("lookR", -lookLR)
         else if (lookLR > 0)
@@ -73,7 +100,22 @@ class NewPCAAnimation(var poseSet: PoseSet) extends Animation {
             map.put("lookU", lookUD)
 
         setupCycle(walkCycleTime, Array("walkLFHit", "walkRFMidpoint", "walkRFHit", "walkLFMidpoint", "walkLFHit"), 1, 2, walkStrength, map)
-        map.put("falling", fallStrength)
+
+        walkStrength = strengthChange(deltaTime * 4, walkStrength, walkStrengthTarget)
+        itemHoldStrength = strengthChange(deltaTime, itemHoldStrength, itemHoldStrengthTarget)
+
+        map.put("holdItem", itemHoldStrength)
+        if (swingTime != -1) {
+            swingTime += deltaTime * 2
+            if (swingTime > 1) {
+                swingTime = 1
+            } else {
+                setupCycle(swingTime, Array(null, "useItemP25", "useItemP50", "useItemP75", null), 1, 1, 1, map)
+            }
+        }
+
         poseSetResult = poseSet.createAnimation(map)
+
+
     }
 }

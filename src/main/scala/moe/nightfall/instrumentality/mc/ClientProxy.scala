@@ -132,8 +132,10 @@ class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     def onTickRender(rte: TickEvent.RenderTickEvent) {
-        if (rte.phase == TickEvent.Phase.START)
+        if (rte.phase == TickEvent.Phase.START) {
+            //TODO: Are we sure this is accurate? The animations are randomly speeding up/slowing down on occasion, can't work out if the timer's off or the anims are.
             InstanceCache.update(rte.renderTickTime / 20d)
+        }
     }
     
     private def cachedModel(player : EntityPlayer) : Option[ModelCacheEntry] = {
@@ -171,8 +173,11 @@ class ClientProxy extends CommonProxy {
         val cache = cachedModel(player)
         if (cache.isEmpty) return // We don't have anything to render
         val model = cache.get.value
-        if (model == null) return // TODO I don't see why this would be needed.
-        
+        if (model == null) return
+        // TODO I don't see why this would be needed. If the model is null, the cache should be empty as well.
+        //      Not true. The model can be null if that player WANTS to be Steve.
+        //      The cache is only empty if we don't actually know what that player is.
+
         var x = interpolate(player.lastTickPosX, player.posX, event.partialRenderTick)
         var y = interpolate(player.lastTickPosY, player.posY, event.partialRenderTick)
         var z = interpolate(player.lastTickPosZ, player.posZ, event.partialRenderTick)
@@ -181,9 +186,9 @@ class ClientProxy extends CommonProxy {
         y -= RenderManager.renderPosY
         z -= RenderManager.renderPosZ
 
-
+        // Animation time tends to randomly slow down / speed up in-game. I'm blaming partialRenderTick.
         model.apply(player, event.partialRenderTick)
-        model.render(player, x, y, z, 0, event.partialRenderTick)
+        model.render(player, x, y, z, 0, event.partialRenderTick, false)
 
         event.setCanceled(true)
     }
@@ -197,12 +202,11 @@ class ClientProxy extends CommonProxy {
         val cache = cachedModel(player)
         if (cache.isEmpty) return // We don't have anything to render
         val model = cache.get.value
-        if (model == null) return // TODO I don't see why this would be needed. If the model is null, the cache should be empty as well.
-        
+        if (model == null) return
         model.apply(player, event.partialTicks)
         
         // TODO Need to fix the camera, this differs from model to model.
-        model.render(player, 0, 0, 0, 2.25, event.partialTicks)
+        model.render(player, 0, 0, 0, 2.25, event.partialTicks, true)
         
         event.setCanceled(true)
     }
