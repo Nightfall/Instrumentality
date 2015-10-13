@@ -23,10 +23,13 @@ class ArrowButtonElement(arrowAngle: Double, toRun: => Unit) extends ButtonEleme
         val h: Double = 1 / 8.0
         val wu = 3
         val hu = 3
+        var scale = width
+        if (height < width)
+            scale = height
 
         GL11.glPushMatrix()
         GL11.glTranslated(width * w * 4, height * h * 4, 0)
-        GL11.glScaled(width, height, 1)
+        GL11.glScaled(scale, scale, 1)
         GL11.glRotated(arrowAngle, 0, 0, 1)
         GL11.glColor3d(0, 0, 0)
         GL11.glBegin(GL11.GL_TRIANGLES)
