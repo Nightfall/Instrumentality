@@ -22,6 +22,8 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.util.vector.Vector2f;
 
 /**
+ * Does AWT-based font drawing.
+ * Note that it is *SLOW*!!!
  * Created on 03/09/15.
  */
 object UISystemFont {
@@ -31,7 +33,7 @@ object UISystemFont {
     // Used to avoid textTextures getting too big
     // (this is a ring, freeTextPtr goes around the ring as textures are alloc'd,
     //  when it runs into old text, it deletes it)
-    private val freeTextRing = new Array[String](32)
+    private val freeTextRing = new Array[String](256)
     private var freeTextPtr = 0
 
     // Scratch buffer for font rendering (To measure how big the rendered text will be, we have to measure it first.)
@@ -49,7 +51,7 @@ object UISystemFont {
      * @return The resulting size.
      */
     def drawSystemLine(str: String, targetFont: Font): Vector2f = {
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
+        GL11.glEnable(GL11.GL_TEXTURE_2D)
         var tex: TextTexture = null
         if (textTextures.contains(str)) {
             tex = textTextures.get(str).get
@@ -68,6 +70,8 @@ object UISystemFont {
             freeTextRing(freeTextPtr) = str
             freeTextPtr += 1
             freeTextPtr = freeTextPtr % freeTextRing.length
+            if (freeTextPtr == 0)
+                System.out.println("Cache ring runover")
             // Work out what we need
             val neededSize = sizeSystemLine(str, targetFont)
             val mainImage = new BufferedImage(neededSize._1.x.toInt, neededSize._1.x.toInt, BufferedImage.TYPE_INT_ARGB)

@@ -35,8 +35,8 @@ class ProgressBarElement extends EditElement {
         }
     }
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        super.draw(ox, oy, scrWidth, scrHeight)
+    override def draw() {
+        super.draw()
         val areaWidth = width - (borderWidth * 2)
         val progressPoint = (areaWidth * interpolatedProgressValue).toInt
         drawSkinnedRect(borderWidth, borderWidth, progressPoint, height - (borderWidth * 2), 1)

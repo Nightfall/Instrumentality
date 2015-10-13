@@ -25,8 +25,8 @@ class CheckboxElement(toRun: => Unit) extends ButtonElement {
         toRun
     }
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        super.draw(ox, oy, scrWidth, scrHeight)
+    override def draw() {
+        super.draw()
         GL11.glColor3d(0, 0, 0)
         val xL = width / 8
         val xM = width / 2

@@ -29,7 +29,8 @@ abstract class EditElement {
     var posX, posY: Int = _
 
     val subElements = ListBuffer[EditElement]()
-    var borderWidth = 4
+    var borderWidth = 6
+    var shadowWidth = 4
 
     var colourR = 0.9f
     var colourG = 0.9f
@@ -105,52 +106,59 @@ abstract class EditElement {
 
         // Main panels
 
-        val w2 = (w / 2) - borderWidth
-        val h2 = (h / 2) - borderWidth
+        val w2 = (w / 2) - shadowWidth
+        val h2 = (h / 2) - shadowWidth
 
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
 
         // UL
-        drawRect(x + borderWidth, y + borderWidth, w2, h2, bkgOuterColour, bkgOuterColour, bkgInnerColour, bkgOuterColour)
+        drawRect(x + shadowWidth, y + shadowWidth, w2, h2, bkgOuterColour, bkgOuterColour, bkgInnerColour, bkgOuterColour)
         // LL
-        drawRect(x + borderWidth, y + (h / 2), w2, h2, bkgOuterColour, bkgOuterColour, bkgOuterColour, bkgInnerColour)
+        drawRect(x + shadowWidth, y + (h / 2), w2, h2, bkgOuterColour, bkgOuterColour, bkgOuterColour, bkgInnerColour)
         // UR
-        drawRect(x + (w / 2), y + borderWidth, w2, h2, bkgOuterColour, bkgInnerColour, bkgOuterColour, bkgOuterColour)
+        drawRect(x + (w / 2), y + shadowWidth, w2, h2, bkgOuterColour, bkgInnerColour, bkgOuterColour, bkgOuterColour)
         // LR
         drawRect(x + (w / 2), y + (h / 2), w2, h2, bkgInnerColour, bkgOuterColour, bkgOuterColour, bkgOuterColour)
 
         // Edges
 
         // top
-        drawQRect(x + borderWidth, y, w - (borderWidth * 2), borderWidth, outerColour, innerColour, innerColour, outerColour)
+        drawQRect(x + shadowWidth, y, w - (shadowWidth * 2), shadowWidth, outerColour, innerColour, innerColour, outerColour)
 
         // left
-        drawQRect(x, y + borderWidth, borderWidth, h - (borderWidth * 2), outerColour, outerColour, innerColour, innerColour)
+        drawQRect(x, y + shadowWidth, shadowWidth, h - (shadowWidth * 2), outerColour, outerColour, innerColour, innerColour)
 
         // bottom
-        drawQRect(x + borderWidth, (y + h) - borderWidth, w - (borderWidth * 2), borderWidth, innerColour, outerColour, outerColour, innerColour)
+        drawQRect(x + shadowWidth, (y + h) - shadowWidth, w - (shadowWidth * 2), shadowWidth, innerColour, outerColour, outerColour, innerColour)
 
         // right
-        drawQRect((x + w) - borderWidth, y + borderWidth, borderWidth, h - (borderWidth * 2), innerColour, innerColour, outerColour, outerColour)
+        drawQRect((x + w) - shadowWidth, y + shadowWidth, shadowWidth, h - (shadowWidth * 2), innerColour, innerColour, outerColour, outerColour)
 
         // UL
-        drawQRect(x, y, borderWidth, borderWidth, outerColour, outerColour, innerColour, outerColour)
+        drawQRect(x, y, shadowWidth, shadowWidth, outerColour, outerColour, innerColour, outerColour)
         // LL
-        drawQRect(x, (y + h) - borderWidth, borderWidth, borderWidth, outerColour, outerColour, outerColour, innerColour)
+        drawQRect(x, (y + h) - shadowWidth, shadowWidth, shadowWidth, outerColour, outerColour, outerColour, innerColour)
         // UR
-        drawQRect((x + w) - borderWidth, y, borderWidth, borderWidth, outerColour, innerColour, outerColour, outerColour)
+        drawQRect((x + w) - shadowWidth, y, shadowWidth, shadowWidth, outerColour, innerColour, outerColour, outerColour)
         // LR
-        drawQRect((x + w) - borderWidth, (y + h) - borderWidth, borderWidth, borderWidth, innerColour, outerColour, outerColour, outerColour)
+        drawQRect((x + w) - shadowWidth, (y + h) - shadowWidth, shadowWidth, shadowWidth, innerColour, outerColour, outerColour, outerColour)
         GL11.glDisable(GL11.GL_BLEND)
     }
 
-    def drawSubelements(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+    def drawSubelements() {
         subElements foreach { ee =>
-            GL11.glPushMatrix();
-            GL11.glTranslated(ee.posX, ee.posY, 0);
-            ee.draw(ox + ee.posX, oy + ee.posY, scrWidth, scrHeight);
-            GL11.glPopMatrix();
+            // MAGIC: detect if we're being clipped and don't draw if completely clipped
+
+            GL11.glPushMatrix()
+            GL11.glTranslated(ee.posX, ee.posY, 0)
+            val rrect = UIUtils.clipRectByClippingBounds(UIUtils.clippingBounds._1 + ee.posX, UIUtils.clippingBounds._2 + ee.posY, ee.width, ee.height)
+            if ((rrect._3 != 0) && (rrect._4 != 0)) {
+                val bounds = UIUtils.setClippingBounds(rrect)
+                ee.draw()
+                UIUtils.setClippingBounds(bounds)
+            }
+            GL11.glPopMatrix()
         }
     }
 
@@ -201,12 +209,10 @@ abstract class EditElement {
      * They are the size of the root display, used for calculating some special transforms.
      * @param ox The absolute top-left X position on the screen, in pixels.
      * @param oy The absolute top-left Y position on the screen, in pixels.
-     * @param scrWidth The absolute X size of the screen, in pixels.
-     * @param scrHeight The absolute Y size of the screen, in pixels.
      */
-    def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+    def draw() {
         drawSkinnedRect(0, 0, sizeWidth, sizeHeight, colourStrength)
-        drawSubelements(ox, oy, scrWidth, scrHeight)
+        drawSubelements()
     }
 
     // RANDOM NOTE II : buttons[] is used for detecting dragging,

@@ -20,9 +20,42 @@ import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, 
 import moe.nightfall.instrumentality.editor.gui.{DownloaderElement, BenchmarkElement, ModelChooserElement, PoseTreeElement}
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
+import org.lwjgl.util.Rectangle
 import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
+
+    var scrWidth = 0
+    var scrHeight = 0
+
+    // Used to work out where to clip!
+    // Also the absolute on-screen bounds of the current widget.
+    var clippingBounds = (0, 0, 0, 0)
+
+    def prepareForDrawing(sw: Int, sh: Int) {
+        scrWidth = sw
+        scrHeight = sh
+        setClippingBounds((0, 0, sw, sh))
+    }
+
+    def clipRectByClippingBounds(rect: (Int, Int, Int, Int)): (Int, Int, Int, Int) = {
+        val ra = new Rectangle(rect._1, rect._2, rect._3, rect._4)
+        val rb = new Rectangle(clippingBounds._1, clippingBounds._2, clippingBounds._3, clippingBounds._4)
+        val rr = ra.intersection(rb, null)
+        (rr.getX, rr.getY, rr.getWidth, rr.getHeight)
+    }
+
+    // Sets the bounds which the scissor test clips in.
+    // Used for optimization. Returns the old bounds, which you should restore when done.
+    def setClippingBounds(tuple: (Int, Int, Int, Int)): (Int, Int, Int, Int) = {
+        if (tuple._3 > 0)
+            if (tuple._4 > 0)
+                GL11.glScissor(tuple._1, scrHeight - (tuple._2 + tuple._4), tuple._3, tuple._4)
+        val oldBounds = clippingBounds
+        clippingBounds = tuple
+        oldBounds
+    }
+
     // TODO Couldn't this just be two variables?
     var state = new Array[Boolean](2)
 
@@ -182,7 +215,7 @@ object UIUtils {
         var scaleW: Double = (width - borderWidth) / textSize.getX
         if (scaleW < scale)
             scale = scaleW
-        if (scale < 1.7) {
+        if (scale < (if (useSystemFont(text)) 1.7d else 1.1d)) {
             scale = height / textSize.getY
             scaleW = width / textSize.getX
             if (scaleW < scale)

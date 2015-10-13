@@ -40,9 +40,9 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
     var sealedTrees = new immutable.HashSet[Node]
     var selectedNode: Node = _
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+    override def draw() {
         // Do not draw a containing panel.
-        drawSubelements(ox, oy, scrWidth, scrHeight)
+        drawSubelements()
     }
 
     override def layout() {

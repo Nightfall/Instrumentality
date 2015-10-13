@@ -111,7 +111,10 @@ class Main extends ApplicationHost {
     private def doDraw() {
         GL11.glEnable(GL11.GL_CULL_FACE)
         GL11.glDisable(GL11.GL_TEXTURE_2D)
-        currentPanel.draw(0, 0, Display.getWidth, Display.getHeight)
+        UIUtils.prepareForDrawing(Display.getWidth, Display.getHeight)
+        GL11.glEnable(GL11.GL_SCISSOR_TEST)
+        currentPanel.draw()
+        GL11.glDisable(GL11.GL_SCISSOR_TEST)
         GL11.glEnable(GL11.GL_TEXTURE_2D)
         GL11.glDisable(GL11.GL_CULL_FACE)
     }

@@ -12,7 +12,7 @@
  */
 package moe.nightfall.instrumentality.editor.control
 
-import moe.nightfall.instrumentality.editor.{EditElement, SelfResizable}
+import moe.nightfall.instrumentality.editor.{UIUtils, EditElement, SelfResizable}
 import org.lwjgl.opengl.GL11
 
 class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scrollStepY: Int) extends EditElement {
@@ -31,41 +31,22 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
     private var scrollY = 0
 
     private val upButton = new ArrowButtonElement(-90, {
-        scrollY += scrollStepY;
+        scrollY += scrollStepY
         layout
     })
     private val downButton = new ArrowButtonElement(+90, {
-        scrollY -= scrollStepY;
+        scrollY -= scrollStepY
         layout
     })
 
     private val leftButton = new ArrowButtonElement(180, {
-        scrollX += scrollStepX;
+        scrollX += scrollStepX
         layout
     })
     private val rightButton = new ArrowButtonElement(0, {
-        scrollX -= scrollStepX;
+        scrollX -= scrollStepX
         layout
     })
-
-    // glScissor doesn't stack AFAIK,
-    // and worse, it means the child has to be treated specially,
-    // while still remaining in the subelements list to avoid reimplementing
-    // the mouse functions.
-    // In the end, it's not worth using it specifically on the child.
-
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        if (width > 0)
-            if (height > 0) {
-                GL11.glScissor(ox, scrHeight - (oy + height), width, height)
-            } else {
-                // glScissor likes to crash given an opportunity
-                return
-            }
-        GL11.glEnable(GL11.GL_SCISSOR_TEST)
-        super.draw(ox, oy, scrWidth, scrHeight)
-        GL11.glDisable(GL11.GL_SCISSOR_TEST)
-    }
 
     override def update(dT: Double) = {
         super.update(dT)

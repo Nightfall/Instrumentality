@@ -19,10 +19,32 @@ import org.lwjgl.util.vector.Vector4f
  * Created on 12/10/15.
  */
 class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
+    colourStrength = 0
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        //        for (i <- 0 until pe.getEditAnim) {
-        //            pe.drawQRect(0, 0, 0, 0, col, col, col, col)
-        //        }
+    def getMultiplier = (width - (borderWidth * 2)) / pe.getEditAnim.lenFrames.toDouble
+
+    override def draw() {
+        super.draw()
+        // NOTE: The borderwidth is so the timeline is confined within the border,
+        //       which looks nicer since it has a shadow.
+        val multiplier = getMultiplier
+        for (i <- 0 until pe.getEditAnim.lenFrames) {
+            val selectedOfs = if (pe.editingData._1 == i) 0.5f else 0.0f
+            val ncol = new Vector4f(0.1f, 0.1f, 0.1f + selectedOfs, 1)
+            var col = new Vector4f(0.2f, 0.2f, 0.2f + selectedOfs, 1)
+            if (pe.getEditAnim.frameMap.get(i).isDefined)
+                col = new Vector4f(0.5f, 0.5f, 0.25f + selectedOfs, 1)
+            val start = Math.floor(i * multiplier).toInt
+            val end = Math.ceil((i + 1) * multiplier).toInt
+            val wid = end - start
+            drawQRect(start + borderWidth, borderWidth, wid / 2, height - (borderWidth * 2), ncol, ncol, col, col)
+            drawQRect(start + (wid / 2) + borderWidth, borderWidth, wid / 2, height - (borderWidth * 2), col, col, ncol, ncol)
+        }
+    }
+
+    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int): Unit = {
+        if (isDown) {
+
+        }
     }
 }

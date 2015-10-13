@@ -14,7 +14,7 @@ package moe.nightfall.instrumentality.editor.control
 
 import java.nio.FloatBuffer
 
-import moe.nightfall.instrumentality.editor.EditElement
+import moe.nightfall.instrumentality.editor.{UIUtils, EditElement}
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
 import org.lwjgl.util.glu.GLU
@@ -27,37 +27,44 @@ abstract class View3DElement extends EditElement {
 
     private var dragX = 0
     private var dragY = 0
+    private var translateY = 0.0d
+    private var scale = 1.0d
     private var ignoreFirstDrag = false
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        super.draw(ox, oy, scrWidth, scrHeight)
-        // This probably isn't repairable, and TBH, it handles arbitrary transforms.
-        val fb: FloatBuffer = BufferUtils.createFloatBuffer(16)
-        GL11.glGetFloat(GL11.GL_MODELVIEW_MATRIX, fb)
+    override def draw() {
+        super.draw()
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)
+        GL11.glPushMatrix()
+        GL11.glLoadIdentity()
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glPushMatrix()
         GL11.glLoadIdentity()
-        GL11.glTranslated(0, 1, 0)
-        GL11.glScaled(2.0d / scrWidth, -2.0d / scrHeight, 1)
-        GL11.glMultMatrix(fb)
-        GL11.glTranslated(width / 2.0, height / 3.0, 0)
-        GL11.glScaled(scrWidth / 2.0, -scrHeight / 2.0, 1)
-        GL11.glTranslated(-1, 0, 0)
-        GL11.glScaled(3, 3, 1)
-        GL11.glScaled(1, height / scrHeight.toFloat, 1)
-        GL11.glTranslated(0, -0.1, 0)
-        val asp = scrWidth.toFloat / height.asInstanceOf[Float]
+
+        // At this point, we should've scaled the -2,-2 to 2,2 of OpenGL's coordinate frame into usable coords.
+        GL11.glScaled(width / UIUtils.scrWidth, height / UIUtils.scrHeight, 1)
+        GL11.glBegin(GL11.GL_LINES)
+        GL11.glColor3d(1, 0, 1)
+        GL11.glVertex2d(-1, -1)
+        GL11.glVertex2d(1, 1)
+        GL11.glEnd()
+        val asp = width / height.toFloat
         GLU.gluPerspective(45, asp, 0.1f, 100)
+
+        // Now transfer into modelview and do stuff.
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glPushMatrix()
-        GL11.glLoadIdentity()
         GL11.glTranslated(0, 0, -5)
+
+        GL11.glScaled(scale, scale, scale)
+
         GL11.glRotated(rotPitch, 1, 0, 0)
         GL11.glRotated(rotYaw, 0, 1, 0)
+
+        GL11.glTranslated(0, translateY, 0)
+
         GL11.glDisable(GL11.GL_CULL_FACE)
         draw3D()
         GL11.glEnable(GL11.GL_CULL_FACE)
+        // Cleanup.
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glPopMatrix()
@@ -81,6 +88,10 @@ abstract class View3DElement extends EditElement {
         if (buttons(0)) {
             rotYaw += x - dragX
             rotPitch += y - dragY
+        }
+        if (buttons(1)) {
+            translateY -= (y - dragY) / 20.0d
+            scale += (x - dragX) / 40.0d
         }
         ignoreFirstDrag = false
         dragX = x

@@ -31,8 +31,8 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
 
     def axisLen = if (horizontal) width else height
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
-        drawSubelements(ox, oy, scrWidth, scrHeight)
+    override def draw() {
+        drawSubelements()
         GL11.glLineWidth(1)
         GL11.glLineStipple(1, 0xF0F0.toShort)
         GL11.glEnable(GL11.GL_LINE_STIPPLE)

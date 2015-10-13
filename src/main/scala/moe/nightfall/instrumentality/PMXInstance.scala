@@ -130,7 +130,7 @@ class PMXInstance(val theModel: PMXModel) {
         if (boneCache(bone.boneId) != null)
             return boneCache(bone.boneId)
         // Simple enough: get what the bone wants us to transform it by...
-        val boneTransform = anim.getBoneTransform(bone.globalName)
+        val boneTransform = anim.getBoneTransform(bone.sensibleName)
         val i = new Matrix4f()
         boneTransform foreach { tr =>
             // Go into bone-space, apply the transform, then leave.
@@ -170,14 +170,22 @@ class PMXInstance(val theModel: PMXModel) {
         GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeInDiscard"), (clippingSize + 0.1f) * theModel.height)
         for (i <- 0 until theModel.groups.length) {
             val mat = theFile.matData(i)
-            GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(mat.texTex.toLowerCase()).get)
+            val usingTex = mat.texTex != null
+            if (usingTex) {
+                val str = mat.texTex.toLowerCase().replace('\\', '/')
+                GL11.glEnable(GL11.GL_TEXTURE_2D)
+                GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(str).get)
+                GL11.glColor4d(red, green, blue, 1.0f)
+            } else {
+                GL11.glColor4d(mat.diffR, mat.diffG, mat.diffB, 1)
+            }
             for (j <- 0 until vboList(i).length) {
                 val fg = theModel.groups(i).get(j).get
                 if (vboList(i)(j) == 0) {
                     // since this set is complete, we can set up the buffers now
                     val vboData = BufferUtils.createFloatBuffer(fg.vertexList.size * VBO_DATASIZE)
                     vboList(i)(j) = GL15.glGenBuffers()
-                    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboList(i)(j));
+                    GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboList(i)(j))
                     fg.vertexList foreach { vt =>
                         val in = vboData.position()
                         vboData.put(vt.posX)
@@ -205,12 +213,13 @@ class PMXInstance(val theModel: PMXModel) {
                 GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, vboList(i)(j))
                 // Adjust uniforms
                 // Then render this chunk of the model.
-                GL11.glColor4d(red, green, blue, 1.0f)
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY)
-                GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY)
+                if (usingTex)
+                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY)
                 GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY)
                 GL11.glVertexPointer(3, GL11.GL_FLOAT, VBO_DATASIZE * 4, 0 * 4)
-                GL11.glTexCoordPointer(2, GL11.GL_FLOAT, VBO_DATASIZE * 4, 3 * 4)
+                if (usingTex)
+                    GL11.glTexCoordPointer(2, GL11.GL_FLOAT, VBO_DATASIZE * 4, 3 * 4)
                 GL11.glNormalPointer(GL11.GL_FLOAT, VBO_DATASIZE * 4, 5 * 4);
                 val bonesAttrib = GL20.glGetAttribLocation(s.program, "Bones")
                 GL20.glEnableVertexAttribArray(bonesAttrib)
@@ -226,11 +235,14 @@ class PMXInstance(val theModel: PMXModel) {
                 GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, fg.vertexList.size)
                 GL20.glDisableVertexAttribArray(bonesAttrib)
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY)
-                GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY)
+                if (usingTex)
+                    GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY)
                 GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY)
                 GL15.glBindBuffer(GL15.GL_ARRAY_BUFFER, 0)
             }
         }
+        // In case the above code enabled GL_TEXTURE_2D
+        GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glDisable(GL11.GL_BLEND)
         GL20.glUseProgram(oldProgram)
     }

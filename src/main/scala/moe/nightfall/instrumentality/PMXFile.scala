@@ -59,7 +59,7 @@ object PMXFile {
     }
 
     class PMXBone(val boneId: Int) {
-        var localName, globalName: String = _
+        var localName, globalDONOTUSEName, sensibleName: String = _
         var posX, posY, posZ: Float = _
         var parentBoneIndex: Int = _
         var transformLevel: Int = _
@@ -95,6 +95,7 @@ class PMXFile private {
     var faceData: Array[Array[Int]] = _
     var matData: Array[PMXMaterial] = _
     var boneData: Array[PMXBone] = _
+    var boneMap = Map[String, Int]()
 
     def this(pmxFile: Array[Byte]) = {
         this()
@@ -149,11 +150,25 @@ class PMXFile private {
             boneData(i) = readBone(i, bb, textEncoding, boneIS)
     }
 
+    def suitableSName(sensibleName: String): Boolean = {
+        if (sensibleName.length == 0)
+            return false
+        if (boneMap.contains(sensibleName))
+            return false
+        true
+    }
+
     private def readBone(id: Int, bb: ByteBuffer, textEncoding: Int, boneIS: Int): PMXBone = {
         val pb = new PMXBone(id)
         pb.localName = getText(bb, textEncoding)
-        pb.globalName = getText(bb, textEncoding)
-        System.out.println(pb.globalName)
+        pb.globalDONOTUSEName = getText(bb, textEncoding)
+        pb.sensibleName = pb.globalDONOTUSEName
+        if (!suitableSName(pb.sensibleName)) {
+            pb.sensibleName = pb.localName
+            if (!suitableSName(pb.sensibleName))
+                pb.sensibleName = pb.globalDONOTUSEName + "_" + pb.boneId
+        }
+        boneMap = boneMap + (pb.sensibleName -> pb.boneId)
         pb.posX = -bb.getFloat()
         pb.posY = bb.getFloat()
         pb.posZ = bb.getFloat()
@@ -217,11 +232,11 @@ class PMXFile private {
                 }
             }
         }
-        return pb;
+        pb
     }
 
     private def readMaterial(id: Int, bb: ByteBuffer, textEncoding: Int, textureIS: Int, tex: Array[String]): PMXMaterial = {
-        val pm = new PMXMaterial(id);
+        val pm = new PMXMaterial(id)
         pm.localName = getText(bb, textEncoding)
         pm.globalName = getText(bb, textEncoding)
         pm.diffR = bb.getFloat()
@@ -324,7 +339,18 @@ class PMXFile private {
     private def getIndex(bb: ByteBuffer, tpe: Int): Int = {
         return tpe match {
             case 1 => bb.get()
-            case 2 => bb.getShort()
+            case 2 => {
+                var lower = bb.get().toInt
+                if (lower < 0)
+                    lower += 256
+                var upper = bb.get().toInt
+                if (upper < 0)
+                    upper += 256
+                val res = (upper * 256) + lower
+                if (res == 0xFFFF)
+                    return -1
+                res
+            }
             case 4 => bb.getInt()
             case _ => throw new IOException("unknown index type " + tpe)
         }

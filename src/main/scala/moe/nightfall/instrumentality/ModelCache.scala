@@ -109,7 +109,10 @@ object ModelCache {
         try {
             return getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name, false)
         } catch {
-            case e: IOException => return null
+            case e: Exception => {
+                e.printStackTrace()
+                return null
+            }
         }
     }
 
@@ -147,35 +150,40 @@ object ModelCache {
             var str = mat.texTex
             if (str != null) {
                 str = str.toLowerCase()
+                str = str.replace('\\', '/')
+
                 // It's dumb, but this is the only place arbitrary pathnames can be
                 // entered into that we'll accept.
                 // So we MUST security-check it. Please, fix this if there is a
                 // problem.
 
                 // two dirseps after each other : SUSPICIOUS!
-                if (str.matches("[\\\\/][\\\\/]"))
+                if (str.matches("//"))
                     throw new IOException("Potentially security-threatening string found (attempt to break into root)");
 
                 // a dirsep at the start of the string: silently remove it
-                if (str.matches("^[\\\\/]"))
-                    str = str.substring(1);
+                if (str.matches("^/"))
+                    str = str.substring(1)
 
                 // .. : really suspicious!
                 if (str.matches("\\.\\."))
                     throw new IOException("Potentially security-threatening string found (attempt to get parent directory)");
 
                 // ./ : just plain weird
-                if (str.matches("^\\.[\\\\/]"))
-                    str = str.substring(2);
+                if (str.matches("^\\./"))
+                    str = str.substring(2)
 
                 // /./ : wtf
-                if (str.matches("[\\\\/]\\.[\\\\/]"))
+                if (str.matches("/\\./"))
                     throw new IOException("Potentially security-threatening string found (weirdness)");
 
                 try {
                     var bi = mapping.get(str)
                     if (bi.isEmpty) {
-                        bi = Some(ImageIO.read(new ByteArrayInputStream(fl(str))))
+                        val img = ImageIO.read(new ByteArrayInputStream(fl(str)))
+                        if (img == null)
+                            throw new IOException("Could not read image: " + str)
+                        bi = Some(img)
                         mapping += str -> bi.get
                     }
                     if (mdl != null)
@@ -209,7 +217,7 @@ object ModelCache {
         // and it means we don't have to keep a "DM dry run" copy of the loading logic.
         // Plus, if it occurs *before* the model is loaded, it'll pre-load it (though this is unlikely to matter)
         getInternal(locator, name, true)
-        return dmcr;
+        return dmcr
     }
 
     private def hashBytes(data: Array[Byte]): String = {

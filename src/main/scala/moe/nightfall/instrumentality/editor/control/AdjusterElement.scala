@@ -35,9 +35,9 @@ class AdjusterElement(valuePrefix: String, toAdjust: AdjusterElementData) extend
      */
     private def correct(v: Double): Double = ((v * (1 / adjustmentValue)).round) / (1 / adjustmentValue)
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+    override def draw() {
         valueDisplay.text = valuePrefix + toAdjust.value
-        super.draw(ox, oy, scrWidth, scrHeight)
+        super.draw()
     }
 
     override def layout() {

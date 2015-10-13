@@ -29,13 +29,13 @@ class ButtonElement(toRun : => Unit) extends EditElement {
         if ((button == 0) && !isDown && onClick != null) onClick()
     }
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+    override def draw() {
         if (isHover && Mouse.isButtonDown(0))
             colourStrength = baseStrength - (baseStrength / 8)
         else
             colourStrength = baseStrength * (if (isHover) 1.1f else 1.0f)
 
-        super.draw(ox, oy, scrWidth, scrHeight)
+        super.draw()
     }
 
     override def mouseEnterLeave(isIn: Boolean) {

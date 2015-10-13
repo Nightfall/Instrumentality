@@ -67,13 +67,13 @@ class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
     override def layout() {
         super.layout()
         val tW = width / 3
-        val tH = height / 5
+        val tH = height / 4
         for ((ae, i) <- allAdjusters.view.zipWithIndex) {
             ae.setSize(tW, tH)
             ae.posX = (i % 3) * tW
             ae.posY = (i / 3) * tH
         }
-        showDebugText.posY = tH * 4
+        showDebugText.posY = tH * 3
         showDebug.posY = showDebugText.posY
         showModel.posY = showDebug.posY
         showModelText.posY = showModel.posY

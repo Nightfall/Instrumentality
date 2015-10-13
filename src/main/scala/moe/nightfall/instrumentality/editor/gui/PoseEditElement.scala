@@ -31,10 +31,10 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
     //        and the Animation object used for the 3D display, based on the PoseAnimation.
     var editingData: (Int, PoseAnimation, Animation) = _
 
-    var editingPoint = 0.0d
+    var editingFrame = 0
 
     def resetFrame {
-        editingData = pm.anims.createEditAnimation(editedPose, editingPoint)
+        editingData = pm.anims.createEditAnimation(editedPose, editingFrame / getEditAnim.lenFrames.toDouble)
         pmxInst.anim = editingData._3
     }
 
@@ -81,7 +81,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
 
     val tView = new TreeviewElement[PMXBone](new TreeviewElementStructurer[PMXBone] {
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
-        override def getNodeName(n: PMXBone): String = n.globalName
+        override def getNodeName(n: PMXBone): String = n.sensibleName
 
         override def getChildNodes(n: Option[PMXBone]): Seq[PMXBone] = {
             var parId = -1
@@ -118,7 +118,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
 
     def getEditPBT: PoseBoneTransform = {
         // What is going on here...?
-        val mid = tView.selectedNode.globalName.toLowerCase
+        val mid = tView.selectedNode.sensibleName.toLowerCase
         // return needed because it *might* be implying that toLowerCase uses the return as a param
         val opbt = editingData._2.hashMap.get(mid)
         // asInstanceOf seems to cause a lot of errors, and getOrElse is just acting weird.

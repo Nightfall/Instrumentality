@@ -43,7 +43,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
         workModel = ModelElement.makeTestInstance(b)
     }
 
-    override def draw(ox: Int, oy: Int, scrWidth: Int, scrHeight: Int) {
+    override def draw() {
         if (isButton) {
             if (workModelName == null) {
                 colourStrength = 0.6f
@@ -55,7 +55,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
                 colourStrength *= (if (isHover) 1.1f else 1f)
             }
         }
-        super.draw(ox, oy, scrWidth, scrHeight)
+        super.draw()
         if (isButton) {
             var text: String = "<null>"
             if (workModelName != null) text = workModelName
