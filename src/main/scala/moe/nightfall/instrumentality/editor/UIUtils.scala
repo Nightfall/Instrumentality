@@ -25,16 +25,20 @@ import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
 
+
+    var widgetX = 0
+    var widgetY = 0
     var scrWidth = 0
     var scrHeight = 0
 
     // Used to work out where to clip!
-    // Also the absolute on-screen bounds of the current widget.
     var clippingBounds = (0, 0, 0, 0)
 
     def prepareForDrawing(sw: Int, sh: Int) {
         scrWidth = sw
         scrHeight = sh
+        widgetX = 0
+        widgetY = 0
         setClippingBounds((0, 0, sw, sh))
     }
 

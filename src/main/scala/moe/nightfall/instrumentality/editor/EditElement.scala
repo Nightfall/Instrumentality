@@ -152,10 +152,16 @@ abstract class EditElement {
 
             GL11.glPushMatrix()
             GL11.glTranslated(ee.posX, ee.posY, 0)
-            val rrect = UIUtils.clipRectByClippingBounds(UIUtils.clippingBounds._1 + ee.posX, UIUtils.clippingBounds._2 + ee.posY, ee.width, ee.height)
-            if ((rrect._3 != 0) && (rrect._4 != 0)) {
+            val rrect = UIUtils.clipRectByClippingBounds(UIUtils.widgetX + ee.posX, UIUtils.widgetY + ee.posY, ee.width, ee.height)
+            if ((rrect._3 > 0) && (rrect._4 > 0)) {
                 val bounds = UIUtils.setClippingBounds(rrect)
+                val oldWX = UIUtils.widgetX
+                val oldWY = UIUtils.widgetY
+                UIUtils.widgetX += ee.posX
+                UIUtils.widgetY += ee.posY
                 ee.draw()
+                UIUtils.widgetX = oldWX
+                UIUtils.widgetY = oldWY
                 UIUtils.setClippingBounds(bounds)
             }
             GL11.glPopMatrix()

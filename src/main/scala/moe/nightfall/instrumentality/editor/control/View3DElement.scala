@@ -40,13 +40,29 @@ abstract class View3DElement extends EditElement {
         GL11.glPushMatrix()
         GL11.glLoadIdentity()
 
-        // At this point, we should've scaled the -2,-2 to 2,2 of OpenGL's coordinate frame into usable coords.
-        GL11.glScaled(width / UIUtils.scrWidth, height / UIUtils.scrHeight, 1)
+        // Virtual viewport
+        GL11.glTranslated(-1, -1, 0)
+        GL11.glTranslated(UIUtils.widgetX / (UIUtils.scrWidth.toDouble / 2), (UIUtils.scrHeight - (UIUtils.widgetY + height)) / (UIUtils.scrHeight.toDouble / 2), 0)
+        GL11.glScaled(width / UIUtils.scrWidth.toDouble, height / UIUtils.scrHeight.toDouble, 1)
+        GL11.glTranslated(1, 1, 0)
+
+        // Use this code to debug the virtual viewport code.
+        /*
+        GL11.glBegin(GL11.GL_QUADS)
+        GL11.glColor3d(0, 1, 0)
+        GL11.glVertex2d(1, -1)
+        GL11.glVertex2d(1, 1)
+        GL11.glVertex2d(-1, 1)
+        GL11.glVertex2d(-1, -1)
+        GL11.glEnd()
         GL11.glBegin(GL11.GL_LINES)
         GL11.glColor3d(1, 0, 1)
         GL11.glVertex2d(-1, -1)
         GL11.glVertex2d(1, 1)
+        GL11.glVertex2d(-1, 1)
+        GL11.glVertex2d(1, -1)
         GL11.glEnd()
+        */
         val asp = width / height.toFloat
         GLU.gluPerspective(45, asp, 0.1f, 100)
 
@@ -65,10 +81,10 @@ abstract class View3DElement extends EditElement {
         draw3D()
         GL11.glEnable(GL11.GL_CULL_FACE)
         // Cleanup.
-        GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_PROJECTION)
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
+        GL11.glPopMatrix()
     }
 
     private def dumpProject(fb: FloatBuffer) {
