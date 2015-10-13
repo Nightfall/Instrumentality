@@ -28,7 +28,7 @@ abstract class View3DElement extends EditElement {
     private var dragX = 0
     private var dragY = 0
     private var translateY = 0.0d
-    private var scale = 1.0d
+    private var scale = 3.0d
     private var ignoreFirstDrag = false
 
     override def draw() {

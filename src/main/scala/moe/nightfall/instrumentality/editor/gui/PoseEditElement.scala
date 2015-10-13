@@ -34,7 +34,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
     var editingFrame = 0
 
     def resetFrame {
-        editingData = pm.anims.createEditAnimation(editedPose, editingFrame / getEditAnim.lenFrames.toDouble)
+        editingData = pm.anims.createEditAnimation(editedPose, editingFrame / (getEditAnim.lenFrames - 1.0d))
         pmxInst.anim = editingData._3
     }
 
@@ -136,11 +136,9 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
     // That is all.
     def editMade {
         val anim = getEditAnim
-        if (!anim.frameMap.contains(editingData._1)) {
-            // Add this as a keyframe based upon what we have
-            // (which as you know can be an interpolated state, this is normal for this style of animation program)
-            anim.frameMap = anim.frameMap + (editingData._1 -> editingData._2)
-        }
+        // Add this as a keyframe based upon what we have
+        // (which as you know can be an interpolated state, this is normal for this style of animation program)
+        anim.frameMap = anim.frameMap + (editingData._1 -> editingData._2)
     }
 
     override def cleanup() {

@@ -83,7 +83,7 @@ class AnimSet {
     //              <sarcasm>You know, that's SUCH a terrible assumption to make...</sarcasm>
     def createEditAnimation(name: String, point: Double): (Int, PoseAnimation, Animation) = {
         val targ = allPoses.get(name).get
-        val f = (targ.lenFrames * point).toInt
+        val f = ((targ.lenFrames - 1) * point).toInt
         // This instance is being passed to the editor.
         val interpol = targ.doInterpolate(f)
         if (poseParents.get(name).isDefined) {

@@ -42,9 +42,29 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
         }
     }
 
-    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int): Unit = {
+    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
         if (isDown) {
+            val frame = Math.floor((x - borderWidth) / getMultiplier).toInt
+            if (frame < 0)
+                return
+            if (frame >= pe.getEditAnim.lenFrames)
+                return
+            if (button == 0) {
+                pe.editingFrame = frame
+                pe.resetFrame
+            }
+        }
+    }
 
+    override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
+        val frame = Math.floor((x - borderWidth) / getMultiplier).toInt
+        if (frame < 0)
+            return
+        if (frame >= pe.getEditAnim.lenFrames)
+            return
+        if (buttons(0)) {
+            pe.editingFrame = frame
+            pe.resetFrame
         }
     }
 }

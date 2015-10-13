@@ -40,22 +40,30 @@ class KeyframeAnimationData {
     var frameMap = Map[Int, PoseAnimation]()
 
     // Creates or retrieves an interpolated PoseAnimation.
-    // The "or retrieves" part means that you should not modify it.
+    // Note that the data-linking done in earlier versions is gone.
+    // Now, the instance is *NOT* "linked".
     def doInterpolate(frame: Int): PoseAnimation = {
         val cFrameAnim = frameMap.getOrElse(frame, new PoseAnimation())
-        var earlyFrame = (frame, cFrameAnim)
-        var lateFrame = (frame, cFrameAnim)
+        if (frameMap.contains(frame))
+            return new PoseAnimation(cFrameAnim)
+        // Try to find the transition we're currently in.
+        var earlyFrame = (Int.MaxValue, cFrameAnim)
+        var lateFrame = (Int.MinValue, cFrameAnim)
         for ((k: Int, v: PoseAnimation) <- frameMap) yield {
+            // If we're earlier than our current earliest, but later than the target...
             if (k < earlyFrame._1)
-                earlyFrame = (k, v)
+                if (k > frame)
+                    earlyFrame = (k, v)
+            // If we're later than our latest, but earlier than the target...
             if (k > lateFrame._1)
-                lateFrame = (k, v)
+                if (k < frame)
+                    lateFrame = (k, v)
         }
-        // If one of the sides returns the frame itself, that's where we are.
-        if (earlyFrame._1 == frame)
-            return earlyFrame._2
-        if (lateFrame._1 == frame)
-            return lateFrame._2
+        // If one of the sides returns Int.MaxValue or such, then return the other side.
+        if (earlyFrame._1 == Int.MaxValue)
+            return new PoseAnimation(lateFrame._2)
+        if (lateFrame._1 == Int.MinValue)
+            return new PoseAnimation(earlyFrame._2)
         var point = 0f
         if (lateFrame._1 != earlyFrame._1)
             point = (frame - earlyFrame._1) / (lateFrame._1 - earlyFrame._1).toFloat

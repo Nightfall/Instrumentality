@@ -153,7 +153,7 @@ class PMXFile private {
     def suitableSName(sensibleName: String): Boolean = {
         if (sensibleName.length == 0)
             return false
-        if (boneMap.contains(sensibleName))
+        if (boneMap.contains(sensibleName.toLowerCase))
             return false
         true
     }
@@ -168,7 +168,7 @@ class PMXFile private {
             if (!suitableSName(pb.sensibleName))
                 pb.sensibleName = pb.globalDONOTUSEName + "_" + pb.boneId
         }
-        boneMap = boneMap + (pb.sensibleName -> pb.boneId)
+        boneMap = boneMap + (pb.sensibleName.toLowerCase -> pb.boneId)
         pb.posX = -bb.getFloat()
         pb.posY = bb.getFloat()
         pb.posZ = bb.getFloat()
