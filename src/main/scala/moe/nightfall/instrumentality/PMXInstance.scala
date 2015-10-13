@@ -71,6 +71,11 @@ class PMXInstance(val theModel: PMXModel) {
         }
     }
 
+    def abssqr(d: Float) = {
+        val a = math.abs(d)
+        a * a
+    }
+
     /**
      * @param intoBoneSpace The matrix to apply to
      * @param bone          The bone to get the IBS of
@@ -95,13 +100,16 @@ class PMXInstance(val theModel: PMXModel) {
             }
         }
         // now work out how far that is so the later maths works correctly
-        val magnitude = math.sqrt((dX * dX) + (dY * dY) + (dZ * dZ));
+        var magnitude = math.sqrt(abssqr(dX) + abssqr(dY) + abssqr(dZ))
         // work out our direction...
         // Note: There was a forum post. It contained the maths that I translated to this code.
         // I have no idea how it would handle dX==0. It could involve explosions.
         // *looks at the IK bones that aren't around*
         // Oh. Wait. Those did dX==0, didn't they...
-        val t = Math.atan(dY / dX).toFloat
+        // (Some time later...)
+        // Replaced this with atan2. The code still breaks on certain bones. They just... phase away.
+        // You know, despite this being nothing more than a few innocent rotations and translations.
+        val t = Math.atan2(dY, dX).toFloat
         val p = Math.acos(dZ / magnitude).toFloat
 
         if (inverse) {
@@ -116,7 +124,7 @@ class PMXInstance(val theModel: PMXModel) {
             intoBoneSpace.rotate(p, new Vector3f(1, 0, 0))
 
             // translate by the inverse position
-            intoBoneSpace.translate(new Vector3f(-(bone.posX), -(bone.posY), -(bone.posZ)))
+            intoBoneSpace.translate(new Vector3f(-bone.posX, -bone.posY, -bone.posZ))
         }
     }
 
@@ -135,14 +143,14 @@ class PMXInstance(val theModel: PMXModel) {
         boneTransform foreach { tr =>
             // Go into bone-space, apply the transform, then leave.
             createIBS(i, bone, true)
-            tr.apply(i);
+            tr.apply(i)
             createIBS(i, bone, false)
         }
         // If there's a parent, run through this again with that...
         if (bone.parentBoneIndex != -1)
             Matrix4f.mul(getBoneMatrix(theFile.boneData(bone.parentBoneIndex)), i, i)
         boneCache(bone.boneId) = i
-        return i
+        i
     }
 
     /**
@@ -172,7 +180,7 @@ class PMXInstance(val theModel: PMXModel) {
             val mat = theFile.matData(i)
             val usingTex = mat.texTex != null
             if (usingTex) {
-                val str = mat.texTex.toLowerCase().replace('\\', '/')
+                val str = mat.texTex.toLowerCase.replace('\\', '/')
                 GL11.glEnable(GL11.GL_TEXTURE_2D)
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(str).get)
                 GL11.glColor4d(red, green, blue, 1.0f)
