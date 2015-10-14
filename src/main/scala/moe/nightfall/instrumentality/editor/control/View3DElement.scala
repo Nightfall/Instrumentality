@@ -106,8 +106,8 @@ abstract class View3DElement extends EditElement {
             rotPitch += y - dragY
         }
         if (buttons(1)) {
-            translateY -= (y - dragY) / 20.0d
-            scale += (x - dragX) / 40.0d
+            translateY -= (y - dragY) / (20.0d * scale)
+            scale += (x - dragX) / 20.0d
         }
         ignoreFirstDrag = false
         dragX = x
