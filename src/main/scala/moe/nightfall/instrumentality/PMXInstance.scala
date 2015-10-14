@@ -117,17 +117,7 @@ class PMXInstance(val theModel: PMXModel) {
         // now work out how far that is so the later maths works correctly
         val magnitude = math.sqrt(abssqr(dX) + abssqr(dY) + abssqr(dZ))
 
-        if (bone.sensibleName.equalsIgnoreCase("shoulderP_L"))
-            System.out.println(bone.boneId + "=" + bone.sensibleName + ":" + magnitude + ":" + dX + "," + dY + "," + dZ + ":" + bone.flagConnection + ":" + bone.connectionIndex)
-
         // work out our direction...
-        // Note: There was a forum post. It contained the maths that I translated to this code.
-        // I have no idea how it would handle dX==0. It could involve explosions.
-        // *looks at the IK bones that aren't around*
-        // Oh. Wait. Those did dX==0, didn't they...
-        // (Some time later...)
-        // Replaced this with atan2. The code still breaks on certain bones. They just... phase away.
-        // You know, despite this being nothing more than a few innocent rotations and translations.
         val t = Math.atan2(dY, dX).toFloat
         val p = Math.acos(dZ / magnitude).toFloat
 

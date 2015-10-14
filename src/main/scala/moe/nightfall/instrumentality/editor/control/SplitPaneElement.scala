@@ -55,7 +55,6 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
         if (axisLen != lastAxisLen) {
             val newAxisLen = axisLen
             if (firstResize) {
-                firstResize = false
                 splitPix = width / 2
             } else {
                 splitPix += ((newAxisLen - lastAxisLen) * resizeWeight).toInt
@@ -73,6 +72,12 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
             panelB.posY = splitPix
             panelB.setSize(width, height - splitPix)
         }
+    }
+
+    override def update(a: Double) = {
+        super.update(a)
+        // update would only be triggered after everything's been initialized
+        firstResize = false
     }
 
     override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]): Unit = {
