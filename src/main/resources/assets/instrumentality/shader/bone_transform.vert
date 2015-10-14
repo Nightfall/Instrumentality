@@ -22,6 +22,7 @@ attribute vec3 Tangent;
 // Note: The value would be something like 12 in practice, I want to make sure that if the regex fails we know about it
 uniform mat4 Pose[/*${groupSize*/1/*}*/];
 varying vec3 T,B,N;
+varying vec4 color;
 varying float originalY;
 
 void main(void) { 
@@ -44,5 +45,6 @@ void main(void) {
     B = cross(T, N);
     originalY = gl_Vertex.y;
 
-    gl_TexCoord[0] = gl_MultiTexCoord0; 
+    gl_TexCoord[0] = gl_MultiTexCoord0;
+    color = gl_Color;
 }

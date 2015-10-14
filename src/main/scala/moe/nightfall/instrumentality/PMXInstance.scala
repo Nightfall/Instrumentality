@@ -99,8 +99,27 @@ class PMXInstance(val theModel: PMXModel) {
                 dZ = theFile.boneData(bone.connectionIndex).posZ - bone.posZ
             }
         }
+
+        // What is causing this madness??? FFS!!!
+        // There are multiple ways for this to occur, I have NO idea why, but they all have a common symptom.
+        if ((dX == 0) && (dY == 0) && (dZ == 0)) {
+            if (bone.parentBoneIndex == -1) {
+                dX = 0
+                dY = 1
+                dZ = 0
+            } else {
+                dX = theFile.boneData(bone.parentBoneIndex).posX - bone.posX
+                dY = theFile.boneData(bone.parentBoneIndex).posY - bone.posY
+                dZ = theFile.boneData(bone.parentBoneIndex).posZ - bone.posZ
+            }
+        }
+
         // now work out how far that is so the later maths works correctly
-        var magnitude = math.sqrt(abssqr(dX) + abssqr(dY) + abssqr(dZ))
+        val magnitude = math.sqrt(abssqr(dX) + abssqr(dY) + abssqr(dZ))
+
+        if (bone.sensibleName.equalsIgnoreCase("shoulderP_L"))
+            System.out.println(bone.boneId + "=" + bone.sensibleName + ":" + magnitude + ":" + dX + "," + dY + "," + dZ + ":" + bone.flagConnection + ":" + bone.connectionIndex)
+
         // work out our direction...
         // Note: There was a forum post. It contained the maths that I translated to this code.
         // I have no idea how it would handle dX==0. It could involve explosions.
@@ -183,7 +202,7 @@ class PMXInstance(val theModel: PMXModel) {
                 val str = mat.texTex.toLowerCase.replace('\\', '/')
                 GL11.glEnable(GL11.GL_TEXTURE_2D)
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(str).get)
-                GL11.glColor4d(red, green, blue, 1.0f)
+                GL11.glColor4d(red, green, blue, 1)
             } else {
                 GL11.glColor4d(mat.diffR, mat.diffG, mat.diffB, 1)
             }
@@ -240,6 +259,7 @@ class PMXInstance(val theModel: PMXModel) {
                     val poseUniform = GL20.glGetUniformLocation(s.program, "Pose[" + bInd + "]")
                     GL20.glUniformMatrix4(poseUniform, false, matrix)
                 }
+                GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "textured"), if (usingTex) 1 else 0)
                 GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, fg.vertexList.size)
                 GL20.glDisableVertexAttribArray(bonesAttrib)
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY)
@@ -277,7 +297,7 @@ class PMXInstance(val theModel: PMXModel) {
             GL11.glPointSize(2)
             val v3f = doTransform(bone, new Vector3f(bone.posX, bone.posY, bone.posZ))
             if (bone.parentBoneIndex != -1) {
-                GL11.glLineWidth(2);
+                GL11.glLineWidth(2)
                 GL11.glBegin(GL11.GL_LINES)
                 val parentSelected = selected == bone.parentBoneIndex
                 if (parentSelected) {
@@ -306,8 +326,9 @@ class PMXInstance(val theModel: PMXModel) {
 
     private def doTransform(pmxBone: PMXBone, iv: Vector3f): Vector3f = {
         val v = new Vector4f(iv.x, iv.y, iv.z, 1)
-        Matrix4f.transform(getBoneMatrix(pmxBone), v, v)
-        return new Vector3f(v.x, v.y, v.z)
+        val mat = getBoneMatrix(pmxBone)
+        Matrix4f.transform(mat, v, v)
+        new Vector3f(v.x, v.y, v.z)
     }
 
     override def finalize() {
@@ -315,7 +336,7 @@ class PMXInstance(val theModel: PMXModel) {
             for (j <- 0 until vboList(i).length) {
                 if (vboList(i)(j) != 0) {
                     System.err.println("WARNING: Finalize without cleanup of a PMXInstance!");
-                    return;
+                    return
                 }
             }
         }
