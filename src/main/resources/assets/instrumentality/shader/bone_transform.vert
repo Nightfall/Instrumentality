@@ -18,10 +18,9 @@
  * -- gamemanj
  */
 attribute vec4 Bones; 
-attribute vec3 Tangent;
 // Note: The value would be something like 12 in practice, I want to make sure that if the regex fails we know about it
 uniform mat4 Pose[/*${groupSize*/1/*}*/];
-varying vec3 T,B,N;
+varying vec3 normal;
 varying vec4 color;
 varying float originalY;
 
@@ -38,11 +37,9 @@ void main(void) {
 
     gl_Position = gl_ModelViewProjectionMatrix * (mat * gl_Vertex);
 
-    mat3 m3 = mat3(mat[0].xyz, mat[0].xyz, mat[0].xyz); // "mat3(mat)"
+    mat3 m3 = mat3(mat[0].xyz, mat[1].xyz, mat[2].xyz); // "mat3(mat)"
+    normal = m3 * gl_Normal;
 
-    N = gl_NormalMatrix * (m3 * gl_Normal);
-    T = gl_NormalMatrix * (m3 * Tangent); 
-    B = cross(T, N);
     originalY = gl_Vertex.y;
 
     gl_TexCoord[0] = gl_MultiTexCoord0;

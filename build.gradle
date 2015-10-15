@@ -17,8 +17,11 @@ buildscript {
 
 apply plugin: "scala"
 apply plugin: "forge"
+apply plugin: "application"
 
 sourceCompatibility = 1.6
+mainClassName = "moe.nightfall.instrumentality.Main"
+applicationDefaultJvmArgs = ["-Djava.library.path=."]
 
 version = "${mcVersion}-${modVersion}"
 group = "moe.nightfall.instrumentality"

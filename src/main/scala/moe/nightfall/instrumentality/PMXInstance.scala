@@ -31,7 +31,7 @@ import org.lwjgl.util.vector.{Matrix4f, Vector3f, Vector4f}
  *         Created on 24/07/15.
  */
 object PMXInstance {
-    val VBO_DATASIZE = 15
+    val VBO_DATASIZE = 12
 }
 
 class PMXInstance(val theModel: PMXModel) {
@@ -171,11 +171,13 @@ class PMXInstance(val theModel: PMXModel) {
 
     /**
      * Renders this model, with a given set of textures.
-     * Make sure to enable GL_TEXTURE_2D before calling.
+     * Uses glPushAttrib and glPopAttrib to avoid disturbing any glEnables.
      *
      * @param s The animation shader.
      */
     def render(s: Shader, red: Double, green: Double, blue: Double, clippingSize: Float) {
+        // Makes things simpler
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
         val matrix = BufferUtils.createFloatBuffer(16)
         val oldProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM)
         GL20.glUseProgram(s.program)
@@ -218,9 +220,6 @@ class PMXInstance(val theModel: PMXModel) {
                         if (res.length != 4)
                             throw new RuntimeException("FIX CREATEBONEDATA")
                         vboData.put(res)
-                        vboData.put(0)
-                        vboData.put(0)
-                        vboData.put(0)
                         if (vboData.position() - in != VBO_DATASIZE)
                             throw new RuntimeException("VBO_DATASIZE incorrect")
                     }
@@ -237,11 +236,10 @@ class PMXInstance(val theModel: PMXModel) {
                 GL11.glVertexPointer(3, GL11.GL_FLOAT, VBO_DATASIZE * 4, 0 * 4)
                 if (usingTex)
                     GL11.glTexCoordPointer(2, GL11.GL_FLOAT, VBO_DATASIZE * 4, 3 * 4)
-                GL11.glNormalPointer(GL11.GL_FLOAT, VBO_DATASIZE * 4, 5 * 4);
+                GL11.glNormalPointer(GL11.GL_FLOAT, VBO_DATASIZE * 4, 5 * 4)
                 val bonesAttrib = GL20.glGetAttribLocation(s.program, "Bones")
                 GL20.glEnableVertexAttribArray(bonesAttrib)
                 GL20.glVertexAttribPointer(bonesAttrib, 4, GL11.GL_FLOAT, false, VBO_DATASIZE * 4, 8 * 4)
-                //GL20.glVertexAttribPointer(tangentsAttrib, 3, GL11.GL_FLOAT, false, VBO_DATASIZE * 4, 12 * 4);
                 for (bInd <- 0 until fg.boneMappingGroupFile.length) {
                     val m = getBoneMatrix(theFile.boneData(fg.boneMappingGroupFile(bInd)))
                     m.store(matrix)
@@ -263,6 +261,7 @@ class PMXInstance(val theModel: PMXModel) {
         GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glDisable(GL11.GL_BLEND)
         GL20.glUseProgram(oldProgram)
+        GL11.glPopAttrib()
     }
 
     def cleanupGL() {
