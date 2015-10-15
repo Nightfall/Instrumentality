@@ -175,7 +175,7 @@ class PMXInstance(val theModel: PMXModel) {
      *
      * @param s The animation shader.
      */
-    def render(s: Shader, red: Double, green: Double, blue: Double, clippingSize: Float) {
+    def render(s: Shader, red: Double, green: Double, blue: Double, clippingSize: Float, clippingSizeDiscard: Float) {
         // Makes things simpler
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
         val matrix = BufferUtils.createFloatBuffer(16)
@@ -186,7 +186,7 @@ class PMXInstance(val theModel: PMXModel) {
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeIn"), clippingSize * theModel.height)
-        GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeInDiscard"), (clippingSize + 0.1f) * theModel.height)
+        GL20.glUniform1f(GL20.glGetUniformLocation(s.program, "fadeInDiscard"), (clippingSize + clippingSizeDiscard) * theModel.height)
         for (i <- 0 until theModel.groups.length) {
             val mat = theFile.matData(i)
             val usingTex = mat.texTex != null
@@ -196,7 +196,7 @@ class PMXInstance(val theModel: PMXModel) {
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(str).get)
                 GL11.glColor4d(red, green, blue, 1)
             } else {
-                GL11.glColor4d(mat.diffR, mat.diffG, mat.diffB, 1)
+                GL11.glColor4d(mat.diffR * red, mat.diffG * green, mat.diffB * blue, 1)
             }
             for (j <- 0 until vboList(i).length) {
                 val fg = theModel.groups(i).get(j).get

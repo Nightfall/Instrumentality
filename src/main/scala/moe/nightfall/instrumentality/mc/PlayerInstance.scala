@@ -14,7 +14,11 @@ package moe.nightfall.instrumentality.mc
 
 import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel}
 import moe.nightfall.instrumentality.animations.NewPCAAnimation
+import net.minecraft.client.Minecraft
+import net.minecraft.client.renderer.texture.{ITextureObject, AbstractTexture, DynamicTexture}
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.util.ResourceLocation
+import net.minecraft.world.{World, EnumSkyBlock}
 import org.lwjgl.opengl.GL11
 
 class PlayerInstance(file: PMXModel) {
@@ -109,9 +113,36 @@ class PlayerInstance(file: PMXModel) {
         }
     }
 
-    private def interpolate(last: Double, current: Double, partialTicks: Float) = last + (current - last) * partialTicks
+    private def interpolate(a: Float, b: Float, point: Float) = a + ((b - a) * point)
 
-    def render(player: EntityPlayer, x: Double, y: Double, z: Double, zOffset: Double, partialTick: Float, firstPerson: Boolean) {
+    var lastKnownLightmap = 0
+
+    def findCol(worldObj: World, x: Int, y: Int, z: Int) = {
+        // This is probably going to be hell to translate to a newer MC version, so to explain:
+        val sky = worldObj.getSkyBlockTypeBrightness(EnumSkyBlock.Sky, x, y, z)
+        val block = worldObj.getSkyBlockTypeBrightness(EnumSkyBlock.Block, x, y, z)
+        // sky and block are now positions in the DYNAMIC lightmap texture (the ordinary lightmap texture doesn't account for a lot of things)
+
+        var p: ITextureObject = null
+        while (p == null) {
+            p = Minecraft.getMinecraft.renderEngine.getTexture(new ResourceLocation("dynamic/lightMap_" + lastKnownLightmap))
+            lastKnownLightmap = lastKnownLightmap + 1
+        }
+        lastKnownLightmap = lastKnownLightmap - 1
+        // pull out the correct colour out of the lightmap
+        val a = p.asInstanceOf[DynamicTexture].getTextureData
+        val col = a(block + (sky * 16))
+        val colR = (col & 0xFF0000) >> 16
+        val colG = (col & 0xFF00) >> 8
+        val colB = col & 0xFF
+        (colR / 255f, colG / 255f, colB / 255f)
+    }
+
+    def interpolCol2(col_m: (Float, Float, Float), col_c: (Float, Float, Float), d: Double) = (interpolate(col_m._1, col_c._1, d.toFloat), interpolate(col_m._2, col_c._2, d.toFloat), interpolate(col_m._3, col_c._3, d.toFloat))
+
+    def interpolCol(col_m: (Float, Float, Float), col_c: (Float, Float, Float), col_p: (Float, Float, Float), d: Double) = if (d < 0.5) interpolCol2(col_m, col_c, d * 2) else interpolCol2(col_c, col_p, (d - 0.5) * 2)
+
+    def render(player: EntityPlayer, x: Double, y: Double, z: Double, partialTick: Float, firstPerson: Boolean) {
         val adjustFactor = if (player.isSneaking()) 0.14f else 0.07f
         val scale = 1F / (pmxInst.theModel.height / player.height)
 
@@ -121,16 +152,34 @@ class PlayerInstance(file: PMXModel) {
         GL11.glTranslated(x, ((y - player.height) + player.eyeHeight) + adjustFactor, z)
         GL11.glRotated(180 - rotBody, 0, 1, 0)
         GL11.glScalef(scale, scale, scale)
-        GL11.glTranslated(0, 0, zOffset)
-        // I fixed the triangle order, but skirts do not play well with culling
+        // I fixed the triangle order(I think. Or was that the -X bias, which would mean it's now broken again?), but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE)
-        val lv = player.worldObj.getBlockLightValue_do(player.posX.toInt, player.posY.toInt, player.posZ.toInt, true)
+
+        // Try to find the best colour. (If I wasn't suffering a terminal case of Can't Be Bothered, this could be done on a per-vertex or even per-pixel basis)
+        val col_c = findCol(player.worldObj, math.floor(player.posX).toInt, math.floor(player.posY).toInt, math.floor(player.posZ).toInt)
+        val col_xM = findCol(player.worldObj, math.floor(player.posX - 1).toInt, math.floor(player.posY).toInt, math.floor(player.posZ).toInt)
+        val col_xP = findCol(player.worldObj, math.floor(player.posX + 1).toInt, math.floor(player.posY).toInt, math.floor(player.posZ).toInt)
+        val col_yM = findCol(player.worldObj, math.floor(player.posX).toInt, math.floor(player.posY - 1).toInt, math.floor(player.posZ).toInt)
+        val col_yP = findCol(player.worldObj, math.floor(player.posX).toInt, math.floor(player.posY + 1).toInt, math.floor(player.posZ).toInt)
+        val col_zM = findCol(player.worldObj, math.floor(player.posX).toInt, math.floor(player.posY).toInt, math.floor(player.posZ - 1).toInt)
+        val col_zP = findCol(player.worldObj, math.floor(player.posX).toInt, math.floor(player.posY).toInt, math.floor(player.posZ + 1).toInt)
+        val col_x = interpolCol(col_xM, col_c, col_xP, player.posX - math.floor(player.posX))
+        val col_y = interpolCol(col_yM, col_c, col_yP, player.posY - math.floor(player.posY))
+        val col_z = interpolCol(col_zM, col_c, col_zP, player.posZ - math.floor(player.posZ))
+
+        val col_f = ((col_x._1 + col_y._1 + col_z._1) / 3, (col_x._2 + col_y._2 + col_z._2) / 3, (col_x._3 + col_y._3 + col_z._3) / 3)
+        // Everything but the division is done...
+
         GL11.glRotated(math.toDegrees(directionAdjustment), 0, 1, 0)
 
         var renderClip = clippingPoint
-        if (firstPerson)
+        if (firstPerson) {
+            // Quite a fine balance between chopping off a head and chopping off arms too
             renderClip = Math.min(renderClip, 0.7d)
-        pmxInst.render(Loader.shaderBoneTransform, lv / 15f, lv / 15f, lv / 15f, renderClip.toFloat)
+            // try and keep hands in view
+            GL11.glScaled(1.125d, 1.125d, 1.125d)
+        }
+        pmxInst.render(Loader.shaderBoneTransform, col_f._1, col_f._2, col_f._3, renderClip.toFloat, if (firstPerson) 0.025f else 0.25f)
 
         GL11.glEnable(GL11.GL_CULL_FACE)
         GL11.glPopMatrix()

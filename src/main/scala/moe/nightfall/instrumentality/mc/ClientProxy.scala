@@ -188,7 +188,7 @@ class ClientProxy extends CommonProxy {
 
         // Animation time tends to randomly slow down / speed up in-game. I'm blaming partialRenderTick.
         model.apply(player, event.partialRenderTick)
-        model.render(player, x, y, z, 0, event.partialRenderTick, false)
+        model.render(player, x, y, z, event.partialRenderTick, false)
 
         event.setCanceled(true)
     }
@@ -204,9 +204,8 @@ class ClientProxy extends CommonProxy {
         val model = cache.get.value
         if (model == null) return
         model.apply(player, event.partialTicks)
-        
-        // TODO Need to fix the camera, this differs from model to model.
-        model.render(player, 0, 0, 0, 2.25, event.partialTicks, true)
+
+        model.render(player, 0, 0, 0, event.partialTicks, true)
         
         event.setCanceled(true)
     }

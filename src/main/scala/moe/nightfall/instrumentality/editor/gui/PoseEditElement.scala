@@ -69,7 +69,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
             pmxInst.clearBoneCache()
             if (params.showModel.checked) {
                 GL11.glEnable(GL11.GL_TEXTURE_2D)
-                pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 2)
+                pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 1, 1)
                 GL11.glDisable(GL11.GL_TEXTURE_2D)
             }
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)
