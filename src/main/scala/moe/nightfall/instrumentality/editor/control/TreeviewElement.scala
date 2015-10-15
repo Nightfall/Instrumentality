@@ -13,6 +13,7 @@
 package moe.nightfall.instrumentality.editor.control
 
 import moe.nightfall.instrumentality.editor.{SelfResizable, EditElement, UIUtils}
+import org.lwjgl.util.vector.Vector2f
 import scala.collection.immutable
 
 class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditElement with SelfResizable {
@@ -22,6 +23,13 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
     var maxWidth = 1
 
     var suggestionChanged = true
+    var doneCull = false
+
+    /**
+     * Dramatically speeds up layout.
+     * As this cache is connected to the TreeviewElement, it dies with it - good to keep performance high!
+     */
+    var textSizeCache = Map[String, Vector2f]()
 
     override def getSuggestedSize: (Int, Int) = {
         (maxWidth, buttonH * numNodes)
@@ -41,12 +49,17 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
     var selectedNode: Node = _
 
     override def draw() {
+        if (!doneCull) {
+            subElements.filter((e) => drawWillCull(e)._1).foreach(subElements -= _)
+            doneCull = true
+        }
         // Do not draw a containing panel.
         drawSubelements()
     }
 
     override def layout() {
         subElements.clear()
+        doneCull = false
 
         var dp, width = 0
 
@@ -96,7 +109,13 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
             if (childNodes.isEmpty)
                 myNode.posX -= depthW
 
-            val textsize = UIUtils.sizeLine(nodeName)
+
+            val textsize = if (textSizeCache.contains(nodeName)) textSizeCache(nodeName)
+            else {
+                val v = UIUtils.sizeLine(nodeName)
+                textSizeCache += nodeName -> v
+                v
+            }
             val textsizemul = (buttonH - myNode.borderWidth) / textsize.getY
             myNode.setSize(math.ceil(textsize.getX * textsizemul).toInt, buttonH)
 

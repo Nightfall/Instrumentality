@@ -21,6 +21,7 @@ import scala.collection.mutable.{HashMap, Map}
 class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
 
     private var walkCycleTime: Double = _
+    private var idleCycleTime: Double = _
     var walkSpeed, lookLR, lookUD, fallStrength: Double = _
     var walkStrength = 0d
     var walkStrengthTarget = 0d
@@ -86,6 +87,7 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
 
     override def update(deltaTime: Double) {
         walkCycleTime += deltaTime * walkSpeed
+        idleCycleTime += deltaTime * 0.25f
         val map = new mutable.HashMap[String, Double]
         map.put("idle", 1d)
         map.put("falling", fallStrength)
@@ -114,7 +116,8 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
             }
         }
 
-        poseSetResult = poseSet.createEditAnimation("walk", walkCycleTime % 1.0f)._2
+        poseSetResult = poseSet.createEditAnimation("idle", idleCycleTime % 1.0f)._3
+        //        poseSetResult = poseSet.createEditAnimation("walk", walkCycleTime % 1.0f)._3
 
 
     }

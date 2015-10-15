@@ -26,7 +26,8 @@ class ButtonElement(toRun : => Unit) extends EditElement {
 
     override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
         super.mouseStateChange(x, y, isDown, button)
-        if ((button == 0) && !isDown && onClick != null) onClick()
+        if ((button == 0) && (!isDown) && (onClick != null))
+            onClick()
     }
 
     override def draw() {

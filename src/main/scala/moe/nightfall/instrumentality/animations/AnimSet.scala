@@ -81,6 +81,8 @@ class AnimSet {
     //              make sure to fix the editor, which uses silly assumptions,
     //              like that when it edits something... it actually edits something, and not just makes a memory-using copy.
     //              <sarcasm>You know, that's SUCH a terrible assumption to make...</sarcasm>
+    //              NOTE: It's less severe than it used to be, but, still.
+
     def createEditAnimation(name: String, point: Double): (Int, PoseAnimation, Animation) = {
         val targ = allPoses.get(name).get
         val f = ((targ.lenFrames - 1) * point).toInt

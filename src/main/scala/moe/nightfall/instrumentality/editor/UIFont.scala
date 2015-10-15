@@ -78,18 +78,21 @@ object UIFont {
                 isCompiling = true
             }
         }
-        var p = getCharLoc(c)
-        if (p == -1) {
+        var stream = fontDB.toStream
+        val pos = getCharLoc(c)
+        if (pos == -1) {
             if (isCompiling)
                 GL11.glEndList()
             return
         }
-        val passes = fontDB(p).toCharArray()
-        p += 1
+        stream = stream.drop(pos)
+
+        val passes = stream.head.toCharArray()
+        stream = stream.tail
         val passData = new Array[String](passes.length * 9)
         for (i <- 0 until passData.length) {
-            passData(i) = fontDB(p)
-            p += 1
+            passData(i) = stream.head
+            stream = stream.tail
         }
         var passPos = 0
         for (i <- 0 until passes.length) {
@@ -131,17 +134,22 @@ object UIFont {
             if (cachedPositions(c) != 0)
                 return cachedPositions(c)
         var p = 0
+        var stream = fontDB.toStream
+        // Who on earth converted this originally!??? I've made it efficent, now. --gamemanj
         while (p < fontDB.length) {
-            val activeChars = fontDB(p)
+            val activeChars = stream.head
+            stream = stream.tail
             p += 1
             if (activeChars.contains(String.valueOf(c))) {
                 if (canCache)
                     cachedPositions(c) = p
                 return p
             }
-            val passes = fontDB(p)
+            val passes = stream.head
+            stream = stream.tail
             p += 1
-            p += passes.length() * 9;
+            stream = stream.drop(passes.length() * 9)
+            p += passes.length() * 9
         }
         if (canCache)
             cachedPositions(c) = -1

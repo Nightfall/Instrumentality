@@ -18,7 +18,14 @@ import org.lwjgl.util.vector.Vector4f
 import scala.collection.mutable.ListBuffer
 
 /**
- * Base element of the UI framework
+ * Base element of the UI framework.
+ * EditElements are allowed to assume they will only have one parent per layout (NOTE: layout is called by setSize)
+ * This is because, in some extreme cases, an EditElement subclass may actually remove parts not on screen until the next layout(),
+ * which is called by setSize().
+ * However, last time I tried adding a "parent" field to this thing, the result was incredibly messy,
+ * and there were quite a few cases where reference loops did not help things.
+ * There are also cases where a "decorator" pattern is useful.
+ * Thus, there is no explicit "parent" field.
  * Created on 18/08/15.
  */
 abstract class EditElement {
@@ -146,15 +153,19 @@ abstract class EditElement {
         GL11.glDisable(GL11.GL_BLEND)
     }
 
+    def drawWillCull(ee: EditElement) = {
+        val rrect = UIUtils.clipRectByClippingBounds(UIUtils.widgetX + ee.posX, UIUtils.widgetY + ee.posY, ee.width, ee.height)
+        ((rrect._3 <= 0) || (rrect._4 <= 0), rrect)
+    }
+
     def drawSubelements() {
         subElements foreach { ee =>
             // MAGIC: detect if we're being clipped and don't draw if completely clipped
-
-            GL11.glPushMatrix()
-            GL11.glTranslated(ee.posX, ee.posY, 0)
-            val rrect = UIUtils.clipRectByClippingBounds(UIUtils.widgetX + ee.posX, UIUtils.widgetY + ee.posY, ee.width, ee.height)
-            if ((rrect._3 > 0) && (rrect._4 > 0)) {
-                val bounds = UIUtils.setClippingBounds(rrect)
+            val rrect = drawWillCull(ee)
+            if (!rrect._1) {
+                GL11.glPushMatrix()
+                GL11.glTranslated(ee.posX, ee.posY, 0)
+                val bounds = UIUtils.setClippingBounds(rrect._2)
                 val oldWX = UIUtils.widgetX
                 val oldWY = UIUtils.widgetY
                 UIUtils.widgetX += ee.posX
@@ -163,8 +174,8 @@ abstract class EditElement {
                 UIUtils.widgetX = oldWX
                 UIUtils.widgetY = oldWY
                 UIUtils.setClippingBounds(bounds)
+                GL11.glPopMatrix()
             }
-            GL11.glPopMatrix()
         }
     }
 

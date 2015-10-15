@@ -12,7 +12,9 @@
  */
 package moe.nightfall.instrumentality.editor.gui
 
+import moe.nightfall.instrumentality.animations.PoseAnimation
 import moe.nightfall.instrumentality.editor.EditElement
+import moe.nightfall.instrumentality.editor.control.TextButtonElement
 import org.lwjgl.util.vector.Vector4f
 
 /**
@@ -21,13 +23,36 @@ import org.lwjgl.util.vector.Vector4f
 class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
     colourStrength = 0
 
+    var hiddenClipboard = new PoseAnimation()
+
+    val deleteButton = new TextButtonElement("Delete", {
+        pe.getEditAnim.frameMap -= pe.editingFrame
+        pe.resetFrame
+    })
+
+    val copyButton = new TextButtonElement("Copy", {
+        hiddenClipboard = new PoseAnimation(pe.editingData._2)
+    })
+
+    val pasteButton = new TextButtonElement("Paste", {
+        pe.getEditAnim.frameMap += pe.editingFrame -> hiddenClipboard
+        pe.resetFrame
+    })
+
+    subElements += deleteButton
+    subElements += copyButton
+    subElements += pasteButton
+
     def getMultiplier = (width - (borderWidth * 2)) / pe.getEditAnim.lenFrames.toDouble
+
+    def getTimelineHeight = height / 2
 
     override def draw() {
         super.draw()
         // NOTE: The borderwidth is so the timeline is confined within the border,
         //       which looks nicer since it has a shadow.
         val multiplier = getMultiplier
+        val timelineHeight = getTimelineHeight
         for (i <- 0 until pe.getEditAnim.lenFrames) {
             val selectedOfs = if (pe.editingData._1 == i) 0.5f else 0.0f
             val ncol = new Vector4f(0.1f, 0.1f, 0.1f + selectedOfs, 1)
@@ -37,12 +62,16 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
             val start = Math.floor(i * multiplier).toInt
             val end = Math.ceil((i + 1) * multiplier).toInt
             val wid = end - start
-            drawQRect(start + borderWidth, borderWidth, wid / 2, height - (borderWidth * 2), ncol, ncol, col, col)
-            drawQRect(start + (wid / 2) + borderWidth, borderWidth, wid / 2, height - (borderWidth * 2), col, col, ncol, ncol)
+            drawQRect(start + borderWidth, borderWidth, wid / 2, timelineHeight, ncol, ncol, col, col)
+            drawQRect(start + (wid / 2) + borderWidth, borderWidth, wid / 2, timelineHeight, col, col, ncol, ncol)
         }
     }
 
     override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
+        if (y >= (getTimelineHeight + borderWidth)) {
+            super.mouseStateChange(x, y, isDown, button)
+            return
+        }
         if (isDown) {
             val frame = Math.floor((x - borderWidth) / getMultiplier).toInt
             if (frame < 0)
@@ -57,6 +86,12 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
     }
 
     override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
+        if (y >= (getTimelineHeight + borderWidth)) {
+            super.mouseMove(x, y, buttons)
+            return
+        } else {
+            super.mouseMove(x, y, Array(false, false))
+        }
         val frame = Math.floor((x - borderWidth) / getMultiplier).toInt
         if (frame < 0)
             return
@@ -66,5 +101,22 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
             pe.editingFrame = frame
             pe.resetFrame
         }
+    }
+
+    override def layout() {
+        super.layout()
+        val quarter = (width - (borderWidth * 2)) / 4
+        val buttonbarY = (height / 2) + borderWidth
+        deleteButton.posX = borderWidth
+        deleteButton.posY = buttonbarY
+        deleteButton.setSize(quarter, (height / 2) - (borderWidth * 2))
+
+        copyButton.posX = borderWidth + quarter
+        copyButton.posY = buttonbarY
+        copyButton.setSize(quarter, (height / 2) - (borderWidth * 2))
+
+        pasteButton.posX = borderWidth + (quarter * 2)
+        pasteButton.posY = buttonbarY
+        pasteButton.setSize(quarter, (height / 2) - (borderWidth * 2))
     }
 }

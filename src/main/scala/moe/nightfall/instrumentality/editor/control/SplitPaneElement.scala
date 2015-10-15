@@ -55,7 +55,7 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
         if (axisLen != lastAxisLen) {
             val newAxisLen = axisLen
             if (firstResize) {
-                splitPix = width / 2
+                splitPix = axisLen / 2
             } else {
                 splitPix += ((newAxisLen - lastAxisLen) * resizeWeight).toInt
             }

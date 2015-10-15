@@ -128,16 +128,18 @@ object UIUtils {
                 if (sysFont == null) {
                     if (sysFontCreationThread == null) {
                         sysFontCreationThread = new Thread {
-                            try {
-                                // did I mention: this call is SLOW. Seriously.
-                                val f = new Font(null, 0, 48)
-                                UISystemFont.scratchFont(f)
-                                sysFont = f
-                            } catch {
-                                case e: Exception =>
-                                    System.err.println("Cannot load a international font... nippon gomen nasai... :(")
-                                    // TODO: This would be the perfect place to turn on a romanizer as a last resort.
-                                    e.printStackTrace()
+                            override def run() {
+                                try {
+                                    // did I mention: this call is SLOW. Seriously.
+                                    val f = new Font(null, 0, 48)
+                                    UISystemFont.scratchFont(f)
+                                    sysFont = f
+                                } catch {
+                                    case e: Exception =>
+                                        System.err.println("Cannot load a international font... nippon gomen nasai... :(")
+                                        // TODO: This would be the perfect place to turn on a romanizer as a last resort.
+                                        e.printStackTrace()
+                                }
                             }
                         }
                         sysFontCreationThread.start()
