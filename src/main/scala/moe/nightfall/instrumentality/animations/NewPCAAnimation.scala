@@ -29,11 +29,9 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
     var itemHoldStrengthTarget = 0d
     var itemHoldStrength = 0d
 
-    var poseSetResult: Animation = new Animation {
-        override def getBoneTransform(boneName: String) = None
-    }
+    val idleAnimation = new KeyframeAnimation(poseSet.allPoses("idle"))
 
-    override def getBoneTransform(boneName: String) = poseSetResult getBoneTransform boneName
+    override def getBoneTransform(boneName: String) = idleAnimation.getBoneTransform(boneName)
 
     def getInterpolate(time: Double, sine: Double, sineRepeat: Int) = {
         val sineSegment = 1d / sineRepeat
@@ -86,27 +84,36 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
     }
 
     override def update(deltaTime: Double) {
+        /*
+         * NOTE: This code has to keep in mind the structure of the poses,
+         * since there's no magic thing to add parents if we miss one.
+         * There's a reference in AnimSet, or just open up the workbench and look at the PoseTree.
+         * Each animation needs it's parent and that parent etc. to be at greater or equal strength to itself.
+         * More or less.
+         * TBH, just keep the strength modifiers at a minimum, try to use positions where possible.
+         * It's more flexible that way.
+         */
         walkCycleTime += deltaTime * walkSpeed
-        idleCycleTime += deltaTime * 0.25f
-        val map = new mutable.HashMap[String, Double]
-        map.put("idle", 1d)
-        map.put("falling", fallStrength)
-        if (lookLR < 0)
-            map.put("lookR", -lookLR)
-        else if (lookLR > 0)
-            map.put("lookL", lookLR)
+        idleAnimation.pos += deltaTime * 0.25f
+        if (idleAnimation.pos > 1)
+            idleAnimation.pos -= 1
+        //        map.put("falling", fallStrength)
+        //        if (lookLR < 0)
+        //            map.put("lookR", -lookLR)
+        //        else if (lookLR > 0)
+        //            map.put("lookL", lookLR)
 
-        if (lookUD < 0)
-            map.put("lookD", -lookUD)
-        else if (lookUD > 0)
-            map.put("lookU", lookUD)
+        //        if (lookUD < 0)
+        //            map.put("lookD", -lookUD)
+        //        else if (lookUD > 0)
+        //            map.put("lookU", lookUD)
 
         setupCycle(walkCycleTime, Array("walkLFHit", "walkRFMidpoint", "walkRFHit", "walkLFMidpoint", "walkLFHit"), 1, 2, walkStrength, map)
 
         walkStrength = strengthChange(deltaTime * 4, walkStrength, walkStrengthTarget)
         itemHoldStrength = strengthChange(deltaTime, itemHoldStrength, itemHoldStrengthTarget)
 
-        map.put("holdItem", itemHoldStrength)
+        //        map.put("holdItem", itemHoldStrength)
         if (swingTime != -1) {
             swingTime += deltaTime * 2
             if (swingTime > 1) {
@@ -115,10 +122,5 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
                 setupCycle(swingTime, Array(null, "useItemP25", "useItemP50", "useItemP75", null), 1, 1, 1, map)
             }
         }
-
-        poseSetResult = poseSet.createEditAnimation("idle", idleCycleTime % 1.0f)._3
-        //        poseSetResult = poseSet.createEditAnimation("walk", walkCycleTime % 1.0f)._3
-
-
     }
 }

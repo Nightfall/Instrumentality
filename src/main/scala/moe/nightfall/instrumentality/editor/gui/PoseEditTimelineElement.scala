@@ -14,7 +14,7 @@ package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.animations.PoseAnimation
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.TextButtonElement
+import moe.nightfall.instrumentality.editor.control.{LabelElement, CheckboxElement, TextButtonElement}
 import org.lwjgl.util.vector.Vector4f
 
 /**
@@ -31,7 +31,7 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
     })
 
     val copyButton = new TextButtonElement("Copy", {
-        hiddenClipboard = new PoseAnimation(pe.editingData._2)
+        hiddenClipboard = new PoseAnimation(pe.editingData._1)
     })
 
     val pasteButton = new TextButtonElement("Paste", {
@@ -39,13 +39,20 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
         pe.resetFrame
     })
 
+    val playCheckbox = new CheckboxElement()
+    val playLabel = new LabelElement("Play (don't edit when on!)")
+
     subElements += deleteButton
     subElements += copyButton
     subElements += pasteButton
+    subElements += playCheckbox
+    subElements += playLabel
 
     def getMultiplier = (width - (borderWidth * 2)) / pe.getEditAnim.lenFrames.toDouble
 
     def getTimelineHeight = height / 2
+
+    var time = 0.0d
 
     override def draw() {
         super.draw()
@@ -54,7 +61,7 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
         val multiplier = getMultiplier
         val timelineHeight = getTimelineHeight
         for (i <- 0 until pe.getEditAnim.lenFrames) {
-            val selectedOfs = if (pe.editingData._1 == i) 0.5f else 0.0f
+            val selectedOfs = if (pe.editingFrame == i) 0.5f else 0.0f
             val ncol = new Vector4f(0.1f, 0.1f, 0.1f + selectedOfs, 1)
             var col = new Vector4f(0.2f, 0.2f, 0.2f + selectedOfs, 1)
             if (pe.getEditAnim.frameMap.get(i).isDefined)
@@ -64,6 +71,19 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
             val wid = end - start
             drawQRect(start + borderWidth, borderWidth, wid / 2, timelineHeight, ncol, ncol, col, col)
             drawQRect(start + (wid / 2) + borderWidth, borderWidth, wid / 2, timelineHeight, col, col, ncol, ncol)
+        }
+    }
+
+    override def update(dT: Double) {
+        time += dT
+        if (time > 0.05d) {
+            time -= 0.05d
+            if (playCheckbox.checked) {
+                pe.editingFrame += 1
+                if (pe.editingFrame == pe.getEditAnim.lenFrames)
+                    pe.editingFrame = 0
+                pe.resetFrame
+            }
         }
     }
 
@@ -106,17 +126,27 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
     override def layout() {
         super.layout()
         val quarter = (width - (borderWidth * 2)) / 4
-        val buttonbarY = (height / 2) + borderWidth
+        val buttonbarY = getTimelineHeight + borderWidth
+        val remainingHeight = height - (buttonbarY + borderWidth)
+        val buttonbarY2 = buttonbarY + (remainingHeight / 2)
         deleteButton.posX = borderWidth
         deleteButton.posY = buttonbarY
-        deleteButton.setSize(quarter, (height / 2) - (borderWidth * 2))
+        deleteButton.setSize(quarter, remainingHeight / 2)
 
         copyButton.posX = borderWidth + quarter
         copyButton.posY = buttonbarY
-        copyButton.setSize(quarter, (height / 2) - (borderWidth * 2))
+        copyButton.setSize(quarter, remainingHeight / 2)
 
         pasteButton.posX = borderWidth + (quarter * 2)
         pasteButton.posY = buttonbarY
-        pasteButton.setSize(quarter, (height / 2) - (borderWidth * 2))
+        pasteButton.setSize(quarter, remainingHeight / 2)
+
+        playCheckbox.posX = borderWidth
+        playCheckbox.posY = buttonbarY2
+        playCheckbox.setSize(quarter / 2, remainingHeight / 2)
+
+        playLabel.posX = borderWidth + (quarter / 2)
+        playLabel.posY = buttonbarY2
+        playLabel.setSize(quarter + (quarter / 2), remainingHeight / 2)
     }
 }

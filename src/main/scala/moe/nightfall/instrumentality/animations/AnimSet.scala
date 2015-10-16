@@ -83,15 +83,15 @@ class AnimSet {
     //              <sarcasm>You know, that's SUCH a terrible assumption to make...</sarcasm>
     //              NOTE: It's less severe than it used to be, but, still.
 
-    def createEditAnimation(name: String, point: Double): (Int, PoseAnimation, Animation) = {
+    def createEditAnimation(name: String, point: Double): (PoseAnimation, Animation) = {
         val targ = allPoses.get(name).get
         val f = ((targ.lenFrames - 1) * point).toInt
         // This instance is being passed to the editor.
         val interpol = targ.doInterpolate(f)
         if (poseParents.get(name).isDefined) {
-            (f, interpol, new OverlayAnimation(mutable.MutableList[Animation](interpol, createEditAnimation(poseParents.get(name).get, 1)._3)))
+            (interpol, new OverlayAnimation(mutable.MutableList[Animation](interpol, createEditAnimation(poseParents.get(name).get, 1)._2)))
         } else {
-            (f, interpol, interpol)
+            (interpol, interpol)
         }
     }
 

@@ -29,13 +29,13 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
     // This data exists to simplify calculations like "which frame are we on" and things like that.
     // It is: The current frame as an Int, the PoseAnimation for this frame (even if none exists, it'll be interpolated),
     //        and the Animation object used for the 3D display, based on the PoseAnimation.
-    var editingData: (Int, PoseAnimation, Animation) = _
+    var editingData: (PoseAnimation, Animation) = _
 
     var editingFrame = 0
 
     def resetFrame {
         editingData = pm.anims.createEditAnimation(editedPose, editingFrame / (getEditAnim.lenFrames - 1.0d))
-        pmxInst.anim = editingData._3
+        pmxInst.anim = editingData._1
     }
 
     resetFrame
@@ -120,12 +120,12 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
         // What is going on here...?
         val mid = tView.selectedNode.sensibleName.toLowerCase
         // return needed because it *might* be implying that toLowerCase uses the return as a param
-        val opbt = editingData._2.hashMap.get(mid)
+        val opbt = editingData._1.hashMap.get(mid)
         // asInstanceOf seems to cause a lot of errors, and getOrElse is just acting weird.
         // Practicality matters.
         if (opbt.isEmpty) {
             val tsf = new PoseBoneTransform()
-            editingData._2.hashMap.put(mid, tsf)
+            editingData._1.hashMap.put(mid, tsf)
             return tsf
         } else {
             return opbt.get
@@ -138,7 +138,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
         val anim = getEditAnim
         // Add this as a keyframe based upon what we have
         // (which as you know can be an interpolated state, this is normal for this style of animation program)
-        anim.frameMap = anim.frameMap + (editingData._1 -> editingData._2)
+        anim.frameMap = anim.frameMap + (editingFrame -> editingData._1)
     }
 
     override def cleanup() {

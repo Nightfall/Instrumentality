@@ -12,6 +12,8 @@
  */
 package moe.nightfall.instrumentality.animations
 
+import moe.nightfall.instrumentality.PoseBoneTransform
+
 /**
  * A keyframe-based animation,
  * which may be based on whatever time scale or otherwise the using code wants.
@@ -39,34 +41,70 @@ class KeyframeAnimationData {
     // The mapping of integers to keyframes.
     var frameMap = Map[Int, PoseAnimation]()
 
+    // Find the transition we're in.
+    // If both int values are the same, there is no transition.
+    // In this case, the value may actually be invalid, if there are no frames at all.
+    // The float value is for interpolation.
+    // It is 0 in the case where there is no transition, but this should not be relied upon.
+    def getEarlyLate(frame: Int, subframe: Float): (Int, Int, Float) = {
+        if (frameMap.contains(frame))
+            return (frame, frame, 0)
+        var earlyFrame = Int.MaxValue
+        var lateFrame = Int.MinValue
+        for ((k: Int, v: PoseAnimation) <- frameMap) yield {
+            // If we're earlier than our current earliest, but later than the target...
+            if (k < earlyFrame)
+                if (k > frame)
+                    earlyFrame = k
+            // If we're later than our latest, but earlier than the target...
+            if (k > lateFrame)
+                if (k < frame)
+                    lateFrame = k
+        }
+        if (earlyFrame == Int.MaxValue) {
+            if (lateFrame == Int.MinValue)
+                return (frame, frame, 0) // ...
+            return (lateFrame, lateFrame, 0)
+        }
+        if (lateFrame == Int.MinValue)
+            return (earlyFrame, earlyFrame, 0)
+        // Simple 3-frame "example case" to explain to myself how this works
+        // For frame 1, subframe 0.5, we'd want a value of 0.75
+        // so it's subframe / (amount of frames-1)
+        val framesM1 = lateFrame - earlyFrame
+        (earlyFrame, lateFrame, ((frame - earlyFrame) + subframe) / framesM1.toFloat)
+    }
+
     // Creates or retrieves an interpolated PoseAnimation.
     // Note that the data-linking done in earlier versions is gone.
     // Now, the instance is *NOT* "linked".
+
     def doInterpolate(frame: Int): PoseAnimation = {
-        val cFrameAnim = frameMap.getOrElse(frame, new PoseAnimation())
-        if (frameMap.contains(frame))
-            return new PoseAnimation(cFrameAnim)
-        // Try to find the transition we're currently in.
-        var earlyFrame = (Int.MaxValue, cFrameAnim)
-        var lateFrame = (Int.MinValue, cFrameAnim)
-        for ((k: Int, v: PoseAnimation) <- frameMap) yield {
-            // If we're earlier than our current earliest, but later than the target...
-            if (k < earlyFrame._1)
-                if (k > frame)
-                    earlyFrame = (k, v)
-            // If we're later than our latest, but earlier than the target...
-            if (k > lateFrame._1)
-                if (k < frame)
-                    lateFrame = (k, v)
+        val earlyLate = getEarlyLate(frame, 0)
+        if (earlyLate._1 == earlyLate._2)
+            return new PoseAnimation(frameMap.getOrElse(earlyLate._1, new PoseAnimation()))
+        new PoseAnimation(frameMap(earlyLate._1), frameMap(earlyLate._2), earlyLate._3)
+    }
+
+    // Allows getting a specific bone transform.
+    // Useful if you don't want the memory overhead of a whole PoseAnimation.
+    def getBoneTransform(boneName: String, pos: Float): Option[PoseBoneTransform] = {
+        val frame = pos * (lenFrames - 1)
+        val framei = Math.floor(frame).toInt
+        val subframe = frame - framei
+
+        val earlyLate = getEarlyLate(framei, subframe)
+        if (earlyLate._1 == earlyLate._2) {
+            val g = frameMap.get(earlyLate._1)
+            if (g.isDefined)
+                return g.get.getBoneTransform(boneName)
+            return None
         }
-        // If one of the sides returns Int.MaxValue or such, then return the other side.
-        if (earlyFrame._1 == Int.MaxValue)
-            return new PoseAnimation(lateFrame._2)
-        if (lateFrame._1 == Int.MinValue)
-            return new PoseAnimation(earlyFrame._2)
-        var point = 0f
-        if (lateFrame._1 != earlyFrame._1)
-            point = (frame - earlyFrame._1) / (lateFrame._1 - earlyFrame._1).toFloat
-        new PoseAnimation(earlyFrame._2, lateFrame._2, point)
+        val pbtA = frameMap(earlyLate._1).getBoneTransform(boneName).orNull
+        val pbtB = frameMap(earlyLate._2).getBoneTransform(boneName).orNull
+        if (pbtA == null)
+            if (pbtB == null)
+                return None
+        Some(new PoseBoneTransform(pbtA, pbtB, earlyLate._3))
     }
 }
