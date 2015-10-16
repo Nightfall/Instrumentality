@@ -22,28 +22,20 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
 
     private var walkCycleTime: Double = _
     private var idleCycleTime: Double = _
-    var walkSpeed, lookLR, lookUD, fallStrength: Double = _
-    var walkStrength = 0d
+    var lookLR, lookUD, fallStrength: Double = _
     var walkStrengthTarget = 0d
     var swingTime = -1d
     var itemHoldStrengthTarget = 0d
     var itemHoldStrength = 0d
 
-    val idleAnimation = new KeyframeAnimation(poseSet.allPoses("idle"))
+    val walkAnimation = new KeyframeAnimation(poseSet.allPoses("walk"), false, true, 1.0d)
+    val walkStrength = new StrengthMultiplyAnimation(walkAnimation)
 
-    override def getBoneTransform(boneName: String) = idleAnimation.getBoneTransform(boneName)
+    val idleAnimation = new KeyframeAnimation(poseSet.allPoses("idle"), false, true, 0.25d)
 
-    def getInterpolate(time: Double, sine: Double, sineRepeat: Int) = {
-        val sineSegment = 1d / sineRepeat
-        // position within current sine segment (0 to 1)
-        val sinePoint = (time % sineSegment) * sineRepeat
-        // base of current sine segment
-        val sineBase = math.floor(time / sineSegment) * sineSegment
-        // current sine value within current segment (0 to 1)
-        val sineCurrent = (1 - math.cos(sinePoint * Math.PI)) / 2
-        val sineComponent = (sineCurrent * sineSegment) + sineBase
-        (time * (1 - sine)) + (sineComponent * sine)
-    }
+    val rootAnimation = new OverlayAnimation(idleAnimation, walkStrength)
+
+    override def getBoneTransform(boneName: String) = rootAnimation.getBoneTransform(boneName)
 
     def strengthChange(deltaTime: Double, in: Double, targ: Double) = {
         var res = in
@@ -59,31 +51,16 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
         res
     }
 
-    def setupCycle(time: Double, subAnims: Array[String], sine: Double, sineRepeat: Int, strength: Double, map: Map[String, Double]) {
-        val time2 =
-            if (time >= 0)
-                time % 1.0
-            else
-                1 + (time % 1.0)
-        val segment = 1.0d / (subAnims.length - 1)
-        var currentStart = math.floor(time2 / segment).toInt
-        var currentEnd = currentStart + 1
-        var strengthEnd = getInterpolate((time2 - (currentStart * segment)) / segment, sine, sineRepeat)
-        currentStart %= subAnims.length
-        currentEnd %= subAnims.length
-        var strengthStart = 1.0d - strengthEnd
-        strengthStart *= strength
-        strengthEnd *= strength
-
-        val startAnim = subAnims(currentStart)
-        val endAnim = subAnims(currentEnd)
-        if (startAnim != null)
-            map.put(startAnim, strengthStart)
-        if (endAnim != null)
-            map.put(endAnim, strengthEnd)
+    def advancePos(deltaTime: Double, fl: Float, pos: KeyframeAnimation) {
+        pos.pos += deltaTime * fl
+        if (pos.pos < 0)
+            pos.pos = 0
+        if (pos.pos > 1)
+            pos.pos = 1
     }
 
     override def update(deltaTime: Double) {
+
         /*
          * NOTE: This code has to keep in mind the structure of the poses,
          * since there's no magic thing to add parents if we miss one.
@@ -93,10 +70,6 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
          * TBH, just keep the strength modifiers at a minimum, try to use positions where possible.
          * It's more flexible that way.
          */
-        walkCycleTime += deltaTime * walkSpeed
-        idleAnimation.pos += deltaTime * 0.25f
-        if (idleAnimation.pos > 1)
-            idleAnimation.pos -= 1
         //        map.put("falling", fallStrength)
         //        if (lookLR < 0)
         //            map.put("lookR", -lookLR)
@@ -108,9 +81,7 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
         //        else if (lookUD > 0)
         //            map.put("lookU", lookUD)
 
-        setupCycle(walkCycleTime, Array("walkLFHit", "walkRFMidpoint", "walkRFHit", "walkLFMidpoint", "walkLFHit"), 1, 2, walkStrength, map)
-
-        walkStrength = strengthChange(deltaTime * 4, walkStrength, walkStrengthTarget)
+        walkStrength.mulAmount = strengthChange(deltaTime * 4, walkStrength.mulAmount, walkStrengthTarget)
         itemHoldStrength = strengthChange(deltaTime, itemHoldStrength, itemHoldStrengthTarget)
 
         //        map.put("holdItem", itemHoldStrength)
@@ -119,8 +90,9 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
             if (swingTime > 1) {
                 swingTime = 1
             } else {
-                setupCycle(swingTime, Array(null, "useItemP25", "useItemP50", "useItemP75", null), 1, 1, 1, map)
+                //                setupCycle(swingTime, Array(null, "useItemP25", "useItemP50", "useItemP75", null), 1, 1, 1, map)
             }
         }
+        rootAnimation.update(deltaTime)
     }
 }

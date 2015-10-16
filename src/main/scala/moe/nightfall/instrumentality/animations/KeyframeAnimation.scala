@@ -18,8 +18,27 @@ import moe.nightfall.instrumentality.PoseBoneTransform
  * A keyframe animation.
  * Created on 16/10/15.
  */
-class KeyframeAnimation(val kad: KeyframeAnimationData) extends Animation {
+class KeyframeAnimation(val kad: KeyframeAnimationData, val pingPong: Boolean, var loop: Boolean, var speed: Double) extends Animation {
     var pos = 0d
+    var reverse = false
+
+    override def update(dt: Double) {
+        pos += speed * (if (reverse) -dt else dt)
+        if (pos >= 1) {
+            pos = 1
+            if (loop)
+                if (pingPong)
+                    reverse = !reverse
+                else
+                    pos = 0
+
+            reverse ^= pingPong
+        }
+        if (pos <= 0) {
+            pos = 0
+            reverse ^= pingPong
+        }
+    }
 
     /**
      * Gets the current transform for a bone.

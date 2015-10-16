@@ -99,7 +99,7 @@ class PlayerInstance(file: PMXModel) {
         if (clippingPoint >= 1.1d)
             clippingPoint = 1.1d
 
-        if ((anim.walkStrength > 0) || (sneakState < 0)) {
+        if ((anim.walkStrengthTarget > 0) || (sneakState < 0)) {
             val waChange: Float = (math.Pi * deltaTime * 2).toFloat
             if (directionAdjustment < daTarget) {
                 directionAdjustment += waChange
@@ -265,7 +265,7 @@ class PlayerInstance(file: PMXModel) {
             val dist = Math.sqrt((dX * dX) + (dZ * dZ))
             spdMul = dist * 10.0d
         }
-        anim.walkSpeed = spdMul
+        anim.walkAnimation.speed = spdMul
         anim.walkStrengthTarget = Math.min(1.0d, spdMul * 10.0d)
         val fallVel = player.lastTickPosY - player.posY
         anim.fallStrength = fallVel

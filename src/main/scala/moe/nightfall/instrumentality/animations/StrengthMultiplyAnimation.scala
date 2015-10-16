@@ -17,7 +17,7 @@ import moe.nightfall.instrumentality.PoseBoneTransform
 /**
  * Created on 25/07/15.
  */
-class StrengthMultiplyAnimation(var beingFaded: Animation, var mulAmount: Float) extends Animation {
+class StrengthMultiplyAnimation(var beingFaded: Animation, var mulAmount: Double) extends Animation {
 
     def this(beingFaded: Animation) = this(beingFaded, 1)
 

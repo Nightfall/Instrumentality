@@ -35,7 +35,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
 
     def resetFrame {
         editingData = pm.anims.createEditAnimation(editedPose, editingFrame / (getEditAnim.lenFrames - 1.0d))
-        pmxInst.anim = editingData._1
+        pmxInst.anim = editingData._2
     }
 
     resetFrame

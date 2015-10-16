@@ -110,8 +110,8 @@ object ModelElement {
     def makeTestInstance(pm: PMXModel): PMXInstance = {
         val pi: PMXInstance = new PMXInstance(pm)
         val npca = new NewPCAAnimation(pm.anims)
-        npca.walkStrength = 1
-        npca.walkSpeed = 1
+        npca.walkStrengthTarget = 1
+        npca.walkAnimation.speed = 1
         pi.anim = npca
         /*return*/ pi
     }
