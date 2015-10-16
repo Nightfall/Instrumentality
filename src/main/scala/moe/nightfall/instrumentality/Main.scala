@@ -14,7 +14,11 @@ package moe.nightfall.instrumentality
 
 import java.io.{InputStream, BufferedReader, InputStreamReader}
 
-import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
+import de.matthiasmann.twl.GUI
+import de.matthiasmann.twl.renderer.lwjgl.LWJGLRenderer
+import moe.nightfall.instrumentality.editor.control.ModelWidget
+import moe.nightfall.instrumentality.editor.twlgui.View3DWidget
+import moe.nightfall.instrumentality.editor.{UIUtils}
 import org.lwjgl.input.{Keyboard, Mouse}
 import org.lwjgl.opengl.{Display, DisplayMode, GL11}
 
@@ -30,51 +34,35 @@ object Main extends App {
 }
 
 class Main extends ApplicationHost {
-    private var currentPanel: EditElement = _
-
+    private var gui: GUI = _
     def startWorkbench() {
         val consoleReader = new BufferedReader(new InputStreamReader(System.in))
 
-        var (scrWidth, scrHeight) = (800, 600)
         Display.setTitle("Instrumentality: PMX Animation Workbench")
-        Display.setDisplayMode(new DisplayMode(scrWidth, scrHeight))
+        Display.setDisplayMode(new DisplayMode(800, 600))
         Display.setResizable(true)
         Display.create()
-        Mouse.create()
 
         Loader.setup(this)
 
-        GL11.glEnable(GL11.GL_DEPTH_TEST)
-        GL11.glDepthFunc(GL11.GL_LEQUAL)
-
         var frameEndpoint = System.currentTimeMillis()
 
-        Keyboard.create()
         var deltaTime = 0.1d
 
-        onSizeChange(scrWidth, scrHeight)
-
-        changePanel(UIUtils.createGui())
+        val mw = new ModelWidget(false)
+        val lr = new LWJGLRenderer
+        gui = new GUI(UIUtils.createGui(), lr)
 
         while (!Display.isCloseRequested) {
-            if (Display.wasResized()) {
-                scrWidth = Display.getWidth
-                scrHeight = Display.getHeight
-                onSizeChange(scrWidth, scrHeight)
-            }
+            GL11.glViewport(0, 0, Display.getWidth, Display.getHeight)
+            lr.setViewport(0, 0, Display.getWidth, Display.getHeight)
             val frameStart = System.currentTimeMillis()
             GL11.glClearColor(0.5f, 0.5f, 0.5f, 1.0f)
             GL11.glClearDepth(1.0f)
             GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT)
             GL11.glLoadIdentity()
 
-            Keyboard.poll()
-            Mouse.poll()
-
-            doUpdate(deltaTime)
-
-            doDraw()
-
+            gui.update()
             Display.update()
 
             val currentTime = System.currentTimeMillis()
@@ -82,7 +70,6 @@ class Main extends ApplicationHost {
             // the sleep)
             val delta = (currentTime - (frameEndpoint - 30)).toInt
             deltaTime = delta / 1000.0d
-            doUpdate(deltaTime)
 
             val v = frameEndpoint - currentTime
             if (v > 1)
@@ -91,37 +78,6 @@ class Main extends ApplicationHost {
             frameEndpoint = currentTime + 30
         }
         Display.destroy()
-    }
-
-    def onSizeChange(scrWidth: Int, scrHeight: Int) {
-        GL11.glViewport(0, 0, scrWidth, scrHeight)
-        GL11.glMatrixMode(GL11.GL_PROJECTION)
-        GL11.glLoadIdentity()
-        GL11.glOrtho(0, scrWidth, scrHeight, 0, 0, 1024)
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        if (currentPanel != null)
-            currentPanel.setSize(scrWidth, scrHeight)
-    }
-
-    def doUpdate(dt: Double) {
-        UIUtils.update(currentPanel)
-        currentPanel.update(dt)
-    }
-
-    private def doDraw() {
-        GL11.glEnable(GL11.GL_CULL_FACE)
-        GL11.glDisable(GL11.GL_TEXTURE_2D)
-        UIUtils.prepareForDrawing(Display.getWidth, Display.getHeight)
-        GL11.glEnable(GL11.GL_SCISSOR_TEST)
-        currentPanel.draw()
-        GL11.glDisable(GL11.GL_SCISSOR_TEST)
-        GL11.glEnable(GL11.GL_TEXTURE_2D)
-        GL11.glDisable(GL11.GL_CULL_FACE)
-    }
-
-    def changePanel(newPanel: EditElement) {
-        currentPanel = newPanel
-        currentPanel.setSize(Display.getWidth, Display.getHeight)
     }
 
     // Gets a file from assets/instrumentality/.

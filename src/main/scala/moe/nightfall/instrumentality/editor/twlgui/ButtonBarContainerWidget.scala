@@ -10,43 +10,39 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.control
+package moe.nightfall.instrumentality.editor.twlgui
 
-import moe.nightfall.instrumentality.editor.EditElement
+import de.matthiasmann.twl.{BoxLayout, Widget}
 
 /**
- * See: GTK+ v3's horizontal Box for a general idea of what this is supposed to be used for.
- * It's just less flexible.
- * Created on 01/09/15.
+ * Created on 16/10/15.
  */
-class HBoxElement extends EditElement {
-    private var barPieces = scala.collection.mutable.ListBuffer[EditElement]()
+class ButtonBarContainerWidget(sizeRatio: Double) extends Widget {
+    val barCore: BoxLayout = new BoxLayout()
+    add(barCore)
+    private var underPanel: Widget = null
+    // Sometimes this needs to be overridden.
+    var noCleanupOnChange: Boolean = false
 
-    def +=(editElement: EditElement): Unit = {
-        barPieces += editElement
-        subElements += editElement
+    def setUnderPanel(editElement: Widget, noCleanup: Boolean) {
+        if (underPanel != null) {
+            if (!noCleanupOnChange)
+                underPanel.destroy()
+            removeChild(underPanel)
+        }
+        noCleanupOnChange = noCleanup
+        underPanel = editElement
+        add(underPanel)
+        layout()
     }
 
-    override def layout() {
-        if (barPieces.nonEmpty) {
-            val div = width / barPieces.size
-            val leftover = width - (div * barPieces.size)
-
-            var first = true
-            var pos = 0
-            for (button <- barPieces) {
-                var ds = div
-                if (first) {
-                    ds += leftover
-                    first = false
-                }
-
-                button.posX = pos
-                button.posY = 0
-
-                pos += ds
-                button.setSize(ds, height)
-            }
+    override def layout() = {
+        val point = (getInnerHeight * sizeRatio).toInt
+        barCore.setPosition(0, 0)
+        barCore.setSize(getInnerWidth, point)
+        if (underPanel != null) {
+            underPanel.setPosition(getInnerX, point + getInnerY)
+            underPanel.setSize(getInnerWidth, getInnerHeight - point)
         }
     }
 }

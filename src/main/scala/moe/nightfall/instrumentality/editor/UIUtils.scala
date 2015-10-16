@@ -14,10 +14,11 @@ package moe.nightfall.instrumentality.editor
 
 import java.awt.Font
 
+import de.matthiasmann.twl.{Button, Label, BoxLayout, Widget}
+import moe.nightfall.instrumentality.editor.control.ModelWidget
+import moe.nightfall.instrumentality.editor.twlgui.ButtonBarContainerWidget
 import moe.nightfall.instrumentality.{Loader, ModelCache}
 import moe.nightfall.instrumentality.animations.AnimSet
-import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement}
-import moe.nightfall.instrumentality.editor.gui.{DownloaderElement, BenchmarkElement, ModelChooserElement, PoseTreeElement}
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
 import org.lwjgl.util.Rectangle
@@ -25,88 +26,40 @@ import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
 
+    def createGui(): Widget = {
+        val bbce = new ButtonBarContainerWidget(0.05d)
 
-    var widgetX = 0
-    var widgetY = 0
-    var scrWidth = 0
-    var scrHeight = 0
-
-    // Used to work out where to clip!
-    var clippingBounds = (0, 0, 0, 0)
-
-    def prepareForDrawing(sw: Int, sh: Int) {
-        scrWidth = sw
-        scrHeight = sh
-        widgetX = 0
-        widgetY = 0
-        setClippingBounds((0, 0, sw, sh))
-    }
-
-    def clipRectByClippingBounds(rect: (Int, Int, Int, Int)): (Int, Int, Int, Int) = {
-        val ra = new Rectangle(rect._1, rect._2, rect._3, rect._4)
-        val rb = new Rectangle(clippingBounds._1, clippingBounds._2, clippingBounds._3, clippingBounds._4)
-        val rr = ra.intersection(rb, null)
-        (rr.getX, rr.getY, rr.getWidth, rr.getHeight)
-    }
-
-    // Sets the bounds which the scissor test clips in.
-    // Used for optimization. Returns the old bounds, which you should restore when done.
-    def setClippingBounds(tuple: (Int, Int, Int, Int)): (Int, Int, Int, Int) = {
-        if (tuple._3 > 0)
-            if (tuple._4 > 0)
-                GL11.glScissor(tuple._1, scrHeight - (tuple._2 + tuple._4), tuple._3, tuple._4)
-        val oldBounds = clippingBounds
-        clippingBounds = tuple
-        oldBounds
-    }
-
-    // TODO Couldn't this just be two variables?
-    var state = new Array[Boolean](2)
-
-    def update(targetPanel: EditElement) {
-        val newState = new Array[Boolean](2)
-        newState(0) = Mouse.isButtonDown(0)
-        newState(1) = Mouse.isButtonDown(1)
-        val x = Mouse.getX()
-        val y = Display.getHeight() - (Mouse.getY() + 1)
-        if (newState(0) != state(0))
-            targetPanel.mouseStateChange(x, y, newState(0), 0)
-        if (newState(1) != state(1))
-            targetPanel.mouseStateChange(x, y, newState(1), 1)
-        targetPanel.mouseMove(x, y, newState)
-        state = newState
-    }
-
-    def createGui(): EditElement = {
-        val bbce = new ButtonBarContainerElement(0.06d)
-
-        val mce = new ModelChooserElement(ModelCache.getLocalModels())
+        val mce = new ModelWidget(false) //new ModelChooserWidget(ModelCache.getLocalModels())
         bbce.setUnderPanel(mce, false)
 
-        bbce.barCore += new TextButtonElement("MdlChoose", 
+        var b = new Button("MdlChoose")
+        bbce.barCore.add(b)
             // also serves as refresh!
-            bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
-        )
+        //bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
 
-        bbce.barCore += new TextButtonElement("Benchmark",
+        b = new Button("Settings")
+        bbce.barCore.add(b)
+        /*
             if (Loader.currentFile != null) {
                 val mdl = ModelCache.getLocal(Loader.currentFile)
                 if (mdl != null)
                     bbce.setUnderPanel(new BenchmarkElement(ModelCache.getLocal(Loader.currentFile)), false)
-            }
-        )
+            }*/
 
-        bbce.barCore += new TextButtonElement("PoseEdit!", 
+        b = new Button("Animator")
+        bbce.barCore.add(b)
+        /*
             if (Loader.currentFile != null) {
                 val mdl = ModelCache.getLocal(Loader.currentFile)
                 if (mdl != null)
                     bbce.setUnderPanel(new PoseTreeElement(mdl.anims, bbce), false)
-            }
-        )
+            }*/
 
-        bbce.barCore += new TextButtonElement("Get PMXs", 
+        b = new Button("Download PMXs")
+        bbce.barCore.add(b)
+        /*
             bbce.setUnderPanel(new DownloaderElement(bbce), false)
-        )
+            */
 
         return bbce
     }

@@ -12,12 +12,13 @@
  */
 package moe.nightfall.instrumentality.editor.control
 
+import moe.nightfall.instrumentality.editor.twlgui.View3DWidget
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance, PMXModel}
 import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import moe.nightfall.instrumentality.editor.UIUtils
 import org.lwjgl.opengl.GL11
 
-class ModelElement(ib: Boolean) extends View3DElement {
+class ModelWidget(ib: Boolean) extends View3DWidget {
     var workModel: PMXInstance = null
     var workModelName: String = null
 
@@ -40,9 +41,10 @@ class ModelElement(ib: Boolean) extends View3DElement {
         if (modelName == null) return
         val b: PMXModel = ModelCache.getLocal(modelName)
         if (b == null) return
-        workModel = ModelElement.makeTestInstance(b)
+        workModel = ModelWidget.makeTestInstance(b)
     }
 
+    /*
     override def draw() {
         if (isButton) {
             if (workModelName == null) {
@@ -61,7 +63,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
             if (workModelName != null) text = workModelName
             UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
         }
-    }
+    }*/
 
     protected def draw3D() {
         if (workModel != null) {
@@ -79,6 +81,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
         }
     }
 
+    /*
     override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
         super.mouseStateChange(x, y, isDown, button)
         if (isButton)
@@ -95,10 +98,10 @@ class ModelElement(ib: Boolean) extends View3DElement {
     override def mouseEnterLeave(isInside: Boolean) {
         super.mouseEnterLeave(isInside)
         isHover = isInside
-    }
+    }*/
 
-    override def cleanup() {
-        super.cleanup()
+    override def destroy() {
+        super.destroy()
         if (workModel != null) {
             workModel.cleanupGL()
             workModel = null
@@ -106,7 +109,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
     }
 }
 
-object ModelElement {
+object ModelWidget {
     def makeTestInstance(pm: PMXModel): PMXInstance = {
         val pi: PMXInstance = new PMXInstance(pm)
         val npca = new NewPCAAnimation(pm.anims)

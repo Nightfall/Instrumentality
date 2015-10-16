@@ -12,12 +12,14 @@
  */
 package moe.nightfall.instrumentality.mc.gui
 
+import de.matthiasmann.twl.renderer.lwjgl.LWJGLRenderer
+import de.matthiasmann.twl.{GUI, Widget}
 import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
+import moe.nightfall.instrumentality.editor.UIUtils
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.util.ResourceLocation
-import org.lwjgl.opengl.{Display, GL11};
+import org.lwjgl.opengl.{Display, GL11}
 
 /**
  * Created on 18/08/15.
@@ -25,12 +27,15 @@ import org.lwjgl.opengl.{Display, GL11};
 class EditorHostGui extends GuiScreen {
 
     var lastTime = System.currentTimeMillis()
-    var hostedElement: EditElement = null
+    var hostedElement: GUI = null
+    var hostedRenderer: LWJGLRenderer = null
 
     override def initGui() {
-        //TODO Uncomment, this is for testing only!
-        //if (hostedElement == null)
+        if (hostedElement == null) {
+            hostedRenderer = new LWJGLRenderer()
+            hostedElement = new GUI(hostedRenderer)
             changePanel(UIUtils.createGui())
+        }
     }
 
     override def setWorldAndResolution(mc: Minecraft, width: Int, height: Int) {
@@ -46,34 +51,15 @@ class EditorHostGui extends GuiScreen {
         val deltaTime = thisTime - lastTime
         lastTime = thisTime
 
-        UIUtils.update(hostedElement)
-        hostedElement.update(deltaTime / 1000f)
-
-        GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glShadeModel(GL11.GL_SMOOTH)
-        GL11.glMatrixMode(GL11.GL_PROJECTION)
-        GL11.glLoadIdentity()
-        GL11.glOrtho(0, Display.getWidth, Display.getHeight, 0, 0, 1024)
-        GL11.glPushMatrix()
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glPushMatrix()
-        GL11.glLoadIdentity()
-        UIUtils.prepareForDrawing(Display.getWidth, Display.getHeight)
-        GL11.glEnable(GL11.GL_SCISSOR_TEST)
-        hostedElement.draw()
-        GL11.glDisable(GL11.GL_SCISSOR_TEST)
-        GL11.glPopMatrix()
-        GL11.glMatrixMode(GL11.GL_PROJECTION)
-        GL11.glPopMatrix()
-        GL11.glMatrixMode(GL11.GL_MODELVIEW)
+        hostedElement.update()
         GL11.glShadeModel(GL11.GL_FLAT)
-        GL11.glEnable(GL11.GL_TEXTURE_2D)
     }
 
-    def changePanel(newPanel: EditElement) {
-        if (hostedElement != null)
-            hostedElement.cleanup()
-        hostedElement = newPanel
+    def changePanel(newPanel: Widget) {
+        if (hostedElement.getRootPane != null)
+            hostedElement.getRootPane.destroy()
+        hostedElement.setRootPane(newPanel)
         hostedElement.setSize(width, height)
     }
 }

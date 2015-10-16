@@ -10,16 +10,19 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.editor.control
+package moe.nightfall.instrumentality.editor.twlgui
 
 import java.nio.FloatBuffer
 
-import moe.nightfall.instrumentality.editor.{UIUtils, EditElement}
-import org.lwjgl.BufferUtils
+import de.matthiasmann.twl.{GUI, Widget}
 import org.lwjgl.opengl.GL11
 import org.lwjgl.util.glu.GLU
 
-abstract class View3DElement extends EditElement {
+/**
+ * NOTE: For this to work properly, the GUI must fill the whole screen.
+ * Created on 16/10/15.
+ */
+abstract class View3DWidget extends Widget {
     var rotYaw: Double = 0
     var rotPitch: Double = 0
 
@@ -31,9 +34,11 @@ abstract class View3DElement extends EditElement {
     private var scale = 3.0d
     private var ignoreFirstDrag = false
 
-    override def draw() {
-        super.draw()
+    override def paint(gui: GUI) {
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)
+        GL11.glEnable(GL11.GL_DEPTH_TEST)
+        GL11.glDepthFunc(GL11.GL_LEQUAL)
         GL11.glPushMatrix()
         GL11.glLoadIdentity()
         GL11.glMatrixMode(GL11.GL_PROJECTION)
@@ -42,11 +47,12 @@ abstract class View3DElement extends EditElement {
 
         // Virtual viewport
         GL11.glTranslated(-1, -1, 0)
-        GL11.glTranslated(UIUtils.widgetX / (UIUtils.scrWidth.toDouble / 2), (UIUtils.scrHeight - (UIUtils.widgetY + height)) / (UIUtils.scrHeight.toDouble / 2), 0)
-        GL11.glScaled(width / UIUtils.scrWidth.toDouble, height / UIUtils.scrHeight.toDouble, 1)
+        GL11.glTranslated(getInnerX / (gui.getWidth.toDouble / 2), (gui.getHeight - (getInnerY + getInnerHeight)) / (gui.getHeight.toDouble / 2), 0)
+        GL11.glScaled(getInnerWidth / gui.getWidth.toDouble, getInnerHeight / gui.getHeight.toDouble, 1)
         GL11.glTranslated(1, 1, 0)
 
         // Use this code to debug the virtual viewport code.
+
         /*
         GL11.glBegin(GL11.GL_QUADS)
         GL11.glColor3d(0, 1, 0)
@@ -63,7 +69,7 @@ abstract class View3DElement extends EditElement {
         GL11.glVertex2d(1, -1)
         GL11.glEnd()
         */
-        val asp = width / height.toFloat
+        val asp = getInnerWidth / getInnerHeight.toFloat
         GLU.gluPerspective(45, asp, 0.1f, 100)
 
         // Now transfer into modelview and do stuff.
@@ -85,6 +91,7 @@ abstract class View3DElement extends EditElement {
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glPopMatrix()
+        GL11.glPopAttrib()
     }
 
     private def dumpProject(fb: FloatBuffer) {
@@ -100,29 +107,31 @@ abstract class View3DElement extends EditElement {
         println("-")
     }
 
-    override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
-        if (buttons(0)) {
-            rotYaw += x - dragX
-            rotPitch += y - dragY
+    /*
+        override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
+            if (buttons(0)) {
+                rotYaw += x - dragX
+                rotPitch += y - dragY
+            }
+            if (buttons(1)) {
+                translateY -= (y - dragY) / (20.0d * scale)
+                scale += (x - dragX) / 20.0d
+            }
+            ignoreFirstDrag = false
+            dragX = x
+            dragY = y
         }
-        if (buttons(1)) {
-            translateY -= (y - dragY) / (20.0d * scale)
-            scale += (x - dragX) / 20.0d
-        }
-        ignoreFirstDrag = false
-        dragX = x
-        dragY = y
-    }
 
-    override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
-        super.mouseStateChange(x, y, isDown, button)
-        if (isDown && (button == 0)) {
+        override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
+            super.mouseStateChange(x, y, isDown, button)
+            if (isDown && (button == 0)) {
+                ignoreFirstDrag = true
+            }
+        }
+
+        override def mouseEnterLeave(isInside: Boolean) {
+            super.mouseEnterLeave(isInside)
             ignoreFirstDrag = true
         }
-    }
-
-    override def mouseEnterLeave(isInside: Boolean) {
-        super.mouseEnterLeave(isInside)
-        ignoreFirstDrag = true
-    }
+        */
 }
