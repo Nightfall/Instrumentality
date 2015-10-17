@@ -12,7 +12,11 @@
  */
 package moe.nightfall.instrumentality.mc.gui
 
+import java.io.File
+import java.net.URL
+
 import de.matthiasmann.twl.renderer.lwjgl.LWJGLRenderer
+import de.matthiasmann.twl.theme.ThemeManager
 import de.matthiasmann.twl.{GUI, Widget}
 import moe.nightfall.instrumentality.Loader
 import moe.nightfall.instrumentality.editor.UIUtils
@@ -33,7 +37,9 @@ class EditorHostGui extends GuiScreen {
     override def initGui() {
         if (hostedElement == null) {
             hostedRenderer = new LWJGLRenderer()
+            val theme = ThemeManager.createThemeManager(UIUtils.getTheme, hostedRenderer)
             hostedElement = new GUI(hostedRenderer)
+            hostedElement.applyTheme(theme)
             changePanel(UIUtils.createGui())
         }
     }

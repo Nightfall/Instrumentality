@@ -36,6 +36,7 @@ abstract class View3DWidget extends Widget {
 
     override def paint(gui: GUI) {
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
+        GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)
         GL11.glEnable(GL11.GL_DEPTH_TEST)
         GL11.glDepthFunc(GL11.GL_LEQUAL)
@@ -53,7 +54,7 @@ abstract class View3DWidget extends Widget {
 
         // Use this code to debug the virtual viewport code.
 
-        /*
+
         GL11.glBegin(GL11.GL_QUADS)
         GL11.glColor3d(0, 1, 0)
         GL11.glVertex2d(1, -1)
@@ -68,7 +69,7 @@ abstract class View3DWidget extends Widget {
         GL11.glVertex2d(-1, 1)
         GL11.glVertex2d(1, -1)
         GL11.glEnd()
-        */
+
         val asp = getInnerWidth / getInnerHeight.toFloat
         GLU.gluPerspective(45, asp, 0.1f, 100)
 

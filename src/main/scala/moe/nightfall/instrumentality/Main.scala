@@ -13,9 +13,11 @@
 package moe.nightfall.instrumentality
 
 import java.io.{InputStream, BufferedReader, InputStreamReader}
+import java.net.URL
 
 import de.matthiasmann.twl.GUI
 import de.matthiasmann.twl.renderer.lwjgl.LWJGLRenderer
+import de.matthiasmann.twl.theme.ThemeManager
 import moe.nightfall.instrumentality.editor.control.ModelWidget
 import moe.nightfall.instrumentality.editor.twlgui.View3DWidget
 import moe.nightfall.instrumentality.editor.{UIUtils}
@@ -50,8 +52,12 @@ class Main extends ApplicationHost {
         var deltaTime = 0.1d
 
         val mw = new ModelWidget(false)
+
         val lr = new LWJGLRenderer
         gui = new GUI(UIUtils.createGui(), lr)
+
+        val theme = ThemeManager.createThemeManager(UIUtils.getTheme, lr)
+        gui.applyTheme(theme)
 
         while (!Display.isCloseRequested) {
             GL11.glViewport(0, 0, Display.getWidth, Display.getHeight)

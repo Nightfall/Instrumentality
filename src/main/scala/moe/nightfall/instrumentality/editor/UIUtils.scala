@@ -13,6 +13,8 @@
 package moe.nightfall.instrumentality.editor
 
 import java.awt.Font
+import java.io.File
+import java.net.URL
 
 import de.matthiasmann.twl.{Button, Label, BoxLayout, Widget}
 import moe.nightfall.instrumentality.editor.control.ModelWidget
@@ -25,6 +27,7 @@ import org.lwjgl.util.Rectangle
 import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
+    val getTheme: URL = new File("theme/simple.xml").toURI.toURL
 
     def createGui(): Widget = {
         val bbce = new ButtonBarContainerWidget(0.05d)

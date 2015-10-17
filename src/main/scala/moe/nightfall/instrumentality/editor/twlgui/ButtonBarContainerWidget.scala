@@ -12,13 +12,14 @@
  */
 package moe.nightfall.instrumentality.editor.twlgui
 
-import de.matthiasmann.twl.{BoxLayout, Widget}
+import de.matthiasmann.twl.{Alignment, Container, BoxLayout, Widget}
 
 /**
  * Created on 16/10/15.
  */
-class ButtonBarContainerWidget(sizeRatio: Double) extends Widget {
+class ButtonBarContainerWidget(sizeRatio: Double) extends Container {
     val barCore: BoxLayout = new BoxLayout()
+    barCore.setAlignment(Alignment.FILL)
     add(barCore)
     private var underPanel: Widget = null
     // Sometimes this needs to be overridden.
@@ -38,11 +39,12 @@ class ButtonBarContainerWidget(sizeRatio: Double) extends Widget {
 
     override def layout() = {
         val point = (getInnerHeight * sizeRatio).toInt
-        barCore.setPosition(0, 0)
+        barCore.setPosition(getInnerX, getInnerY)
         barCore.setSize(getInnerWidth, point)
         if (underPanel != null) {
             underPanel.setPosition(getInnerX, point + getInnerY)
             underPanel.setSize(getInnerWidth, getInnerHeight - point)
+            underPanel.setVisible(true)
         }
     }
 }
