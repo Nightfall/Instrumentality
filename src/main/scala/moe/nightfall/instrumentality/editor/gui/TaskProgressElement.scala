@@ -14,14 +14,14 @@ package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.{TaskState, MeasurableTask}
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{ProgressBarElement, LabelElement, ButtonBarContainerElement}
+import moe.nightfall.instrumentality.editor.control.{ProgressBarElement, LabelElement, PowerlineContainerElement}
 import org.lwjgl.opengl.GL11
 
 /**
  * For long-running tasks.
  * Created on 26/09/15.
  */
-class TaskProgressElement(val rootPanel: ButtonBarContainerElement, val preempted: EditElement, val noCleanupPreempted: Boolean, val task: MeasurableTask) extends EditElement {
+class TaskProgressElement(val rootPanel: PowerlineContainerElement, val preempted: EditElement, val noCleanupPreempted: Boolean, val task: MeasurableTask) extends EditElement {
     var returnPlease = false
     var tasksOnReturn = Seq[(TaskProgressElement) => Unit]()
 

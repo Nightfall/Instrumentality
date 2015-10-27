@@ -16,7 +16,7 @@ import java.awt.Font
 
 import moe.nightfall.instrumentality.{Loader, ModelCache}
 import moe.nightfall.instrumentality.animations.AnimSet
-import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TextButtonElement}
+import moe.nightfall.instrumentality.editor.control.{PowerlineContainerElement, TextButtonElement}
 import moe.nightfall.instrumentality.editor.gui.{DownloaderElement, BenchmarkElement, ModelChooserElement, PoseTreeElement}
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
@@ -78,16 +78,11 @@ object UIUtils {
     }
 
     def createGui(): EditElement = {
-        val bbce = new ButtonBarContainerElement(0.06d)
+        val bbce = new PowerlineContainerElement(0.06d, (A) => {
+            new ModelChooserElement(ModelCache.getLocalModels(), A)
+        })
 
-        val mce = new ModelChooserElement(ModelCache.getLocalModels())
-        bbce.setUnderPanel(mce, false)
-
-        bbce.barCore += new TextButtonElement("MdlChoose", 
-            // also serves as refresh!
-            bbce.setUnderPanel(new ModelChooserElement(ModelCache.getLocalModels()), false)
-        )
-
+        /*
         bbce.barCore += new TextButtonElement("Benchmark",
             if (Loader.currentFile != null) {
                 val mdl = ModelCache.getLocal(Loader.currentFile)
@@ -106,7 +101,7 @@ object UIUtils {
 
         bbce.barCore += new TextButtonElement("Get PMXs", 
             bbce.setUnderPanel(new DownloaderElement(bbce), false)
-        )
+        )*/
 
         return bbce
     }

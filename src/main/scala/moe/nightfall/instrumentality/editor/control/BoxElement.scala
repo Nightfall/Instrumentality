@@ -19,18 +19,27 @@ import moe.nightfall.instrumentality.editor.EditElement
  * It's just less flexible.
  * Created on 01/09/15.
  */
-class HBoxElement extends EditElement {
+class BoxElement(val vertical: Boolean) extends EditElement {
     private var barPieces = scala.collection.mutable.ListBuffer[EditElement]()
 
-    def +=(editElement: EditElement): Unit = {
+    def +=(editElement: EditElement) {
         barPieces += editElement
         subElements += editElement
     }
 
+    def -=(editElement: EditElement) {
+        if (barPieces.contains(editElement))
+            barPieces.remove(barPieces.indexOf(editElement))
+        if (subElements.contains(editElement)) {
+            subElements.remove(subElements.indexOf(editElement))
+            editElement.cleanup()
+        }
+    }
+
     override def layout() {
         if (barPieces.nonEmpty) {
-            val div = width / barPieces.size
-            val leftover = width - (div * barPieces.size)
+            val div = (if (vertical) height else width) / barPieces.size
+            val leftover = (if (vertical) height else width) - (div * barPieces.size)
 
             var first = true
             var pos = 0
@@ -41,11 +50,11 @@ class HBoxElement extends EditElement {
                     first = false
                 }
 
-                button.posX = pos
-                button.posY = 0
+                button.posX = if (vertical) 0 else pos
+                button.posY = if (vertical) pos else 0
 
                 pos += ds
-                button.setSize(ds, height)
+                button.setSize(if (vertical) width else ds, if (vertical) ds else height)
             }
         }
     }

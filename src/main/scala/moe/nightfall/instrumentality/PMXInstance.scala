@@ -177,7 +177,7 @@ class PMXInstance(val theModel: PMXModel) {
      */
     def render(s: Shader, red: Double, green: Double, blue: Double, clippingSize: Float, clippingSizeDiscard: Float) {
         // Makes things simpler
-        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
+        GL11.glPushAttrib(GL11.GL_ENABLE_BIT)
         val matrix = BufferUtils.createFloatBuffer(16)
         val oldProgram = GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM)
         GL20.glUseProgram(s.program)
@@ -196,6 +196,7 @@ class PMXInstance(val theModel: PMXModel) {
                 GL11.glBindTexture(GL11.GL_TEXTURE_2D, theModel.materials.get(str).get)
                 GL11.glColor4d(red, green, blue, 1)
             } else {
+                GL11.glDisable(GL11.GL_TEXTURE_2D)
                 GL11.glColor4d(mat.diffR * red, mat.diffG * green, mat.diffB * blue, 1)
             }
             for (j <- 0 until vboList(i).length) {

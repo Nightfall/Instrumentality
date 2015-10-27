@@ -15,7 +15,7 @@ package moe.nightfall.instrumentality.editor.gui
 
 import java.io.{DataOutputStream, FileOutputStream}
 
-import moe.nightfall.instrumentality.{Loader, ModelCache}
+import moe.nightfall.instrumentality.{PMXModel, Loader, ModelCache}
 import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control._
@@ -23,7 +23,7 @@ import moe.nightfall.instrumentality.editor.control._
 /**
  * Created on 11/09/15.
  */
-class PoseTreeElement(val targetSet: AnimSet, whereAmI: ButtonBarContainerElement) extends EditElement {
+class PoseTreeElement(val targetMdl: PMXModel, whereAmI: PowerlineContainerElement) extends EditElement {
     val treeviewElement = new TreeviewElement(new TreeviewElementStructurer[String] {
         /*
         override def getNodeName(n : String) = n
@@ -43,15 +43,14 @@ class PoseTreeElement(val targetSet: AnimSet, whereAmI: ButtonBarContainerElemen
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
         override def getNodeName(n: String): String = n
 
-        override def onNodeClick(n: String): Unit =
-            whereAmI.setUnderPanel(
-                new PoseEditElement(n, ModelCache.getLocal(Loader.currentFile)),
-                noCleanup = false)
+        override def onNodeClick(n: String) {
+            whereAmI.addAndGo(n, new PoseEditElement(n, targetMdl))
+        }
 
         // The nonsense that was here, I cannot understand.
         // Now, Map - Filter - etc., I *CAN* understand!
         override def getChildNodes(n: Option[String]): Iterable[String] =
-            targetSet.allPoses.keys.filter(targetSet.poseParents.get(_) == n).toSeq
+            targetMdl.anims.allPoses.keys.filter(targetMdl.anims.poseParents.get(_) == n).toSeq
     })
     
     val scrollArea = new ScrollAreaElement(treeviewElement)
@@ -61,7 +60,7 @@ class PoseTreeElement(val targetSet: AnimSet, whereAmI: ButtonBarContainerElemen
     val saveButton = new TextButtonElement("Save", {
         val fos = new FileOutputStream(ModelCache.modelRepository + "/" + Loader.currentFile + "/mmcposes.dat")
         val dos = new DataOutputStream(fos)
-        targetSet.save(dos)
+        targetMdl.anims.save(dos)
         dos.close()
     })
 

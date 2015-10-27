@@ -13,13 +13,34 @@
 package moe.nightfall.instrumentality.editor.control
 
 import moe.nightfall.instrumentality.editor.EditElement
+import org.lwjgl.opengl.GL11
 
-class ButtonBarContainerElement(sizeRatio: Double) extends EditElement {
-    val barCore: HBoxElement = new HBoxElement
+class PowerlineContainerElement(sizeRatio: Double, getHome: (PowerlineContainerElement) => EditElement) extends EditElement {
+
+    val barCore: BoxElement = new BoxElement(false)
     subElements += barCore
     private var underPanel: EditElement = null
     // Sometimes this needs to be overridden.
     var noCleanupOnChange: Boolean = false
+    private val powerlineBobs = scala.collection.mutable.ListBuffer[(EditElement, () => Unit)]()
+
+    def addThing(button: EditElement, onDelete: () => Unit) {
+        val pl = new PowerlineArrowElement(button)
+        barCore += pl
+        // o...kay? (These parenthesis are not useless!)
+        powerlineBobs += ((pl, onDelete))
+    }
+
+    def addAndGo(s: String, l: EditElement) {
+        val ind = powerlineBobs.length + 1
+        addThing(new TextButtonElement(s, {
+            removeFromIndex(ind)
+            setUnderPanel(l, true)
+        }), () => {
+            l.cleanup()
+        })
+        setUnderPanel(l, true)
+    }
 
     def setUnderPanel(editElement: EditElement, noCleanup: Boolean) {
         if (underPanel != null) {
@@ -34,6 +55,20 @@ class ButtonBarContainerElement(sizeRatio: Double) extends EditElement {
         layout()
     }
 
+    def removeFromIndex(i: Int) {
+        while (powerlineBobs.length > i) {
+            barCore -= powerlineBobs(i)._1
+            powerlineBobs(i)._2()
+            powerlineBobs.remove(i)
+        }
+    }
+
+    barCore += new TextButtonElement("Home", {
+        removeFromIndex(0)
+        setUnderPanel(getHome(this), false)
+    })
+    setUnderPanel(getHome(this), false)
+
     override def layout() {
         val size: Int = (height * sizeRatio).asInstanceOf[Int]
         if (underPanel != null) {
@@ -45,4 +80,27 @@ class ButtonBarContainerElement(sizeRatio: Double) extends EditElement {
         barCore.posX = 0
         barCore.posY = 0
     }
+
+    class PowerlineArrowElement(val b: EditElement) extends EditElement {
+        subElements += b
+
+        override def draw() {
+            drawSubelements()
+            GL11.glLineWidth(1)
+            GL11.glColor3f(0, 0, 0)
+            GL11.glBegin(GL11.GL_LINE_STRIP)
+            // It doesn't look right if we respect the border
+            GL11.glVertex2d(0, shadowWidth)
+            GL11.glVertex2d(height / 4, height / 2)
+            GL11.glVertex2d(0, height - shadowWidth)
+            GL11.glEnd()
+        }
+
+        override def layout() {
+            b.posX = height / 4
+            b.posY = 0
+            b.setSize(width - (height / 4), height)
+        }
+    }
+
 }

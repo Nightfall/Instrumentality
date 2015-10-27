@@ -24,5 +24,5 @@ import net.minecraft.util.ResourceLocation
 class MinecraftApplicationHost extends ApplicationHost {
 
     // Gets a file from assets/instrumentality/ in a replacable manner.
-    override def getResource(resource: String): InputStream = Minecraft.getMinecraft.getResourceManager.getResource(new ResourceLocation("instrumentality:/" + resource)).getInputStream
+    override def getResource(resource: String): InputStream = Minecraft.getMinecraft.getResourceManager.getResource(new ResourceLocation("instrumentality:" + resource)).getInputStream
 }

@@ -32,6 +32,9 @@ object Loader {
     // This is the current model name for the player.
     // To be notified when this changes, put yourself on the list below :)
     var currentFile: String = _
+
+    // NOTE: This list is "kind of" dangerous.
+    // If you put yourself on this list, please keep yourself there. Don't forget.
     var currentFileListeners = ListBuffer[() => Unit]()
 
     var shaderBoneTransform: Shader = _

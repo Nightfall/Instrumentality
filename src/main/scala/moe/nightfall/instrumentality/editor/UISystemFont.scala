@@ -28,7 +28,9 @@ import org.lwjgl.util.vector.Vector2f;
  */
 object UISystemFont {
     // We're /NOT/ uploading this to the GPU every frame just to copy it back down again as a UI draw.
-    private var textTextures = scala.collection.mutable.HashMap[String, TextTexture]()
+    private val textTextures = scala.collection.mutable.HashMap[String, TextTexture]()
+    // Sizes!
+    private val textSizes = scala.collection.mutable.HashMap[String, (Vector2f, Vector2f, Double)]()
 
     // Used to avoid textTextures getting too big
     // (this is a ring, freeTextPtr goes around the ring as textures are alloc'd,
@@ -74,7 +76,7 @@ object UISystemFont {
                 System.out.println("Cache ring runover")
             // Work out what we need
             val neededSize = sizeSystemLine(str, targetFont)
-            val mainImage = new BufferedImage(neededSize._1.x.toInt, neededSize._1.x.toInt, BufferedImage.TYPE_INT_ARGB)
+            val mainImage = new BufferedImage(neededSize._1.x.toInt, neededSize._1.y.toInt, BufferedImage.TYPE_INT_ARGB)
             val g = mainImage.createGraphics()
             g.setFont(targetFont)
             g.setColor(Color.BLACK)
@@ -114,12 +116,16 @@ object UISystemFont {
     // but if you *want* to draw your text with the offsets, then feel free to.)
     // To get the size in GL units, just multiply the first v2f by the scale.
     def sizeSystemLine(str: String, targetFont: Font): (Vector2f, Vector2f, Double) = {
+        if (textSizes.contains(str))
+            return textSizes(str)
         fontTestRender.setFont(targetFont)
-        val fm = fontTestRender.getFontMetrics()
+        val fm = fontTestRender.getFontMetrics
         // Work out what we need
         val neededSize = fm.getStringBounds(str, fontTestRender)
-        val scale = 9d / fm.getHeight()
-        (new Vector2f(neededSize.getWidth.toFloat + 1, neededSize.getHeight.toFloat + 1), new Vector2f(neededSize.getX.toFloat, neededSize.getY.toFloat), scale)
+        val scale = 9d / fm.getHeight
+        val s = (new Vector2f(neededSize.getWidth.toFloat + 1, neededSize.getHeight.toFloat + 1), new Vector2f(neededSize.getX.toFloat, neededSize.getY.toFloat), scale)
+        textSizes(str) = s
+        s
     }
 
     /**

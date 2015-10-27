@@ -13,29 +13,58 @@
 
 package moe.nightfall.instrumentality.editor.gui
 
+import moe.nightfall.instrumentality.{ModelCache, Loader}
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{ArrowButtonElement, ModelElement}
+import moe.nightfall.instrumentality.editor.control._
 
 /**
  * Created on 25/08/15, ported to Scala on 2015-09-20
  */
-class ModelChooserElement(val availableModels: Seq[String]) extends EditElement {
+class ModelChooserElement(val availableModels: Seq[String], powerlineContainerElement: PowerlineContainerElement) extends EditElement {
     private var group = Array.fill[ModelElement](3)(new ModelElement(true))
     subElements ++= group
 
     private var ptrStart: Int = 0
+    private var x22H: BoxElement = new BoxElement(false)
+    private var x22VA: BoxElement = new BoxElement(true)
+    private var x22VB: BoxElement = new BoxElement(true)
+    x22H += x22VA
+    x22H += x22VB
+    x22VA += new TextButtonElement("Animations", {
+        val mdl = ModelCache.getLocal(Loader.currentFile)
+        if (mdl != null) {
+            val l = new PoseTreeElement(mdl, powerlineContainerElement)
+            powerlineContainerElement.addAndGo("Animations", l)
+        }
+    })
+    x22VA += new TextButtonElement("Benchmark", {
+        val mdl = ModelCache.getLocal(Loader.currentFile)
+        if (mdl != null) {
+            val l = new BenchmarkElement(mdl)
+            powerlineContainerElement.addAndGo("Benchmark", l)
+        }
+    })
+    x22VB += new TextButtonElement("Settings", {
+        //        val l=new DownloaderElement(powerlineContainerElement)
+        //        powerlineContainerElement.addAndGo("Downloader",l)
+    })
+    x22VB += new TextButtonElement("Downloader", {
+        val l = new DownloaderElement(powerlineContainerElement)
+        powerlineContainerElement.addAndGo("PMX Downloader", l)
+    })
     private var buttonbar = Array[EditElement](
         new ArrowButtonElement(180, {
             ptrStart -= 1
             if (ptrStart < 0)
-                ptrStart = availableModels.length;
+                ptrStart = availableModels.length
             updatePosition()
         }),
         new ArrowButtonElement(0, {
             ptrStart += 1
             updatePosition()
         }),
-        new ModelElement(false)
+        new ModelElement(false),
+        x22H
     )
     subElements ++= buttonbar
     updatePosition()
@@ -53,15 +82,15 @@ class ModelChooserElement(val availableModels: Seq[String]) extends EditElement 
         for ((button, index) <- buttonbar.view.zipWithIndex) {
             button.posX = y * index
             button.posY = 0
-            button.setSize(y, y)
+            button.setSize(if (index != buttonbar.length - 1) y else width - (y * index), y)
         }
     }
 
     def updatePosition() = {
         for ((element, index) <- group.view.zipWithIndex) {
-            val indi = (index + ptrStart) % (availableModels.length + 1);
+            val indi = (index + ptrStart) % (availableModels.length + 1)
             if (indi == 0) {
-                element.setModel(null);
+                element.setModel(null)
             } else {
                 element.setModel(availableModels(indi - 1))
             }

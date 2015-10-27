@@ -22,7 +22,7 @@ import moe.nightfall.instrumentality.{ModelDownloadTask, ModelCache, Recommended
 import moe.nightfall.instrumentality.RecommendedInfoCache.DownloadableEntry
 import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{ButtonBarContainerElement, TreeviewElement, TreeviewElementStructurer}
+import moe.nightfall.instrumentality.editor.control.{PowerlineContainerElement, TreeviewElement, TreeviewElementStructurer}
 import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
 
 import scala.collection.JavaConversions._
@@ -31,7 +31,7 @@ import scala.collection.JavaConversions._
  * Automatically downloads and sets up models.
  * Created on 26/09/15.
  */
-class DownloaderElement(val rootPanel: ButtonBarContainerElement) extends EditElement {
+class DownloaderElement(val rootPanel: PowerlineContainerElement) extends EditElement {
     var listview = new TreeviewElement[DownloadableEntry](new TreeviewElementStructurer[DownloadableEntry] {
         override def getNodeName(n: DownloadableEntry): String = n.name + ":" + n.author
 
