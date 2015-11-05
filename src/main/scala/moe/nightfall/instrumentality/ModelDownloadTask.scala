@@ -18,11 +18,12 @@ import java.util.zip.{ZipEntry, ZipInputStream}
 
 import moe.nightfall.instrumentality.ModelCache.{DownloadingPMXFilenameLocator, IPMXFilenameLocator}
 import moe.nightfall.instrumentality.animations.AnimSet
+import moe.nightfall.instrumentality.RecommendedInfoCache.DownloadableEntry
 
 /**
  * Created on 09/10/15.
  */
-class ModelDownloadTask(val ps: AnimSet, val downloadName: String) extends MeasurableTask with Runnable {
+class ModelDownloadTask(val n: DownloadableEntry, val downloadName: String) extends MeasurableTask with Runnable {
 
     // Scala is magic...
     var generalTask = "Starting download thread..."
@@ -33,7 +34,7 @@ class ModelDownloadTask(val ps: AnimSet, val downloadName: String) extends Measu
     override def run(): Unit = {
         progress = 0
         generalTask = "Downloading ZIP..."
-        subTask = ps.downloadURL
+        subTask = n.download
         state = TaskState.Running
         val fakeIt = false
         try {
@@ -46,7 +47,7 @@ class ModelDownloadTask(val ps: AnimSet, val downloadName: String) extends Measu
                 val fakeIt2 = false
                 var f = new File("nodos.zip")
                 if (!fakeIt2) {
-                    val uc = new URL(ps.downloadURL).openConnection()
+                    val uc = new URL(n.download).openConnection()
                     uc.addRequestProperty("User-Agent", "MikuMikuCraft")
                     uc.connect()
                     val contentLength = uc.getContentLengthLong
@@ -83,7 +84,7 @@ class ModelDownloadTask(val ps: AnimSet, val downloadName: String) extends Measu
                 }
                 fis.close()
 
-                var root = ps.downloadBaseFolder.toLowerCase
+                var root = n.downloadDir.toLowerCase
                 if (root == "/")
                     root = ""
                 var fileProgress = 0.1d

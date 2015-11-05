@@ -28,17 +28,6 @@ class AnimSet {
     // Basic pose data
     val allPoses = new HashMap[String, KeyframeAnimationData]
     val poseParents = new HashMap[String, String]
-    // Model ZIP download URL & folder containing PMX within ZIP.
-    // A blank downloadURL means that this is not usable for suggestion.
-    // A blank downloadBaseFolder means that the URL *cannot* be automatically followed for some reason,
-    // and the URL should instead be given to the web browser on the system.
-    // (This mechanism allows creating a listing of recommended models for the user to download,
-    //  which should make the mod a LOT easier to use. This method isn't flexible, but it's easy for the user.
-    //  Also, this being bundled with the posedata ensure that whenever we suggest a model,
-    //  it's a one-click process to use it, as the posedata is where we got the URL from.)
-    var downloadURL = ""
-    // Note: The value "." indicates that the PMX file is in the base folder.
-    var downloadBaseFolder = ""
 
     // NOTE: The parent of a keyframe animation is considered in the editor by it's last frame.
     //       This is so things like bowPull make sense. :)
@@ -98,8 +87,6 @@ class AnimSet {
     @throws(classOf[IOException])
     def save(os: DataOutputStream) {
         os.writeUTF("Lelouch")
-        os.writeUTF(downloadURL)
-        os.writeUTF(downloadBaseFolder)
         // GZIP does better if we throw in all the data at once. Also, we need finish()
         val baos = new ByteArrayOutputStream()
         val zos = new DataOutputStream(baos)
@@ -144,8 +131,6 @@ class AnimSet {
     def load(dis: DataInputStream) {
         val ver = dis.readUTF()
         if (ver == "Lelouch") {
-            downloadURL = dis.readUTF()
-            downloadBaseFolder = dis.readUTF()
             // main pose loader is generally very similar
             loadMain(0, new DataInputStream(new GZIPInputStream(dis)))
         } else {
