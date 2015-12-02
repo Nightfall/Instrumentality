@@ -118,7 +118,7 @@ object UIUtils {
                 // NOP
             } else if (c == 32) {
                 // more NOP
-            } else if (UIFont.getCharLoc(c) == -1) {
+            } else if ( /*UIFont.getCharLoc(c) == -1 This argument is getting rather stupid. --gamemanj */ true) {
                 // welp, we have an unknown char, assume it's an evil diacritic
                 if (sysFont == null) {
                     if (sysFontCreationThread == null) {
