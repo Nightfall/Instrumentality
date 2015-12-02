@@ -36,6 +36,8 @@ object RecommendedInfoCache {
         val name = arr(1)
         val author = arr(2)
         val poser = arr(3)
+        val download = arr(4)
+        val downloadDir = arr(5)
 
         def isInstalled: Boolean = ModelCache.localFromHash(sha).isDefined
     }

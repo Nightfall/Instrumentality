@@ -36,18 +36,15 @@ class DownloaderElement(val rootPanel: PowerlineContainerElement) extends EditEl
         override def getNodeName(n: DownloadableEntry): String = n.name + ":" + n.author
 
         override def onNodeClick(n: DownloadableEntry) = {
-            val ps = new AnimSet
-            ps.loadForHash(n.sha)
-            if (ps.downloadURL == "") {
-
+            if (n.download == "") {
+                // What to do...?
             } else {
-                if (ps.downloadBaseFolder == "") {
-                    Desktop.getDesktop().browse(new URI(ps.downloadURL))
+                if (n.downloadDir == "") {
+                    Desktop.getDesktop().browse(new URI(n.download))
                 } else {
-                    val task = new ModelDownloadTask(ps, n.sha)
+                    val task = new ModelDownloadTask(n, n.sha)
                     val tpe = new TaskProgressElement(rootPanel, DownloaderElement.this, false, task)
                     new Thread(task).start()
-                    tpe.label.text = "Downloading " + ps.downloadURL + "..."
                     tpe.addReturnTask((tpe) => {
                         ModelCache.notifyModelsAdded
                         RecommendedInfoCache.refreshAvailable
