@@ -25,10 +25,11 @@ abstract class View3DElement extends EditElement {
 
     protected def draw3D(): Unit
 
+    var translateY = 0.0d
+    var scale = 3.0d
+
     private var dragX = 0
     private var dragY = 0
-    private var translateY = 0.0d
-    private var scale = 3.0d
     private var ignoreFirstDrag = false
 
     override def draw() {
@@ -108,6 +109,8 @@ abstract class View3DElement extends EditElement {
         if (buttons(1)) {
             translateY -= (y - dragY) / (20.0d * scale)
             scale += (x - dragX) / 20.0d
+            if (scale < 0.05d)
+                scale = 0.05d
         }
         ignoreFirstDrag = false
         dragX = x

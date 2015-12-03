@@ -79,7 +79,7 @@ object UIUtils {
 
     def createGui(): EditElement = {
         val bbce = new PowerlineContainerElement(0.06d, (A) => {
-            new ModelChooserElement(ModelCache.getLocalModels(), A)
+            new ModelChooserElement(ModelCache.getLocalModels() :+ null, A)
         })
 
         /*

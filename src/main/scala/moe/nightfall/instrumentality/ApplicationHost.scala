@@ -21,4 +21,8 @@ import java.io.InputStream
 trait ApplicationHost {
     // Gets a file from assets/instrumentality/ in a (preferably) easily-replaced manner.
     def getResource(resource: String): InputStream
+
+    // Draws the ordinary player. It should be scaled to within a 0-1 vertical range.
+    // As with the PMX models themselves, keep it to a sane horizontal range, please?
+    def drawPlayer()
 }

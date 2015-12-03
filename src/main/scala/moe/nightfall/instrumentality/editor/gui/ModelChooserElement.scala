@@ -13,87 +13,192 @@
 
 package moe.nightfall.instrumentality.editor.gui
 
-import moe.nightfall.instrumentality.{ModelCache, Loader}
-import moe.nightfall.instrumentality.editor.EditElement
+import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import moe.nightfall.instrumentality.editor.control._
+import moe.nightfall.instrumentality.editor.{UIUtils, EditElement, UIFont}
+import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance}
+import org.lwjgl.opengl.GL11
 
 /**
- * Created on 25/08/15, ported to Scala on 2015-09-20
+ * Created on 25/08/15, ported to Scala on 2015-09-20. Oh, and our date formats are inconsistent.
+ * availableModels must contain at least null.
+ * Also note that I intend for this to perform loading in the background.
  */
 class ModelChooserElement(val availableModels: Seq[String], powerlineContainerElement: PowerlineContainerElement) extends EditElement {
-    private var group = Array.fill[ModelElement](3)(new ModelElement(true))
-    subElements ++= group
+    private val availableModelUnits = new Array[PMXInstance](availableModels.length)
 
-    private var ptrStart: Int = 0
-    private var x22H: BoxElement = new BoxElement(false)
-    private var x22VA: BoxElement = new BoxElement(true)
-    private var x22VB: BoxElement = new BoxElement(true)
-    x22H += x22VA
-    x22H += x22VB
-    x22VA += new TextButtonElement("Animations", {
-        val mdl = ModelCache.getLocal(Loader.currentFile)
-        if (mdl != null) {
-            val l = new PoseTreeElement(mdl, powerlineContainerElement)
-            powerlineContainerElement.addAndGo("Animations", l)
+    // Used for angle calculations in the Rotary
+    private val sliceSize = math.Pi / (0.5 * availableModelUnits.length)
+    private val sliceOfs = -math.Pi
+    private val rotaryScale = availableModelUnits.length / 4
+
+    private var angleValue = 0d
+    private var angleTarget = 0d
+
+    // Used to prevent a total failure.
+    var slowLoad = 0
+
+    availableModels.zipWithIndex.foreach(kv => {
+        if (kv._1 != null) {
+            val mdl = ModelCache.getLocal(kv._1)
+            availableModelUnits(kv._2) = new PMXInstance(mdl)
+            availableModelUnits(kv._2).anim = new NewPCAAnimation(mdl.anims)
         }
     })
-    x22VA += new TextButtonElement("Benchmark", {
-        val mdl = ModelCache.getLocal(Loader.currentFile)
-        if (mdl != null) {
-            val l = new BenchmarkElement(mdl)
-            powerlineContainerElement.addAndGo("Benchmark", l)
-        }
-    })
-    x22VB += new TextButtonElement("Settings", {
-        //        val l=new DownloaderElement(powerlineContainerElement)
-        //        powerlineContainerElement.addAndGo("Downloader",l)
-    })
-    x22VB += new TextButtonElement("Downloader", {
-        val l = new DownloaderElement(powerlineContainerElement)
-        powerlineContainerElement.addAndGo("PMX Downloader", l)
-    })
-    private var buttonbar = Array[EditElement](
-        new ArrowButtonElement(180, {
-            ptrStart -= 1
-            if (ptrStart < 0)
-                ptrStart = availableModels.length
-            updatePosition()
-        }),
-        new ArrowButtonElement(0, {
-            ptrStart += 1
-            updatePosition()
-        }),
-        new ModelElement(false),
-        x22H
-    )
-    subElements ++= buttonbar
-    updatePosition()
 
-    override def layout() = {
-        val x = width / group.length
-        val y = height / 4
-
-        for ((element, index) <- group.view.zipWithIndex) {
-            element.posX = x * index
-            element.posY = y
-            element.setSize(x, y * 3)
-        }
-
-        for ((button, index) <- buttonbar.view.zipWithIndex) {
-            button.posX = y * index
-            button.posY = 0
-            button.setSize(if (index != buttonbar.length - 1) y else width - (y * index), y)
+    private var mainRotary = new View3DElement {
+        override protected def draw3D(): Unit = {
+            GL11.glTranslated(0, 0, -rotaryScale)
+            GL11.glRotated(math.toDegrees(-angleValue), 0, 1, 0)
+            GL11.glLineWidth(4)
+            GL11.glBegin(GL11.GL_LINE_LOOP)
+            GL11.glColor3b(0, 0, 0)
+            availableModels.zipWithIndex.foreach(kv => {
+                val angle = sliceOfs + (sliceSize * kv._2)
+                GL11.glVertex3d(math.sin(angle) * rotaryScale, 0, math.cos(angle) * rotaryScale)
+            })
+            GL11.glEnd()
+            GL11.glBegin(GL11.GL_LINES)
+            GL11.glColor3b(0, 0, 0)
+            GL11.glVertex3d(0, 0, 0)
+            GL11.glVertex3d(math.sin(angleValue) * rotaryScale, 0, math.cos(angleValue) * rotaryScale)
+            GL11.glEnd()
+            availableModels.zipWithIndex.foreach(kv => {
+                val angle = sliceOfs + (sliceSize * kv._2)
+                GL11.glPushMatrix()
+                GL11.glTranslated(math.sin(angle) * rotaryScale, 0, math.cos(angle) * rotaryScale)
+                GL11.glRotated(math.toDegrees(angle) + 180, 0, 1, 0)
+                if (slowLoad > kv._2) {
+                    if (availableModelUnits(kv._2) != null) {
+                        val scale = 1 / availableModelUnits(kv._2).theModel.height
+                        GL11.glScaled(scale, scale, scale)
+                        availableModelUnits(kv._2).render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
+                    } else {
+                        if (kv._1 == null) {
+                            // Player
+                            Loader.applicationHost.drawPlayer()
+                        } else {
+                            // Unloaded (?)
+                            GL11.glTranslated(0.5, 0.5, 0)
+                            GL11.glScaled(-0.1d, -0.1d, 0.1d)
+                            GL11.glScaled(0.125d, 0.125d, 0.125d)
+                            UIUtils.drawText("Loading...")
+                        }
+                    }
+                } else {
+                    GL11.glTranslated(0.5, 0.5, 0)
+                    GL11.glScaled(-0.1d, -0.1d, 0.1d)
+                    GL11.glScaled(0.125d, 0.125d, 0.125d)
+                    UIUtils.drawText("Please wait")
+                }
+                GL11.glPopMatrix()
+            })
+            slowLoad += 1
+            if (slowLoad > availableModelUnits.length)
+                slowLoad = availableModelUnits.length
         }
     }
 
-    def updatePosition() = {
-        for ((element, index) <- group.view.zipWithIndex) {
-            val indi = (index + ptrStart) % (availableModels.length + 1)
-            if (indi == 0) {
-                element.setModel(null)
-            } else {
-                element.setModel(availableModels(indi - 1))
+    mainRotary.translateY = -0.5
+    mainRotary.scale = 3
+
+    subElements += mainRotary
+
+    private var buttonbar = Array[EditElement](
+        new ArrowButtonElement(180, {
+            Loader.setCurrentFile(availableModels(getFB._1))
+        }),
+        new ArrowButtonElement(0, {
+            Loader.setCurrentFile(availableModels(getFB._2))
+        }),
+        new TextButtonElement("Downloader", {
+            val l = new DownloaderElement(powerlineContainerElement)
+            powerlineContainerElement.addAndGo("PMX Downloader", l)
+        }),
+        new TextButtonElement("Benchmark", {
+            if (Loader.currentFile != null) {
+                val mdl = ModelCache.getLocal(Loader.currentFile)
+                if (mdl != null) {
+                    val l = new BenchmarkElement(mdl)
+                    powerlineContainerElement.addAndGo("Benchmark", l)
+                }
             }
+        }),
+        new TextButtonElement("Animations", {
+            if (Loader.currentFile != null) {
+                val mdl = ModelCache.getLocal(Loader.currentFile)
+                if (mdl != null) {
+                    val l = new PoseTreeElement(mdl, powerlineContainerElement)
+                    powerlineContainerElement.addAndGo("Animations", l)
+                }
+            }
+        })
+    )
+    subElements ++= buttonbar
+
+    private def getFB: (Int, Int) = {
+        val point = availableModels.zipWithIndex.filter(_._1 == Loader.currentFile)
+        val current = point.head
+        val next = if (current._2 == (availableModelUnits.length - 1)) 0 else current._2 + 1
+        if (current._2 == 0)
+            return (availableModelUnits.length - 1, next)
+        (current._2 - 1, next)
+    }
+
+    override def layout() = {
+        val y = height / 8
+
+        var genWidth = width / buttonbar.length
+        var pos = 0
+        for ((button, index) <- buttonbar.view.zipWithIndex) {
+            button.posX = pos
+            button.posY = y * 7
+            var usedWidth = genWidth
+            if (button.isInstanceOf[ArrowButtonElement]) {
+                // recalculate based on remaining. (This will not work if an arrow is last!!!)
+                usedWidth = y
+                genWidth = (width - (pos + usedWidth)) / ((buttonbar.length - index) - 1)
+            }
+            button.setSize(usedWidth, y)
+            pos += button.width
         }
+
+        mainRotary.posX = 0
+        mainRotary.posY = 0
+        mainRotary.setSize(width, y * 7)
+    }
+
+    // Both values are from -Pi to Pi.
+    // If there is a difference of > Pi between them, it's more efficient to go in reverse
+    private def aComp(angleValue: Double, angleTarget: Double): Double = if (math.abs(angleValue - angleTarget) <= math.Pi) angleValue - angleTarget else angleTarget - angleValue
+
+    private def aFlow(angle: Double): Double = {
+        if (angle < -math.Pi)
+            return angle + (math.Pi * 2)
+        if (angle > math.Pi)
+            return angle - (math.Pi * 2)
+        angle
+    }
+
+    override def update(dT: Double) = {
+        availableModels.zipWithIndex.filter(_._1 == Loader.currentFile).foreach(kv => angleTarget = sliceOfs + (sliceSize * kv._2))
+        if (aComp(angleValue, angleTarget) < 0) {
+            angleValue += dT
+            angleValue = aFlow(angleValue)
+            if (aComp(angleValue, angleTarget) > 0)
+                angleValue = angleTarget
+        } else {
+            angleValue -= dT
+            angleValue = aFlow(angleValue)
+            if (aComp(angleValue, angleTarget) < 0)
+                angleValue = angleTarget
+        }
+    }
+
+    override def cleanup() = {
+        availableModels.zipWithIndex.foreach(kv => {
+            if (availableModelUnits(kv._2) != null)
+                availableModelUnits(kv._2).cleanupGL()
+        })
     }
 }

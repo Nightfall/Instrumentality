@@ -25,4 +25,9 @@ class MinecraftApplicationHost extends ApplicationHost {
 
     // Gets a file from assets/instrumentality/ in a replacable manner.
     override def getResource(resource: String): InputStream = Minecraft.getMinecraft.getResourceManager.getResource(new ResourceLocation("instrumentality:" + resource)).getInputStream
+
+    // Draws the ordinary player. It should be scaled to within a 0-1 vertical range.
+    override def drawPlayer(): Unit = {
+        // still nope
+    }
 }

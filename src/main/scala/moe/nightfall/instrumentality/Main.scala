@@ -126,4 +126,9 @@ class Main extends ApplicationHost {
 
     // Gets a file from assets/instrumentality/.
     override def getResource(resource: String): InputStream = getClass.getResourceAsStream("/assets/instrumentality/" + resource)
+
+    // Draws the ordinary player. It should be scaled to within a 0-1 vertical range.
+    override def drawPlayer(): Unit = {
+        // nope
+    }
 }
