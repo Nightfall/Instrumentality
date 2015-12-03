@@ -71,8 +71,18 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                 if (slowLoad > kv._2) {
                     if (availableModelUnits(kv._2) != null) {
                         val scale = 1 / availableModelUnits(kv._2).theModel.height
+                        GL11.glPushMatrix()
                         GL11.glScaled(scale, scale, scale)
                         availableModelUnits(kv._2).render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
+                        GL11.glPopMatrix()
+                        GL11.glTranslated(0, 1.1d, 0)
+                        GL11.glScaled(-0.1d, -0.1d, 0.1d)
+                        GL11.glScaled(0.125d, 0.125d, 0.125d)
+                        val nameSize = UIUtils.sizeText(kv._1)
+                        val textScale = if (nameSize.getX > 64) 1 / (((nameSize.getX - 64) / 64) + 1) else 1
+                        GL11.glScaled(textScale, textScale, 1)
+                        GL11.glTranslated(-nameSize.getX / 2, -nameSize.getY, 0)
+                        UIUtils.drawText(kv._1)
                     } else {
                         if (kv._1 == null) {
                             // Player
@@ -99,7 +109,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
         }
     }
 
-    mainRotary.translateY = -0.5
+    mainRotary.translateY = -0.6
     mainRotary.scale = 3
 
     subElements += mainRotary
