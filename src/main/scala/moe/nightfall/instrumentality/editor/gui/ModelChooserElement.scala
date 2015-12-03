@@ -192,6 +192,10 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
 
     override def update(dT: Double) = {
         availableModels.zipWithIndex.filter(_._1 == Loader.currentFile).foreach(kv => angleTarget = sliceOfs + (sliceSize * kv._2))
+        availableModels.zipWithIndex.foreach(kv => {
+            if (availableModelUnits(kv._2) != null)
+                availableModelUnits(kv._2).update(dT)
+        })
         if (aComp(angleValue, angleTarget) < 0) {
             angleValue += dT
             angleValue = aFlow(angleValue)
