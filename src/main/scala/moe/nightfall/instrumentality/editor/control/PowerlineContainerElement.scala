@@ -43,7 +43,7 @@ class PowerlineContainerElement(sizeRatio: Double, getHome: (PowerlineContainerE
     }
 
     def setUnderPanel(editElement: EditElement, noCleanup: Boolean) {
-        System.out.println("Powerline Switch " + editElement);
+        //System.out.println("Powerline Switch " + editElement);
         if (underPanel != null) {
             if (!noCleanupOnChange)
                 underPanel.cleanup()

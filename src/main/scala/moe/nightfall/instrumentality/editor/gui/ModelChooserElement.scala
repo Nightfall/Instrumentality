@@ -30,7 +30,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     // Used for angle calculations in the Rotary
     private val sliceSize = math.Pi / (0.5 * availableModelUnits.length)
     private val sliceOfs = -math.Pi
-    private val rotaryScale = availableModelUnits.length / 4
+    private val rotaryScale = availableModelUnits.length / 4.0d
 
     private var angleValue = 0d
     private var angleTarget = 0d
