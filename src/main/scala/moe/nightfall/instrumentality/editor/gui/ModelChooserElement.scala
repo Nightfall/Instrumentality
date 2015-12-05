@@ -15,7 +15,7 @@ package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import moe.nightfall.instrumentality.editor.control._
-import moe.nightfall.instrumentality.editor.{UIUtils, EditElement, UIFont}
+import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance}
 import org.lwjgl.opengl.GL11
 
@@ -42,7 +42,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
         if (kv._1 != null) {
             val mdl = ModelCache.getLocal(kv._1)
             availableModelUnits(kv._2) = new PMXInstance(mdl)
-            availableModelUnits(kv._2).anim = new NewPCAAnimation(mdl.anims)
+            availableModelUnits(kv._2).anim = new NewPCAAnimation(mdl.defaultAnims)
         }
     })
 

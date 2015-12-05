@@ -13,17 +13,17 @@
 package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.PMXFile.PMXBone
-import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel, PoseBoneTransform}
-import moe.nightfall.instrumentality.animations.{KeyframeAnimationData, Animation, PoseAnimation}
+import moe.nightfall.instrumentality.animations.{Animation, KeyframeAnimationData, PoseAnimation}
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control._
+import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel, PoseBoneTransform}
 import org.lwjgl.opengl.GL11
 
 class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement {
 
     val pmxInst: PMXInstance = new PMXInstance(pm)
 
-    def getEditAnim: KeyframeAnimationData = pm.anims.allPoses.get(editedPose).get
+    def getEditAnim: KeyframeAnimationData = pm.defaultAnims.allPoses.get(editedPose).get
 
     // Read-only except in resetFrame.
     // This data exists to simplify calculations like "which frame are we on" and things like that.
@@ -34,7 +34,7 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
     var editingFrame = 0
 
     def resetFrame {
-        editingData = pm.anims.createEditAnimation(editedPose, editingFrame / (getEditAnim.lenFrames - 1.0d))
+        editingData = pm.defaultAnims.createEditAnimation(editedPose, editingFrame / (getEditAnim.lenFrames - 1.0d))
         pmxInst.anim = editingData._2
     }
 

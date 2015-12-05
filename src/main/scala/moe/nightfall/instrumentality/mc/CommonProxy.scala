@@ -13,12 +13,51 @@
 package moe.nightfall.instrumentality.mc
 
 import cpw.mods.fml.common.FMLCommonHandler
-import moe.nightfall.instrumentality.Loader
-import net.minecraftforge.common.MinecraftForge;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent
+import cpw.mods.fml.relauncher.Side
+import moe.nightfall.instrumentality.mc.network._
+import net.minecraft.entity.player.EntityPlayerMP
+import net.minecraftforge.event.entity.EntityJoinWorldEvent
+
+//import moe.nightfall.instrumentality.mc.network.SendSHAMessage
+import net.minecraftforge.common.MinecraftForge
+
+import scala.collection.JavaConversions._
+
+//,WantDataMessage,GiveDataMessage}
 
 class CommonProxy {
+
+    var serverKnownDataManifests = Map[String, SendSHAMessage]()
+
     def preInit() {
         MinecraftForge.EVENT_BUS.register(this)
         FMLCommonHandler.instance.bus.register(this)
+        // sent by client using send-to-server to say "yes I support MMC",
+        // and to send the current model's SHA. Note that sending a SHA indicates to the server you have that SHA
+        MikuMikuCraft.mikuNet.registerMessage(classOf[SendSHAMessageServerHandler], classOf[SendSHAMessage], 0, Side.SERVER)
+        MikuMikuCraft.mikuNet.registerMessage(classOf[SendSHAMessageClientHandler], classOf[SendSHAMessage], 1, Side.CLIENT)
+        // sent by client to server, indicates that client needs data for a given SHA
+        //MikuMikuCraft.mikuNet.registerMessage(WantDataMessageServerHandler, classOf[WantDataMessage], 2, Side.SERVER)
+        // sent by server to client, indicates that server needs data for a given SHA
+        //MikuMikuCraft.mikuNet.registerMessage(WantDataMessageClientHandler, classOf[WantDataMessage], 3, Side.CLIENT)
+        // sent by client to server, gives server the data for a given SHA
+        //MikuMikuCraft.mikuNet.registerMessage(GiveDataMessageServerHandler, classOf[GiveDataMessage], 4, Side.SERVER)
+        // sent by server to client, gives client the data for a given SHA
+        //MikuMikuCraft.mikuNet.registerMessage(GiveDataMessageClientHandler, classOf[GiveDataMessage], 5, Side.CLIENT)
+    }
+
+    @SubscribeEvent
+    def onEntityJoin(entityJoinWorldEvent: EntityJoinWorldEvent) {
+        if (!entityJoinWorldEvent.world.isRemote) {
+            if (entityJoinWorldEvent.entity.isInstanceOf[EntityPlayerMP]) {
+                // Forward all the SendSHA messages we know of in that world to the player
+                entityJoinWorldEvent.world.playerEntities.foreach((e) => {
+                    val d = serverKnownDataManifests.get(e.asInstanceOf[EntityPlayerMP].getCommandSenderName)
+                    if (d.isDefined)
+                        MikuMikuCraft.mikuNet.sendTo(d.get, e.asInstanceOf[EntityPlayerMP])
+                })
+            }
+        }
     }
 }

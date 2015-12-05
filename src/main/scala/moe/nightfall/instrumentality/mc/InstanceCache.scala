@@ -15,7 +15,9 @@ package moe.nightfall.instrumentality.mc
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentLinkedQueue
 
+import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.{Loader, PMXModel}
+import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 
 /**
@@ -25,6 +27,7 @@ import net.minecraft.entity.player.EntityPlayer
 object InstanceCache {
 
     // TODO SCALA Use scala classes, ACTUALLY, rewrite all of this using FP
+    // NOTE TO WHOEVER WROTE THAT ^ : Whatever you do, the hashmap needs to use weak references in the key field
     private val cacheDivisions: Array[collection.mutable.Set[ModelCacheEntry]] = new Array(0x100)
     private val changes: ConcurrentLinkedQueue[ChangeEntry] = new ConcurrentLinkedQueue[ChangeEntry]
 
@@ -56,10 +59,21 @@ object InstanceCache {
                     cacheDivisions(div) = null
             }
         }
+        var ch = Seq[ChangeEntry]()
         while (true) {
             val ce = changes.poll()
-            if (ce == null) return
-            setModel(ce.changeTarget, ce.newModel)
+            if (ce == null) {
+                ch.foreach((c) => changes.add(c))
+                return
+            }
+            val pent = Minecraft.getMinecraft.theWorld.getPlayerEntityByName(ce.changeTarget)
+            if (pent == null) {
+                // NOTE: Forge's magical stacktrace thing only works with the functions directly
+                System.err.println("Could not apply change to \"" + ce.changeTarget + "\" : entity does not exist")
+                ch = ch :+ ce
+            } else {
+                setModel(pent, ce.newModel, ce.newAnims)
+            }
         }
     }
 
@@ -68,7 +82,7 @@ object InstanceCache {
      * @param model  The model to apply.
      * @return The MCE(Note that MCEs are reused - they are always assigned to the same EntityPlayer, though.)
      */
-    def setModel(player: EntityPlayer, model: PMXModel): ModelCacheEntry = {
+    def setModel(player: EntityPlayer, model: PMXModel, animSet: AnimSet): ModelCacheEntry = {
         val div = player.hashCode() & 0xFF00 >> 8
         var dll = cacheDivisions(div)
         if (dll == null) {
@@ -76,7 +90,7 @@ object InstanceCache {
             cacheDivisions(div) = dll
         }
 
-        var nm = dll.find(_.playerRef.get == player) getOrElse null
+        var nm = dll.find(_.playerRef.get == player).orNull
         if (nm == null) {
             nm = new ModelCacheEntry()
             nm.playerRef = new WeakReference(player)
@@ -92,7 +106,7 @@ object InstanceCache {
             return nm
 
         // This is the only case where nm.value ends up != null
-        nm.value = new PlayerInstance(model)
+        nm.value = new PlayerInstance(model, animSet)
         return nm
     }
 
@@ -104,13 +118,17 @@ object InstanceCache {
             dll = collection.mutable.Set()
         cacheDivisions(div) = dll
 
-        return dll.find(_.playerRef.get == player) getOrElse null
+        return dll.find(_.playerRef.get == player) orNull
     }
 
     // This is how MT writes are done
-    def queueChange(user: EntityPlayer, pm: PMXModel) {
-        val ce = new ChangeEntry(user, pm)
-        changes.add(ce);
+    def queueChange(user: EntityPlayer, pm: PMXModel, as: AnimSet) {
+        queueChange(user.getCommandSenderName, pm, as)
+    }
+
+    def queueChange(user: String, pm: PMXModel, as: AnimSet) {
+        val ce = new ChangeEntry(user, pm, as)
+        changes.add(ce)
     }
 }
 
@@ -123,7 +141,11 @@ class ModelCacheEntry {
 }
 
 private class ChangeEntry(
-                             // Transient, so can contain a direct EntityPlayer reference
-                             val changeTarget: EntityPlayer,
-                             val newModel: PMXModel
+                           // Uses a string because it can be called from another thread.
+                           // Hopefully people can't change name while connected to a server,
+                           // if this is wrong, then change this to a GUID.
+                           // getCommandSenderName is used, since that's what the world uses to find a player
+                           val changeTarget: String,
+                           val newModel: PMXModel,
+                           val newAnims: AnimSet
                              )

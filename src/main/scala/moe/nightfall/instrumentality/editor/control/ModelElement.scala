@@ -12,9 +12,9 @@
  */
 package moe.nightfall.instrumentality.editor.control
 
-import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance, PMXModel}
 import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import moe.nightfall.instrumentality.editor.UIUtils
+import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance, PMXModel}
 import org.lwjgl.opengl.GL11
 
 class ModelElement(ib: Boolean) extends View3DElement {
@@ -109,7 +109,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
 object ModelElement {
     def makeTestInstance(pm: PMXModel): PMXInstance = {
         val pi: PMXInstance = new PMXInstance(pm)
-        val npca = new NewPCAAnimation(pm.anims)
+        val npca = new NewPCAAnimation(pm.defaultAnims)
         npca.walkStrengthTarget = 1
         npca.walkAnimation.speed = 1
         pi.anim = npca

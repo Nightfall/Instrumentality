@@ -37,6 +37,7 @@ object PMXInstance {
 class PMXInstance(val theModel: PMXModel) {
 
     val theFile = theModel.theFile
+
     /**
      * although theFile is part of theModel, most code uses theFile
      */

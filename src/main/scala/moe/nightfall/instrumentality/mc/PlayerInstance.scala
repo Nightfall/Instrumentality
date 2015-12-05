@@ -12,22 +12,22 @@
  */
 package moe.nightfall.instrumentality.mc
 
+import moe.nightfall.instrumentality.animations.{AnimSet, NewPCAAnimation}
 import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel}
-import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import net.minecraft.client.Minecraft
-import net.minecraft.client.renderer.texture.{ITextureObject, AbstractTexture, DynamicTexture}
+import net.minecraft.client.renderer.texture.{DynamicTexture, ITextureObject}
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.ResourceLocation
-import net.minecraft.world.{World, EnumSkyBlock}
+import net.minecraft.world.{EnumSkyBlock, World}
 import org.lwjgl.opengl.GL11
 
-class PlayerInstance(file: PMXModel) {
+class PlayerInstance(file: PMXModel, animSet: AnimSet) {
 
     var anim: NewPCAAnimation = null
 
     // CONST
     val pmxInst = new PMXInstance(file)
-    anim = new NewPCAAnimation(file.anims)
+    anim = new NewPCAAnimation(animSet)
     pmxInst.anim = anim
 
     var clippingPoint = 0d
@@ -178,6 +178,9 @@ class PlayerInstance(file: PMXModel) {
             renderClip = Math.min(renderClip, 0.7d)
             // try and keep hands in view
             GL11.glScaled(1.125d, 1.125d, 1.125d)
+        } else {
+            // it's actually back to front (again)
+            GL11.glRotated(180, 0, 1, 0)
         }
         pmxInst.render(Loader.shaderBoneTransform, col_f._1, col_f._2, col_f._3, renderClip.toFloat, if (firstPerson) 0.025f else 0.25f)
 

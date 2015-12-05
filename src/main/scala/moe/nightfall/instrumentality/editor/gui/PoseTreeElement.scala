@@ -15,10 +15,9 @@ package moe.nightfall.instrumentality.editor.gui
 
 import java.io.{DataOutputStream, FileOutputStream}
 
-import moe.nightfall.instrumentality.{PMXModel, Loader, ModelCache}
-import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control._
+import moe.nightfall.instrumentality.{Loader, ModelCache, PMXModel}
 
 /**
  * Created on 11/09/15.
@@ -50,7 +49,7 @@ class PoseTreeElement(val targetMdl: PMXModel, whereAmI: PowerlineContainerEleme
         // The nonsense that was here, I cannot understand.
         // Now, Map - Filter - etc., I *CAN* understand!
         override def getChildNodes(n: Option[String]): Iterable[String] =
-            targetMdl.anims.allPoses.keys.filter(targetMdl.anims.poseParents.get(_) == n).toSeq
+            targetMdl.defaultAnims.allPoses.keys.filter(targetMdl.defaultAnims.poseParents.get(_) == n).toSeq
     })
     
     val scrollArea = new ScrollAreaElement(treeviewElement)
@@ -60,8 +59,10 @@ class PoseTreeElement(val targetMdl: PMXModel, whereAmI: PowerlineContainerEleme
     val saveButton = new TextButtonElement("Save", {
         val fos = new FileOutputStream(ModelCache.modelRepository + "/" + Loader.currentFile + "/mmcposes.dat")
         val dos = new DataOutputStream(fos)
-        targetMdl.anims.save(dos)
+        targetMdl.defaultAnims.save(dos)
         dos.close()
+        // Resend if required
+        Loader.setCurrentFile(Loader.currentFile)
     })
 
     subElements += saveButton

@@ -17,6 +17,7 @@ import java.io.{ByteArrayInputStream, DataInputStream, File, FileInputStream, Fi
 import javax.imageio.ImageIO
 
 import com.google.common.hash.Hashing
+import moe.nightfall.instrumentality.animations.AnimSet
 
 /**
  * Model cache. This is designed to be used from multiple threads, as long as
@@ -131,10 +132,10 @@ object ModelCache {
         }
 
         try {
-            pm.anims.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
+            pm.defaultAnims.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
         } catch {
             case _: IOException => {
-                pm.anims.loadForHash(pmxHash);
+                pm.defaultAnims.loadForHash(pmxHash)
             }
         }
 
@@ -216,7 +217,7 @@ object ModelCache {
         // This way absolutely ensures the model is valid before we upload,
         // and it means we don't have to keep a "DM dry run" copy of the loading logic.
         // Plus, if it occurs *before* the model is loaded, it'll pre-load it (though this is unlikely to matter)
-        getInternal(locator, name, true)
+        dmcr.animSet = getInternal(locator, name, true).defaultAnims
         return dmcr
     }
 
@@ -299,13 +300,13 @@ object ModelCache {
         // Not future planning, but seriously, 2GB is a flipping D.O.S attack by
         // my standards.
         def getLength(hash: String): Int
-
         def getData(hash: String): Array[Byte]
     }
 
     class DataManifestCreationResult {
         var filesToHashes = collection.mutable.Map[String, String]()
         var hashesToFiles = collection.mutable.Map[String, String]()
+        var animSet: AnimSet = _
     }
 
 }

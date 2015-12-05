@@ -15,27 +15,57 @@ package moe.nightfall.instrumentality.mc
 import cpw.mods.fml.client.registry.ClientRegistry
 import cpw.mods.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import cpw.mods.fml.common.gameevent.{InputEvent, TickEvent}
-import moe.nightfall.instrumentality.{Loader, ModelCache, PMXModel}
+import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.mc.gui.EditorHostGui
+import moe.nightfall.instrumentality.mc.network.SendSHAMessage
+import moe.nightfall.instrumentality.{Loader, ModelCache, PMXModel}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.RenderManager
 import net.minecraft.client.settings.KeyBinding
-import net.minecraftforge.client.event.RenderPlayerEvent
-import org.lwjgl.input.Keyboard
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraftforge.client.event.RenderHandEvent
-import org.lwjgl.opengl.GL11
-import net.minecraft.client.renderer.entity.RenderPlayer
+import net.minecraft.nbt.NBTTagCompound
+import net.minecraftforge.client.event.{RenderHandEvent, RenderPlayerEvent}
+import net.minecraftforge.event.entity.EntityJoinWorldEvent
+import org.lwjgl.input.Keyboard
 
 object ClientProxy {
-    val protocolId = "MMC"
+
     var editorBinding: KeyBinding = null
 
     // Assigns usernames to models.
     val knownModels: collection.concurrent.TrieMap[String, MHolder] = collection.concurrent.TrieMap()
 
-    class MHolder(val held: PMXModel)
+    // Used by network code, could be called from other threads(!)
+    def updateRemoteModel(user: String, dataManifest: Map[String, String], serv: ModelCache.IPMXLocator, animSet: AnimSet) {
+        if (dataManifest == null) {
+            ClientProxy.knownModels += user -> new ClientProxy.MHolder(null, null)
+            InstanceCache.queueChange(user, null, animSet)
+            return
+        }
+        new Thread {
+            val pm = ModelCache.getByManifest(dataManifest, serv)
+            ClientProxy.knownModels += user -> new ClientProxy.MHolder(pm, animSet)
+            InstanceCache.queueChange(user, pm, animSet)
+        }.start()
+    }
 
+    def getSelfSHA: SendSHAMessage = {
+        // Hello server, we're an MMC user!
+        val msg = new SendSHAMessage()
+        msg.player = Minecraft.getMinecraft.thePlayer.getCommandSenderName
+        msg.dataManifest = if (Loader.currentFile != null) {
+            val fth = ModelCache.createManifestForLocal(Loader.currentFile)
+            val nbt = new NBTTagCompound()
+            for ((k, v) <- fth.filesToHashes)
+                nbt.setString(k, v)
+            Some(nbt, fth.animSet)
+        } else {
+            None
+        }
+        msg
+    }
+
+    class MHolder(val held: PMXModel, val heldSet: AnimSet)
 }
 
 class ClientProxy extends CommonProxy {
@@ -46,6 +76,9 @@ class ClientProxy extends CommonProxy {
         ClientRegistry.registerKeyBinding(ClientProxy.editorBinding)
 
         Loader.setup(new MinecraftApplicationHost)
+        Loader.currentFileListeners += (() => {
+            MikuMikuCraft.mikuNet.sendToServer(ClientProxy.getSelfSHA)
+        })
     }
 
     /*
@@ -100,25 +133,12 @@ class ClientProxy extends CommonProxy {
 	 * sendMMCAnnounce(args[args.length - 3]); } } }
 	 */
 
-    private def miniDM(arg: String): Map[String, String] = {
-        return Map("mdl.pmx" -> arg)
-    }
-
-    private def updateRemoteModel(user: String, dataManifest: Map[String, String], serv: ModelCache.IPMXLocator) {
-        val ep = Minecraft.getMinecraft.theWorld.getPlayerEntityByName(user);
-        if (dataManifest == null) {
-            ClientProxy.knownModels += user -> new ClientProxy.MHolder(null)
-            if (ep != null)
-                InstanceCache.setModel(ep, null)
-            return
-        }
-        new Thread {
-            val pm = ModelCache.getByManifest(dataManifest, serv);
-            ClientProxy.knownModels += user -> new ClientProxy.MHolder(pm)
-            val ep2 = Minecraft.getMinecraft.theWorld.getPlayerEntityByName(user);
-            //				if (ep2 != null)
-            //					InstanceCache.queueChange(ep2, pm);
-        }.start()
+    @SubscribeEvent
+    override def onEntityJoin(entityJoinWorldEvent: EntityJoinWorldEvent): Unit = {
+        // avoid making requests to localhost
+        // if server wants a SHA, we'll know!
+        if (entityJoinWorldEvent.entity != Minecraft.getMinecraft.thePlayer)
+            super.onEntityJoin(entityJoinWorldEvent)
     }
 
     @SubscribeEvent
@@ -144,20 +164,26 @@ class ClientProxy extends CommonProxy {
             if (player == Minecraft.getMinecraft.thePlayer) {
 
                 var newMdl: PMXModel = null
-                if (Loader.currentFile != null)
+                var newAni: AnimSet = null
+                if (Loader.currentFile != null) {
                     newMdl = ModelCache.getLocal(Loader.currentFile)
-                mce = InstanceCache.setModel(player, newMdl)
+                    newAni = newMdl.defaultAnims
+                }
+                mce = InstanceCache.setModel(player, newMdl, newAni)
                 val mceF = mce
 
                 // InstanceCache will automatically delete any currentFile hook
                 // we leave here
                 mce.cfHook = () => {
                     var newMdl: PMXModel = null
-                    if (Loader.currentFile != null)
+                    var newAni: AnimSet = null
+                    if (Loader.currentFile != null) {
                         newMdl = ModelCache.getLocal(Loader.currentFile)
+                        newAni = newMdl.defaultAnims
+                    }
                     val ep = mceF.playerRef.get()
                     if (ep != null)
-                        InstanceCache.setModel(ep, newMdl)
+                        InstanceCache.setModel(ep, newMdl, newAni)
                 }
 
                 Loader.currentFileListeners += mce.cfHook

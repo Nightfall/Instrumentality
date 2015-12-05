@@ -13,7 +13,7 @@
 package moe.nightfall.instrumentality
 
 import java.awt.image.BufferedImage
-import java.io.{PrintStream, FileOutputStream}
+import java.io.{FileOutputStream, PrintStream}
 
 import moe.nightfall.instrumentality.PMXModel._
 import moe.nightfall.instrumentality.animations.AnimSet
@@ -53,8 +53,7 @@ object PMXModel {
 
 class PMXModel private {
     var theFile: PMXFile = _
-    val anims = new AnimSet()
-
+    var defaultAnims: AnimSet = new AnimSet
     // This is null'd once setupMaterials is called. Don't modify after this goes into the ModelCache.
     var materialData = collection.mutable.Map[String, BufferedImage]()
     // This is the OpenGL materials hashmap, don't access outside the OpenGL owning thread.

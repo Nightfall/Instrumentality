@@ -13,11 +13,15 @@
 package moe.nightfall.instrumentality.mc
 
 import cpw.mods.fml.common.Mod.EventHandler
-import cpw.mods.fml.common.{Mod, SidedProxy}
-import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLPreInitializationEvent
+import cpw.mods.fml.common.network.NetworkRegistry
+import cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper
+import cpw.mods.fml.common.{Mod, SidedProxy};
 
 @Mod(name = "MikuMikuCraft", modid = "instrumentality", modLanguage = "scala")
 object MikuMikuCraft {
+
+    var mikuNet: SimpleNetworkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel("instrumentality")
 
     @SidedProxy(serverSide = "moe.nightfall.instrumentality.mc.CommonProxy", clientSide = "moe.nightfall.instrumentality.mc.ClientProxy")
     var proxy: CommonProxy = _
