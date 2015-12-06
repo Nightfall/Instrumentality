@@ -33,6 +33,15 @@ class CommonProxy {
     val serverKnownDataManifests = collection.concurrent.TrieMap[String, SendSHAMessage]()
     val serverHashOwners = collection.concurrent.TrieMap[String, EntityPlayerMP]()
 
+    // The Long is the currentTimeMillis upon which the data should be deleted when new data comes in.
+    // The Int is the total size.
+    // Needs to be iterable so data can be removed when it's too old.
+    val serverCache = new java.util.concurrent.ConcurrentHashMap[String, (Long, Int, Array[RequestFileMessage])]()
+
+    // 4MiB cache limit.
+
+    val serverCacheLimit = 4 * 1024 * 1024
+
     // These callbacks can run from basically any thread
     // If the callback returns true, it's removed.
     var clientCallbackOnData = new java.util.concurrent.ConcurrentHashMap[(String, (RequestFileMessage) => Boolean), Unit]()
