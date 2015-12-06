@@ -30,11 +30,12 @@ object ModelCache {
     // downloading.
     // Setting this to -1 means "unlimited" (NOT RECOMMENDED : this makes it a
     // lot easier for a random player to spam your bandwidth away)
-    var maxTotalUsage = 0L
+    var maxTotalUsage = -1L
 
     // Local model repository.
     // This string, and directories directly under it (but not
     // files/subdirectories within those) should NOT be lowercased.
+    // Also, it must end in /
     var modelRepository = "mdl/"
 
     private val localModels = collection.concurrent.TrieMap[String, PMXModel]()
@@ -49,8 +50,8 @@ object ModelCache {
             return localFromHashCache(hash)
         val v = {
             getLocalModels() foreach { s =>
-                val l = new FilePMXFilenameLocator(modelRepository + "/" + s + "/")
-                if (hash.equalsIgnoreCase(hashBytes(l(findPMX(l.listFiles)))))
+                val dm = createManifestForLocal(s)
+                if (hashDataManifest(dm.filesToHashes.toMap[String, String]) == hash)
                     return Some(s)
             }
             None
@@ -59,20 +60,30 @@ object ModelCache {
         v
     }
 
+    def findFreeName(prefer: String): String = {
+        if (new File(modelRepository + prefer).exists()) {
+            var i = 0
+            while ((i < 1000) && (new File(modelRepository + prefer + "-" + i).exists()))
+                i += 1
+            return modelRepository + prefer + "-" + i
+        }
+        prefer
+    }
+
     /**
      * Gets a PMXModel from a data manifest. Will try local FS, then try server
      *
      * @param hashMap
-     * Mapping from filenames to hashes. Only "mdl.pmx" is needed if
-     * remoteServer==null. This is so that MMC-Chat protocol can work
+     * The core DataManifest.
      * @param remoteServer
-     * The remote server should a local copy be unavailable (can be
-     * null)
+     *  The remote server should a local copy be unavailable (can be
+      * null, but will mean it won't be able to retrieve it)
      * @return The resulting model
      */
     def getByManifest(hashMap: Map[String, String], remoteServer: IPMXLocator): PMXModel = {
         // Check for eligible candidates locally
-        val targetHash = hashMap.get(findPMX(hashMap.keys)).get.toLowerCase()
+        val targetHash = hashDataManifest(hashMap)
+        println("MMC getByManifest hash: " + targetHash)
         val local = localFromHash(targetHash)
         if (local.isDefined)
             return getLocal(local.get)
@@ -91,9 +102,16 @@ object ModelCache {
                 }
             }
 
-            return getInternal(new DownloadingPMXFilenameLocator(manifestGetter, targetHash, maxTotalUsage), targetHash, true);
+            val data = getInternal(new DownloadingPMXFilenameLocator(manifestGetter, findFreeName(targetHash), maxTotalUsage), targetHash, true)
+            if (data != null)
+                ModelCache.notifyModelsAdded
+            return data
         } catch {
-            case e: IOException => return null
+            case e: IOException => {
+                System.err.println("getByManifest failed download from server. Reason:")
+                e.printStackTrace()
+                return null
+            }
         }
     }
 
@@ -108,7 +126,7 @@ object ModelCache {
         val mdl = localModels.get(name)
         if (mdl.isDefined) return mdl.get
         try {
-            return getInternal(new FilePMXFilenameLocator(modelRepository + "/" + name + "/"), name, false)
+            return getInternal(new FilePMXFilenameLocator(modelRepository + name + "/"), name, false)
         } catch {
             case e: Exception => {
                 e.printStackTrace()
@@ -120,7 +138,7 @@ object ModelCache {
     // getTxt will get .txt files for legal purposes (but will not fail if they cannot be downloaded)
     def getInternal(locator: IPMXFilenameLocator, name: String, getTxt: Boolean): PMXModel = {
         val pmxData = locator(findPMX(locator.listFiles))
-        val pmxHash = hashBytes(pmxData)
+        val pmxHash = hashRawBytes(pmxData)
         val pm = new PMXModel(new PMXFile(pmxData), Loader.groupSize)
 
         if (getTxt) {
@@ -135,6 +153,7 @@ object ModelCache {
             pm.defaultAnims.load(new DataInputStream(new ByteArrayInputStream(locator("mmcposes.dat"))))
         } catch {
             case _: IOException => {
+                // default animations are indexed by PMX hash anyway
                 pm.defaultAnims.loadForHash(pmxHash)
             }
         }
@@ -196,36 +215,47 @@ object ModelCache {
         }
     }
 
-    // Automatically creates a manifest, and a way of mapping hashes back to
-    // files for use when requests are made
+    // Automatically creates a manifest.
     def createManifestForLocal(name: String): DataManifestCreationResult = {
         val dmcr = new DataManifestCreationResult
         val rootDir = new File(modelRepository + "/" + name)
-        val rootLocator = new FilePMXFilenameLocator(modelRepository + "/" + name + "/")
+        val rootLocator = new FilePMXFilenameLocator(modelRepository + name + "/")
         val locator = new IPMXFilenameLocator() {
             override def listFiles(): Seq[String] = rootLocator.listFiles
 
             override def apply(filename: String): Array[Byte] = {
                 val data = rootLocator(filename)
                 if (dmcr.filesToHashes.contains(filename)) data
-                val hash = hashBytes(data)
+                val hash = hashRawBytes(data)
                 dmcr.filesToHashes.put(filename, hash)
-                dmcr.hashesToFiles.put(hash, filename)
                 data
             }
         }
         // This way absolutely ensures the model is valid before we upload,
         // and it means we don't have to keep a "DM dry run" copy of the loading logic.
-        // Plus, if it occurs *before* the model is loaded, it'll pre-load it (though this is unlikely to matter)
+        // Plus, if it occurs *before* the model is loaded, it won't be loaded twice!
         dmcr.animSet = getInternal(locator, name, true).defaultAnims
+
         return dmcr
     }
 
-    private def hashBytes(data: Array[Byte]): String = {
+    def hashRawBytes(data: Array[Byte]): String = {
         // NOTE: This hash does NOT need to be cryptographically secure, just
         // large enough to avoid any decent chance of accidental collision.
         // Oh, and changing it after release will break everything.
-        return Hashing.sha1.hashBytes(data).toString
+        return Hashing.sha256.hashBytes(data).toString
+    }
+
+    // Hashes a DataManifest.
+    def hashDataManifest(filesToHashes: Map[String, String]): String = {
+        val sortedKeys = filesToHashes.keys.map(s => s.toLowerCase).filterNot(_.endsWith(".txt")).filterNot(_.endsWith(".dat")).toList.sorted
+        var valueMap = Map[String, String]()
+        filesToHashes.keys.foreach((k) => valueMap += k.toLowerCase -> filesToHashes(k))
+        var data = ""
+        sortedKeys.foreach(k => {
+            data += valueMap(k)
+        })
+        hashRawBytes(data.getBytes)
     }
 
     trait IPMXFilenameLocator {
@@ -272,12 +302,20 @@ object ModelCache {
         override def listFiles(): Seq[String] = rootFilenameLocator.listFiles
 
         override def apply(filename: String): Array[Byte] = {
+            val targ = new File(modelRepository + targetName + "/" + filename)
+            if (targ.exists()) {
+                // It exists already, just assume it's right
+                val fis = new FileInputStream(targ)
+                val data = new Array[Byte](fis.available)
+                fis.read(data)
+                fis.close()
+                return data
+            }
             val b = rootFilenameLocator(filename)
             totalUsage += b.length
             if (maxTotalUsage >= 0 && totalUsage > maxTotalUsage)
                 throw new IOException(
                     "Potential Denial Of Service attack via HDD usage, download will not be continued.")
-            val targ = new File(modelRepository + "/" + targetName + "/" + filename)
             // one final sanity check (lowercase'd because of potential
             // case madness on Windows, etc.)
             if (!targ.getAbsolutePath().toLowerCase()
@@ -299,13 +337,11 @@ object ModelCache {
         // we should run away first chance we get.
         // Not future planning, but seriously, 2GB is a flipping D.O.S attack by
         // my standards.
-        def getLength(hash: String): Int
         def getData(hash: String): Array[Byte]
     }
 
     class DataManifestCreationResult {
         var filesToHashes = collection.mutable.Map[String, String]()
-        var hashesToFiles = collection.mutable.Map[String, String]()
         var animSet: AnimSet = _
     }
 

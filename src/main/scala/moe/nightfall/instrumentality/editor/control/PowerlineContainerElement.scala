@@ -104,4 +104,8 @@ class PowerlineContainerElement(sizeRatio: Double, getHome: (PowerlineContainerE
         }
     }
 
+    override def cleanup(): Unit = {
+        removeFromIndex(0)
+        super.cleanup()
+    }
 }

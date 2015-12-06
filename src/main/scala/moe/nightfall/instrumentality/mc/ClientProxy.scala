@@ -12,12 +12,15 @@
  */
 package moe.nightfall.instrumentality.mc
 
+import java.io.IOException
+
 import cpw.mods.fml.client.registry.ClientRegistry
 import cpw.mods.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import cpw.mods.fml.common.gameevent.{InputEvent, TickEvent}
+import moe.nightfall.instrumentality.ModelCache.IPMXLocator
 import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.mc.gui.EditorHostGui
-import moe.nightfall.instrumentality.mc.network.SendSHAMessage
+import moe.nightfall.instrumentality.mc.network.{RequestFileMessage, SendSHAMessage}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXModel}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.RenderManager
@@ -28,24 +31,34 @@ import net.minecraftforge.client.event.{RenderHandEvent, RenderPlayerEvent}
 import net.minecraftforge.event.entity.EntityJoinWorldEvent
 import org.lwjgl.input.Keyboard
 
+import scala.concurrent.Lock
+
 object ClientProxy {
 
     var editorBinding: KeyBinding = null
 
     // Assigns usernames to models.
     val knownModels: collection.concurrent.TrieMap[String, MHolder] = collection.concurrent.TrieMap()
+    // Used when the system is serving data to find out where data is
+    val hashToFile: collection.concurrent.TrieMap[String, String] = collection.concurrent.TrieMap()
 
     // Used by network code, could be called from other threads(!)
-    def updateRemoteModel(user: String, dataManifest: Map[String, String], serv: ModelCache.IPMXLocator, animSet: AnimSet) {
+    def updateRemoteModel(user: String, dataManifest: Map[String, String], animSet: AnimSet) {
         if (dataManifest == null) {
             ClientProxy.knownModels += user -> new ClientProxy.MHolder(null, null)
             InstanceCache.queueChange(user, null, animSet)
             return
         }
         new Thread {
-            val pm = ModelCache.getByManifest(dataManifest, serv)
-            ClientProxy.knownModels += user -> new ClientProxy.MHolder(pm, animSet)
-            InstanceCache.queueChange(user, pm, animSet)
+            override def run() {
+                val pm = ModelCache.getByManifest(dataManifest, new IPMXLocator {
+                    override def getData(hash: String): Array[Byte] = blockingReceiveData(hash)
+                })
+                if (pm == null)
+                    System.err.println("Download of model was unsuccessful!")
+                ClientProxy.knownModels += user -> new ClientProxy.MHolder(pm, animSet)
+                InstanceCache.queueChange(user, pm, animSet)
+            }
         }.start()
     }
 
@@ -56,13 +69,73 @@ object ClientProxy {
         msg.dataManifest = if (Loader.currentFile != null) {
             val fth = ModelCache.createManifestForLocal(Loader.currentFile)
             val nbt = new NBTTagCompound()
-            for ((k, v) <- fth.filesToHashes)
+            for ((k, v) <- fth.filesToHashes) {
+                hashToFile += v -> (ModelCache.modelRepository + "/" + Loader.currentFile + "/" + k)
                 nbt.setString(k, v)
+            }
             Some(nbt, fth.animSet)
         } else {
             None
         }
         msg
+    }
+
+    def blockingReceiveData(hash: String): Array[Byte] = {
+        var dataReceived: Option[Array[Byte]] = None
+        var seq: Array[RequestFileMessage] = null
+        var seqLock = new Lock()
+        MikuMikuCraft.proxy.clientCallbackOnData.put((hash, (pkt) => {
+            System.out.println(hash + "==" + pkt.fileHash + ":" + pkt.seqNum + " size " + pkt.seqSize)
+            // TODO: Adjust this. Right now: 32kb * 1024 == 32MB.
+            if (pkt.seqSize > 1024) {
+                // This person's playing a joke on us
+                true
+            } else {
+                seqLock.acquire()
+                if (seq == null)
+                    seq = new Array[RequestFileMessage](pkt.seqSize)
+                if ((pkt.seqNum < 0) || (pkt.seqNum >= seq.length)) {
+                    seqLock.release()
+                    true
+                } else {
+                    seq(pkt.seqNum) = pkt
+                    val result = seq.filter(_ == null).size == 0
+                    if (result) {
+                        // before killing the callback, put everything into place
+                        var totalSize = 0
+                        seq.foreach((rfm) => totalSize += rfm.fileData.get.length)
+                        val data = new Array[Byte](totalSize)
+                        var pos = 0
+                        seq.foreach((rfm) => {
+                            rfm.fileData.get.copyToArray(data, pos)
+                            pos += rfm.fileData.get.length
+                        })
+                        dataReceived = Some(data)
+                    }
+                    seqLock.release()
+                    result
+                }
+            }
+            false
+        }), Unit)
+        val req = new RequestFileMessage()
+        req.fileData = None
+        req.fileHash = hash
+        MikuMikuCraft.mikuNet.sendToServer(req)
+        var tries = 0
+        // Apparently Minecraft thinks it's the only class in the universe that needs to shutdown. IT'S WRONG!
+        // As it is, since I can't get information on if Minecraft is running,
+        // here's the workaround: we're not communicating with the server when the world is null anyway,
+        // and it's kind enough to set it to null while shutting down.
+        // So this is the best compromise I can think of.
+        while ((tries < 200) & (Minecraft.getMinecraft.theWorld != null)) {
+            tries += 1
+            Thread.sleep(100)
+            val res = dataReceived
+            if (res.isDefined)
+                return res.get
+        }
+        throw new IOException("Retrieval timed out of " + hash)
     }
 
     class MHolder(val held: PMXModel, val heldSet: AnimSet)

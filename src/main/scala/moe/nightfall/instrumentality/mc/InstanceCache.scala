@@ -46,13 +46,13 @@ object InstanceCache {
                 while (i.hasNext) {
                     val mce = i.next()
                     if (mce.playerRef.get() == null) {
-                        mce.value.cleanupGL()
+                        if (mce.value != null)
+                            mce.value.cleanupGL()
                         Loader.currentFileListeners -= mce.cfHook
                         cache.remove(mce)
                     } else {
-                        if (mce.value != null) {
+                        if (mce.value != null)
                             mce.value.update(dt)
-                        }
                     }
                 }
                 if (cacheDivisions(div).size == 0)

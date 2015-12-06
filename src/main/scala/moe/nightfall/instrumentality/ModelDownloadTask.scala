@@ -17,7 +17,6 @@ import java.net.URL
 import java.util.zip.{ZipEntry, ZipInputStream}
 
 import moe.nightfall.instrumentality.ModelCache.{DownloadingPMXFilenameLocator, IPMXFilenameLocator}
-import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.RecommendedInfoCache.DownloadableEntry
 
 /**
@@ -125,7 +124,8 @@ class ModelDownloadTask(val n: DownloadableEntry, val downloadName: String) exte
                     }
                 }
                 fileProgress = 0.5d / filenameLocator.listFiles().size
-                ModelCache.getInternal(new DownloadingPMXFilenameLocator(filenameLocator, downloadName, -1), downloadName, true)
+                val name = ModelCache.findFreeName(downloadName)
+                ModelCache.getInternal(new DownloadingPMXFilenameLocator(filenameLocator, name, -1), name, true)
             }
             state = TaskState.Success
         } catch {

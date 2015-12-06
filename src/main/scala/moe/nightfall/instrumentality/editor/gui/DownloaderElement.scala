@@ -13,25 +13,20 @@
 package moe.nightfall.instrumentality.editor.gui
 
 import java.awt.Desktop
-import java.io.{FileInputStream, File, FileOutputStream, IOException}
-import java.net.{URI, URL}
-import java.util.zip.{ZipInputStream, ZipEntry, ZipFile}
+import java.net.URI
 
-import moe.nightfall.instrumentality.ModelCache.{DownloadingPMXFilenameLocator, IPMXFilenameLocator}
-import moe.nightfall.instrumentality.{ModelDownloadTask, ModelCache, RecommendedInfoCache}
 import moe.nightfall.instrumentality.RecommendedInfoCache.DownloadableEntry
-import moe.nightfall.instrumentality.animations.AnimSet
 import moe.nightfall.instrumentality.editor.EditElement
 import moe.nightfall.instrumentality.editor.control.{PowerlineContainerElement, TreeviewElement, TreeviewElementStructurer}
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream
-
-import scala.collection.JavaConversions._
+import moe.nightfall.instrumentality.{ModelCache, ModelDownloadTask, RecommendedInfoCache}
 
 /**
  * Automatically downloads and sets up models.
  * Created on 26/09/15.
  */
 class DownloaderElement(val rootPanel: PowerlineContainerElement) extends EditElement {
+    if (!RecommendedInfoCache.isLoaded)
+        RecommendedInfoCache.loadRecommended
     var listview = new TreeviewElement[DownloadableEntry](new TreeviewElementStructurer[DownloadableEntry] {
         override def getNodeName(n: DownloadableEntry): String = n.name + ":" + n.author
 

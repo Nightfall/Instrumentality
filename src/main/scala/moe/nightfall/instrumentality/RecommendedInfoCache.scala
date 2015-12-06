@@ -16,7 +16,7 @@ package moe.nightfall.instrumentality
  * Created on 26/09/15.
  */
 object RecommendedInfoCache {
-
+    var isLoaded = false
     var allEntries = Seq[DownloadableEntry]()
     var availableEntries = allEntries
 
@@ -25,6 +25,7 @@ object RecommendedInfoCache {
         allEntries = recommended.getLines.toList.tail.map(new DownloadableEntry(_))
         recommended.close
         refreshAvailable
+        isLoaded = true
     }
 
     def refreshAvailable = availableEntries = allEntries.filter(!_.isInstalled)

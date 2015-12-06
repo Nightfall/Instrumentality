@@ -43,7 +43,6 @@ object Loader {
         applicationHost = host
         loadShaders()
         UIFont.setFont(applicationHost.getResource("font.txt"))
-        RecommendedInfoCache.loadRecommended
     }
 
     def loadShaders() = {

@@ -12,11 +12,9 @@
  */
 package moe.nightfall.instrumentality.mc.gui
 
-import moe.nightfall.instrumentality.Loader
-import moe.nightfall.instrumentality.editor.{EditElement, UIFont, UIUtils}
+import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
-import net.minecraft.util.ResourceLocation
 import org.lwjgl.opengl.{Display, GL11};
 
 /**
@@ -28,8 +26,9 @@ class EditorHostGui extends GuiScreen {
     var hostedElement: EditElement = null
 
     override def initGui() {
-        //TODO Uncomment, this is for testing only!
-        //if (hostedElement == null)
+        // Only comment the if (hostedElement == null) for testing!
+        // If commented, a resource leak happens! --gamemanj
+        if (hostedElement == null)
             changePanel(UIUtils.createGui())
     }
 

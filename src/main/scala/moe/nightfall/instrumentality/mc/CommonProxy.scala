@@ -28,7 +28,24 @@ import scala.collection.JavaConversions._
 
 class CommonProxy {
 
-    var serverKnownDataManifests = Map[String, SendSHAMessage]()
+    // NOTE: The two of these are a potential memory leak.
+    //       Basically - pray they aren't too much of a memory leak.
+    val serverKnownDataManifests = collection.concurrent.TrieMap[String, SendSHAMessage]()
+    val serverHashOwners = collection.concurrent.TrieMap[String, EntityPlayerMP]()
+
+    // These callbacks can run from basically any thread
+    // If the callback returns true, it's removed.
+    var clientCallbackOnData = new java.util.concurrent.ConcurrentHashMap[(String, (RequestFileMessage) => Boolean), Unit]()
+    var serverCallbackOnData = new java.util.concurrent.ConcurrentHashMap[(String, (RequestFileMessage) => Boolean), Unit]()
+
+    def onDataReceive(requestFileMessage: RequestFileMessage, server: Boolean): Unit = {
+        val callbacks = (if (server) serverCallbackOnData else clientCallbackOnData)
+        callbacks.filter(a => a._1._1 == requestFileMessage.fileHash).foreach((e) => {
+            if (requestFileMessage.fileData.isDefined)
+                if (e._1._2(requestFileMessage))
+                    callbacks.remove(e._1)
+        })
+    }
 
     def preInit() {
         MinecraftForge.EVENT_BUS.register(this)
@@ -37,14 +54,8 @@ class CommonProxy {
         // and to send the current model's SHA. Note that sending a SHA indicates to the server you have that SHA
         MikuMikuCraft.mikuNet.registerMessage(classOf[SendSHAMessageServerHandler], classOf[SendSHAMessage], 0, Side.SERVER)
         MikuMikuCraft.mikuNet.registerMessage(classOf[SendSHAMessageClientHandler], classOf[SendSHAMessage], 1, Side.CLIENT)
-        // sent by client to server, indicates that client needs data for a given SHA
-        //MikuMikuCraft.mikuNet.registerMessage(WantDataMessageServerHandler, classOf[WantDataMessage], 2, Side.SERVER)
-        // sent by server to client, indicates that server needs data for a given SHA
-        //MikuMikuCraft.mikuNet.registerMessage(WantDataMessageClientHandler, classOf[WantDataMessage], 3, Side.CLIENT)
-        // sent by client to server, gives server the data for a given SHA
-        //MikuMikuCraft.mikuNet.registerMessage(GiveDataMessageServerHandler, classOf[GiveDataMessage], 4, Side.SERVER)
-        // sent by server to client, gives client the data for a given SHA
-        //MikuMikuCraft.mikuNet.registerMessage(GiveDataMessageClientHandler, classOf[GiveDataMessage], 5, Side.CLIENT)
+        MikuMikuCraft.mikuNet.registerMessage(classOf[RequestFileMessageServerHandler], classOf[RequestFileMessage], 2, Side.SERVER)
+        MikuMikuCraft.mikuNet.registerMessage(classOf[RequestFileMessageClientHandler], classOf[RequestFileMessage], 3, Side.CLIENT)
     }
 
     @SubscribeEvent
@@ -60,4 +71,6 @@ class CommonProxy {
             }
         }
     }
+
+
 }

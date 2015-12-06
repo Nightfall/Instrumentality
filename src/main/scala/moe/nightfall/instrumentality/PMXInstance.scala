@@ -38,6 +38,8 @@ class PMXInstance(val theModel: PMXModel) {
 
     val theFile = theModel.theFile
 
+    val stackTrace = new Throwable().fillInStackTrace()
+
     /**
      * although theFile is part of theModel, most code uses theFile
      */
@@ -326,7 +328,8 @@ class PMXInstance(val theModel: PMXModel) {
         for (i <- 0 until theModel.groups.length) {
             for (j <- 0 until vboList(i).length) {
                 if (vboList(i)(j) != 0) {
-                    System.err.println("WARNING: Finalize without cleanup of a PMXInstance!");
+                    System.err.println("WARNING: Finalize without cleanup of a PMXInstance! Created at...")
+                    stackTrace.printStackTrace(System.err)
                     return
                 }
             }

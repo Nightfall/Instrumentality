@@ -95,7 +95,7 @@ class SendSHAMessageClientHandler extends IMessageHandler[SendSHAMessage, IMessa
         } else {
             h = null // yeah, IK, "use Option"...
         }
-        ClientProxy.updateRemoteModel(req.player, h, null, hb)
+        ClientProxy.updateRemoteModel(req.player, h, hb)
         null
     }
 }
@@ -106,6 +106,12 @@ class SendSHAMessageServerHandler extends IMessageHandler[SendSHAMessage, IMessa
             req.player = messageContext.getServerHandler.playerEntity.getCommandSenderName // forceful override
         } else {
             null
+        }
+        if (req.dataManifest.isDefined) {
+            val kv = req.dataManifest.get._1
+            kv.func_150296_c().foreach((h) => {
+                MikuMikuCraft.proxy.serverHashOwners += kv.getString(h.asInstanceOf[String]) -> messageContext.getServerHandler.playerEntity
+            })
         }
         MikuMikuCraft.proxy.serverKnownDataManifests += req.player -> req
         messageContext.getServerHandler.playerEntity.worldObj.playerEntities.foreach((e) => {
