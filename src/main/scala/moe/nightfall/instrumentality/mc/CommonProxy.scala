@@ -70,8 +70,10 @@ class CommonProxy {
     @SubscribeEvent
     def onEntityJoin(entityJoinWorldEvent: EntityJoinWorldEvent) {
         if (!entityJoinWorldEvent.world.isRemote) {
+            // We're on server
             if (entityJoinWorldEvent.entity.isInstanceOf[EntityPlayerMP]) {
                 // Forward all the SendSHA messages we know of in that world to the player
+                System.out.println("forwarding known SHAs to: " + entityJoinWorldEvent.entity.getCommandSenderName);
                 entityJoinWorldEvent.world.playerEntities.foreach((e) => {
                     val d = serverKnownDataManifests.get(e.asInstanceOf[EntityPlayerMP].getCommandSenderName)
                     if (d.isDefined)

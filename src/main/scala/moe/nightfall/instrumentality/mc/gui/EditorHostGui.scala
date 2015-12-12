@@ -17,25 +17,28 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiScreen
 import org.lwjgl.opengl.{Display, GL11};
 
+object EditorHostGui {
+    var hostedElement: EditElement = null
+}
+
 /**
  * Created on 18/08/15.
  */
 class EditorHostGui extends GuiScreen {
 
     var lastTime = System.currentTimeMillis()
-    var hostedElement: EditElement = null
 
     override def initGui() {
         // Only comment the if (hostedElement == null) for testing!
         // If commented, a resource leak happens! --gamemanj
-        if (hostedElement == null)
+        if (EditorHostGui.hostedElement == null)
             changePanel(UIUtils.createGui())
     }
 
     override def setWorldAndResolution(mc: Minecraft, width: Int, height: Int) {
         super.setWorldAndResolution(mc, width, height)
-        if (hostedElement != null)
-            hostedElement.setSize(Display.getWidth(), Display.getHeight())
+        if (EditorHostGui.hostedElement != null)
+            EditorHostGui.hostedElement.setSize(Display.getWidth(), Display.getHeight())
     }
 
     override def drawScreen(xCoord: Int, yCoord: Int, partialTick: Float) {
@@ -45,8 +48,8 @@ class EditorHostGui extends GuiScreen {
         val deltaTime = thisTime - lastTime
         lastTime = thisTime
 
-        UIUtils.update(hostedElement)
-        hostedElement.update(deltaTime / 1000f)
+        UIUtils.update(EditorHostGui.hostedElement)
+        EditorHostGui.hostedElement.update(deltaTime / 1000f)
 
         GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glShadeModel(GL11.GL_SMOOTH)
@@ -59,7 +62,7 @@ class EditorHostGui extends GuiScreen {
         GL11.glLoadIdentity()
         UIUtils.prepareForDrawing(Display.getWidth, Display.getHeight)
         GL11.glEnable(GL11.GL_SCISSOR_TEST)
-        hostedElement.draw()
+        EditorHostGui.hostedElement.draw()
         GL11.glDisable(GL11.GL_SCISSOR_TEST)
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_PROJECTION)
@@ -70,9 +73,9 @@ class EditorHostGui extends GuiScreen {
     }
 
     def changePanel(newPanel: EditElement) {
-        if (hostedElement != null)
-            hostedElement.cleanup()
-        hostedElement = newPanel
-        hostedElement.setSize(width, height)
+        if (EditorHostGui.hostedElement != null)
+            EditorHostGui.hostedElement.cleanup()
+        EditorHostGui.hostedElement = newPanel
+        EditorHostGui.hostedElement.setSize(width, height)
     }
 }

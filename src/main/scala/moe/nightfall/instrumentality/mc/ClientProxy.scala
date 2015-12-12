@@ -208,10 +208,11 @@ class ClientProxy extends CommonProxy {
 
     @SubscribeEvent
     override def onEntityJoin(entityJoinWorldEvent: EntityJoinWorldEvent): Unit = {
-        // avoid making requests to localhost
-        // if server wants a SHA, we'll know!
-        if (entityJoinWorldEvent.entity != Minecraft.getMinecraft.thePlayer)
-            super.onEntityJoin(entityJoinWorldEvent)
+        // client joined world? send our SHA
+        if (entityJoinWorldEvent.world.isRemote)
+            if (entityJoinWorldEvent.entity == Minecraft.getMinecraft.thePlayer)
+                MikuMikuCraft.mikuNet.sendToServer(ClientProxy.getSelfSHA);
+        super.onEntityJoin(entityJoinWorldEvent)
     }
 
     @SubscribeEvent

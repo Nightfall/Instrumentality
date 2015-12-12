@@ -105,7 +105,7 @@ class SendSHAMessageServerHandler extends IMessageHandler[SendSHAMessage, IMessa
         if (messageContext.getServerHandler.playerEntity != null) {
             req.player = messageContext.getServerHandler.playerEntity.getCommandSenderName // forceful override
         } else {
-            null
+            return null
         }
         if (req.dataManifest.isDefined) {
             val kv = req.dataManifest.get._1
