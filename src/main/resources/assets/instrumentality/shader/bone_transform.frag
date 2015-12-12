@@ -7,7 +7,7 @@ varying vec3 normal;
 uniform float fadeIn,fadeInDiscard,textured;
 void main() {
     vec4 col = color;
-    if (textured > 0.5f)
+    if (textured > 0.5)
         col *= texture2D(tex_sampler, gl_TexCoord[0].st);
 
     if (normal.y < 0.0) {
