@@ -178,9 +178,6 @@ class PlayerInstance(file: PMXModel, animSet: AnimSet) {
             renderClip = Math.min(renderClip, 0.7d)
             // try and keep hands in view
             GL11.glScaled(1.125d, 1.125d, 1.125d)
-        } else {
-            // it's actually back to front (again)
-            GL11.glRotated(180, 0, 1, 0)
         }
         pmxInst.render(Loader.shaderBoneTransform, col_f._1, col_f._2, col_f._3, renderClip.toFloat, if (firstPerson) 0.025f else 0.25f)
 
