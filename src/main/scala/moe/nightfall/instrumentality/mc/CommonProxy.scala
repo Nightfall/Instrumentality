@@ -73,11 +73,11 @@ class CommonProxy {
             // We're on server
             if (entityJoinWorldEvent.entity.isInstanceOf[EntityPlayerMP]) {
                 // Forward all the SendSHA messages we know of in that world to the player
-                System.out.println("forwarding known SHAs to: " + entityJoinWorldEvent.entity.getCommandSenderName);
+                System.out.println("forwarding known SHAs to: " + entityJoinWorldEvent.entity.getCommandSenderName)
                 entityJoinWorldEvent.world.playerEntities.foreach((e) => {
                     val d = serverKnownDataManifests.get(e.asInstanceOf[EntityPlayerMP].getCommandSenderName)
                     if (d.isDefined)
-                        MikuMikuCraft.mikuNet.sendTo(d.get, e.asInstanceOf[EntityPlayerMP])
+                        MikuMikuCraft.mikuNet.sendTo(d.get, entityJoinWorldEvent.entity.asInstanceOf[EntityPlayerMP])
                 })
             }
         }
