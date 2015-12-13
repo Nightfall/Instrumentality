@@ -12,7 +12,7 @@
  */
 package moe.nightfall.instrumentality.mc
 
-import java.io.InputStream
+import java.io.{FileNotFoundException, InputStream}
 
 import moe.nightfall.instrumentality.ApplicationHost
 import net.minecraft.client.Minecraft
@@ -24,7 +24,15 @@ import net.minecraft.util.ResourceLocation
 class MinecraftApplicationHost extends ApplicationHost {
 
     // Gets a file from assets/instrumentality/ in a replacable manner.
-    override def getResource(resource: String): InputStream = Minecraft.getMinecraft.getResourceManager.getResource(new ResourceLocation("instrumentality:" + resource)).getInputStream
+    override def getResource(resource: String): InputStream = {
+        try {
+            Minecraft.getMinecraft.getResourceManager.getResource(new ResourceLocation("instrumentality:" + resource)).getInputStream
+        } catch {
+            case e: FileNotFoundException => {
+                getClass.getResourceAsStream("/assets/instrumentality/" + resource)
+            }
+        }
+    }
 
     // Draws the ordinary player. It should be scaled to within a 0-1 vertical range.
     override def drawPlayer(): Unit = {
