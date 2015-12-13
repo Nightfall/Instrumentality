@@ -59,7 +59,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
         if (isButton) {
             var text: String = "<null>"
             if (workModelName != null) text = workModelName
-            UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
+            UIUtils.drawBoundedText(text, width, height, borderWidth * 2, true)
         }
     }
 

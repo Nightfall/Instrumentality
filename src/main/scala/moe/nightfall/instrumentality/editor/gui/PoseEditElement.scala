@@ -105,9 +105,9 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
 
     tView.selectedNode = pmxInst.theFile.boneData(0)
 
-    val udSplitPane = new SplitPaneElement(tViewScroll, params, false, 1d)
-    val lrSplitPane = new SplitPaneElement(model, udSplitPane, true, 1d)
-    val timelineSplitPane = new SplitPaneElement(lrSplitPane, timeline, false, 1d)
+    val udSplitPane = new SplitPaneElement(tViewScroll, params, false, 1d, 0.5d)
+    val lrSplitPane = new SplitPaneElement(model, udSplitPane, true, 1d, 0.65d)
+    val timelineSplitPane = new SplitPaneElement(lrSplitPane, timeline, false, 1d, 0.75d)
     subElements += timelineSplitPane
 
     override def layout(): Unit = {

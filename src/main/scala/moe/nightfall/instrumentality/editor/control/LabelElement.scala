@@ -13,13 +13,12 @@
 package moe.nightfall.instrumentality.editor.control
 
 import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
-import org.lwjgl.opengl.GL11
 
 class LabelElement(initial: String) extends EditElement {
     var text = initial
 
     override def draw() {
         super.draw()
-        UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
+        UIUtils.drawBoundedText(text, width, height, borderWidth * 2, false)
     }
 }

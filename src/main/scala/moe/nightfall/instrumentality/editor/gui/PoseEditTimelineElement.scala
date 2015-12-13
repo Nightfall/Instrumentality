@@ -14,7 +14,7 @@ package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.animations.PoseAnimation
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{LabelElement, CheckboxElement, TextButtonElement}
+import moe.nightfall.instrumentality.editor.control.{CheckboxElement, LabelElement, TextButtonElement}
 import org.lwjgl.util.vector.Vector4f
 
 /**
@@ -50,7 +50,7 @@ class PoseEditTimelineElement(pe: PoseEditElement) extends EditElement {
 
     def getMultiplier = (width - (borderWidth * 2)) / pe.getEditAnim.lenFrames.toDouble
 
-    def getTimelineHeight = height / 2
+    def getTimelineHeight = height / 4
 
     var time = 0.0d
 

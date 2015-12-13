@@ -65,7 +65,7 @@ object ModelCache {
             var i = 0
             while ((i < 1000) && (new File(modelRepository + prefer + "-" + i).exists()))
                 i += 1
-            return modelRepository + prefer + "-" + i
+            return prefer + "-" + i
         }
         prefer
     }

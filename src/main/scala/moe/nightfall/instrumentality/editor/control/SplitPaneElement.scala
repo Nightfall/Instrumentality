@@ -18,7 +18,7 @@ import org.lwjgl.opengl.GL11
 /**
  * Created on 05/10/15.
  */
-class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val horizontal: Boolean, var resizeWeight: Double) extends EditElement {
+class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val horizontal: Boolean, var resizeWeight: Double, var initResizeWeight: Double) extends EditElement {
     subElements += panelA += panelB
     var splitPix = 0
     // Used for tracking resizes
@@ -55,7 +55,7 @@ class SplitPaneElement(val panelA: EditElement, val panelB: EditElement, val hor
         if (axisLen != lastAxisLen) {
             val newAxisLen = axisLen
             if (firstResize) {
-                splitPix = axisLen / 2
+                splitPix = (axisLen * initResizeWeight).toInt
             } else {
                 splitPix += ((newAxisLen - lastAxisLen) * resizeWeight).toInt
             }

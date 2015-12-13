@@ -14,17 +14,15 @@ package moe.nightfall.instrumentality.editor
 
 import java.awt.Font
 
-import moe.nightfall.instrumentality.{Loader, ModelCache}
-import moe.nightfall.instrumentality.animations.AnimSet
-import moe.nightfall.instrumentality.editor.control.{PowerlineContainerElement, TextButtonElement}
-import moe.nightfall.instrumentality.editor.gui.{DownloaderElement, BenchmarkElement, ModelChooserElement, PoseTreeElement}
+import moe.nightfall.instrumentality.ModelCache
+import moe.nightfall.instrumentality.editor.control.PowerlineContainerElement
+import moe.nightfall.instrumentality.editor.gui.ModelChooserElement
 import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
 import org.lwjgl.util.Rectangle
 import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
-
 
     var widgetX = 0
     var widgetY = 0
@@ -209,11 +207,12 @@ object UIUtils {
         totalSize
     }
 
-    def drawBoundedText(text: String, width: Int, height: Int, borderWidth: Int) {
+    def drawBoundedText(text: String, width: Int, height: Int, borderWidth: Int, centred: Boolean) {
         GL11.glPushMatrix()
         val textSize = sizeText(text)
         var scale: Double = (height - borderWidth) / textSize.getY
         var scaleW: Double = (width - borderWidth) / textSize.getX
+        var tWidth: Int = width
         if (scaleW < scale)
             scale = scaleW
         if (scale < (if (useSystemFont(text)) 1.7d else 1.1d)) {
@@ -223,7 +222,10 @@ object UIUtils {
                 scale = scaleW
         } else {
             GL11.glTranslated(borderWidth / 2, borderWidth / 2, 0)
+            tWidth = width - borderWidth
         }
+        val resX = textSize.getX * scale
+        GL11.glTranslated((tWidth - resX) / 2, 0, 0)
         GL11.glScaled(scale, scale, 1)
         drawText(text)
         GL11.glPopMatrix()

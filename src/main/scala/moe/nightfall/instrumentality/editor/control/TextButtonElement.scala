@@ -13,11 +13,10 @@
 package moe.nightfall.instrumentality.editor.control
 
 import moe.nightfall.instrumentality.editor.UIUtils
-import org.lwjgl.opengl.GL11
 
 class TextButtonElement(text: String, toRun: => Unit) extends ButtonElement(toRun) {
     override def draw() {
         super.draw()
-        UIUtils.drawBoundedText(text, width, height, borderWidth * 2)
+        UIUtils.drawBoundedText(text, width, height, borderWidth * 2, true)
     }
 }
