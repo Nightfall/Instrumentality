@@ -118,6 +118,8 @@ class AnimSet {
                     zos.writeDouble(pbtValue.TX0)
                     zos.writeDouble(pbtValue.TY0)
                     zos.writeDouble(pbtValue.TZ0)
+                    zos.writeDouble(pbtValue.TZ0)
+                    zos.writeDouble(pbtValue.alphaMul)
                 }
                 zos.write(0)
             }
@@ -175,6 +177,7 @@ class AnimSet {
                     pbt.TX0 = dis.readDouble()
                     pbt.TY0 = dis.readDouble()
                     pbt.TZ0 = dis.readDouble()
+                    pbt.alphaMul = dis.readDouble()
                 }
             }
         }
