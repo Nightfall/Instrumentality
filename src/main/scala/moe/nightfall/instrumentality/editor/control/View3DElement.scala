@@ -14,8 +14,7 @@ package moe.nightfall.instrumentality.editor.control
 
 import java.nio.FloatBuffer
 
-import moe.nightfall.instrumentality.editor.{UIUtils, EditElement}
-import org.lwjgl.BufferUtils
+import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import org.lwjgl.opengl.GL11
 import org.lwjgl.util.glu.GLU
 
@@ -25,7 +24,12 @@ abstract class View3DElement extends EditElement {
 
     protected def draw3D(): Unit
 
+    // these are applied at different stages
+    // translateY is adjusted by scale, preTranslateZ is not
+    var preTranslateZ = -5.0d
+
     var translateY = 0.0d
+
     var scale = 3.0d
 
     private var dragX = 0
@@ -69,7 +73,7 @@ abstract class View3DElement extends EditElement {
 
         // Now transfer into modelview and do stuff.
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
-        GL11.glTranslated(0, 0, -5)
+        GL11.glTranslated(0, 0, preTranslateZ)
 
         GL11.glScaled(scale, scale, scale)
 
@@ -102,6 +106,7 @@ abstract class View3DElement extends EditElement {
     }
 
     override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
+        super.mouseMove(x, y, buttons)
         if (buttons(0)) {
             rotYaw += x - dragX
             rotPitch += y - dragY

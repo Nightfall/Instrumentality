@@ -82,7 +82,8 @@ object ShaderManager {
             in.read(data)
             in.close()
             var program = new String(data)
-            val matcher = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*/\\*\\$\\{([a-zA-Z]*)\\*/.*?/\\*}\\*/").matcher(program)
+            val pattern = Pattern.compile("(?<!\\\\)(?:\\\\\\\\)*/\\*\\$\\{([a-zA-Z]*)\\*/.*?/\\*}\\*/")
+            var matcher = pattern.matcher(program)
             while (matcher.find()) {
                 val start = matcher.start()
                 val variable = matcher.group(1)
@@ -92,6 +93,7 @@ object ShaderManager {
                     "\"")
                 program = program.substring(0, start) + variables.get(variable).get +
                     program.substring(matcher.end(), program.length)
+                matcher = pattern.matcher(program)
             }
             GL20.glShaderSource(shader, program)
             GL20.glCompileShader(shader)

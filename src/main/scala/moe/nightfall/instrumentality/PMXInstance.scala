@@ -50,7 +50,7 @@ class PMXInstance(val theModel: PMXModel) {
     var anim: Animation = _
 
     var vboList = new Array[Array[Int]](theModel.groups.length)
-    var boneCache = new Array[Matrix4f](theFile.boneData.length)
+    var boneCache = new Array[(Matrix4f, Double)](theFile.boneData.length)
 
     for (i <- 0 until vboList.length)
         vboList(i) = new Array[Int](theModel.groups(i).length)
@@ -144,25 +144,30 @@ class PMXInstance(val theModel: PMXModel) {
      * Do not modify the matrix that leaves.
      *
      * @param bone The bone to get the matrix of
-     * @return A matrix4f that you should not modify.
+      * @return A matrix4f that you should not modify, and an alpha double.
      */
-    def getBoneMatrix(bone: PMXBone): Matrix4f = {
+    def getBoneMatrix(bone: PMXBone): (Matrix4f, Double) = {
         if (boneCache(bone.boneId) != null)
             return boneCache(bone.boneId)
         // Simple enough: get what the bone wants us to transform it by...
         val boneTransform = anim.getBoneTransform(bone.sensibleName)
         val i = new Matrix4f()
+        var d = 1.0d
         boneTransform foreach { tr =>
             // Go into bone-space, apply the transform, then leave.
             createIBS(i, bone, true)
             tr.apply(i)
+            d *= tr.alphaMul
             createIBS(i, bone, false)
         }
         // If there's a parent, run through this again with that...
-        if (bone.parentBoneIndex != -1)
-            Matrix4f.mul(getBoneMatrix(theFile.boneData(bone.parentBoneIndex)), i, i)
-        boneCache(bone.boneId) = i
-        i
+        if (bone.parentBoneIndex != -1) {
+            val parent = getBoneMatrix(theFile.boneData(bone.parentBoneIndex))
+            d *= parent._2
+            Matrix4f.mul(parent._1, i, i)
+        }
+        boneCache(bone.boneId) = (i, d)
+        (i, d)
     }
 
     /**
@@ -246,7 +251,9 @@ class PMXInstance(val theModel: PMXModel) {
                 GL20.glVertexAttribPointer(bonesAttrib, 4, GL11.GL_FLOAT, false, VBO_DATASIZE * 4, 8 * 4)
                 for (bInd <- 0 until fg.boneMappingGroupFile.length) {
                     val m = getBoneMatrix(theFile.boneData(fg.boneMappingGroupFile(bInd)))
-                    m.store(matrix)
+                    m._1.store(matrix)
+                    val alphaUniform = GL20.glGetUniformLocation(s.program, "Alpha[" + bInd + "]")
+                    GL20.glUniform1f(alphaUniform, m._2.toFloat)
                     matrix.rewind()
                     val poseUniform = GL20.glGetUniformLocation(s.program, "Pose[" + bInd + "]")
                     GL20.glUniformMatrix4(poseUniform, false, matrix)
@@ -320,7 +327,7 @@ class PMXInstance(val theModel: PMXModel) {
     private def doTransform(pmxBone: PMXBone, iv: Vector3f): Vector3f = {
         val v = new Vector4f(iv.x, iv.y, iv.z, 1)
         val mat = getBoneMatrix(pmxBone)
-        Matrix4f.transform(mat, v, v)
+        Matrix4f.transform(mat._1, v, v)
         new Vector3f(v.x, v.y, v.z)
     }
 

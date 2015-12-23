@@ -36,6 +36,9 @@ class PoseBoneTransform {
      */
     var TX0, TY0, TZ0: Double = _
 
+    // Alpha multiplier
+    var alphaMul = 1.0d
+
     /**
      * My Little Miku
      * Interpolation Is Magic
@@ -61,6 +64,7 @@ class PoseBoneTransform {
         TX0 = (A.TX0 * i) + (B.TX0 * (1.0f - i))
         TY0 = (A.TY0 * i) + (B.TY0 * (1.0f - i))
         TZ0 = (A.TZ0 * i) + (B.TZ0 * (1.0f - i))
+        TZ0 = (A.alphaMul * i) + (B.alphaMul * (1.0f - i))
     }
 
     def this(boneTransform: PoseBoneTransform) {
@@ -74,15 +78,16 @@ class PoseBoneTransform {
         TX0 = boneTransform.TX0
         TY0 = boneTransform.TY0
         TZ0 = boneTransform.TZ0
+        alphaMul = boneTransform.alphaMul
     }
 
     def this(v: Float, v1: Float, v2: Float, v3: Float, v4: Float) {
         this()
-        X0 = v;
-        Y0 = v1;
-        Z0 = v2;
-        X1 = v3;
-        Y1 = v4;
+        X0 = v
+        Y0 = v1
+        Z0 = v2
+        X1 = v3
+        Y1 = v4
     }
 
     def +=(other: PoseBoneTransform): PoseBoneTransform = {
@@ -96,7 +101,8 @@ class PoseBoneTransform {
         TX0 += other.TX0
         TY0 += other.TY0
         TZ0 += other.TZ0
-        return this
+        alphaMul *= other.alphaMul
+        this
     }
 
     def *=(other: Double): PoseBoneTransform = {
@@ -110,7 +116,8 @@ class PoseBoneTransform {
         TX0 *= other
         TY0 *= other
         TZ0 *= other
-        return this
+        alphaMul = (other * (alphaMul - 1)) + 1
+        this
     }
 
     def isZero(): Boolean = !isNotZero
@@ -118,11 +125,11 @@ class PoseBoneTransform {
     def isNotZero(): Boolean = (X0 != 0) || (Y0 != 0) || (Z0 != 0) ||
         (X1 != 0) || (Y1 != 0) ||
         (X2 != 0) ||
-        (TX0 != 0) || (TY0 != 0) || (TZ0 != 0)
+      (TX0 != 0) || (TY0 != 0) || (TZ0 != 0) || (alphaMul != 1)
 
 
     def apply(boneMatrix: Matrix4f) {
-        boneMatrix.translate(new Vector3f(TX0.toFloat, TY0.toFloat, TZ0.toFloat));
+        boneMatrix.translate(new Vector3f(TX0.toFloat, TY0.toFloat, TZ0.toFloat))
 
         boneMatrix.rotate(X0.toFloat, new Vector3f(1, 0, 0))
         boneMatrix.rotate(Y0.toFloat, new Vector3f(0, 1, 0))

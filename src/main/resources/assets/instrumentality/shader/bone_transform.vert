@@ -20,9 +20,10 @@
 attribute vec4 Bones; 
 // Note: The value would be something like 12 in practice, I want to make sure that if the regex fails we know about it
 uniform mat4 Pose[/*${groupSize*/1/*}*/];
+uniform float Alpha[/*${groupSize*/1/*}*/];
 varying vec3 normal;
 varying vec4 color;
-varying float originalY;
+varying float originalY, alpha;
 
 void main(void) { 
     // Just "0.0" did not work on my system.
@@ -34,6 +35,12 @@ void main(void) {
     mat += Pose[int(Bones[1])] * fract(Bones[1]);
     mat += Pose[int(Bones[2])] * fract(Bones[2]);
     mat += Pose[int(Bones[3])] * fract(Bones[3]);
+    float al = Alpha[int(Bones[0])] * fract(Bones[0]);
+    al += Alpha[int(Bones[1])] * fract(Bones[1]);
+    al += Alpha[int(Bones[2])] * fract(Bones[2]);
+    al += Alpha[int(Bones[3])] * fract(Bones[3]);
+
+    alpha = al;
 
     gl_Position = gl_ModelViewProjectionMatrix * (mat * gl_Vertex);
 

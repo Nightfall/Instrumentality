@@ -43,7 +43,7 @@ class PoseTreeElement(val targetMdl: PMXModel, whereAmI: PowerlineContainerEleme
         override def getNodeName(n: String): String = n
 
         override def onNodeClick(n: String) {
-            whereAmI.addAndGo(n, new PoseEditElement(n, targetMdl))
+            whereAmI.addAndGo(n, new PoseEditElement(n, targetMdl, n == "firstPerson"))
         }
 
         // The nonsense that was here, I cannot understand.

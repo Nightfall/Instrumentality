@@ -60,6 +60,10 @@ class AnimSet {
     allPoses.put("hairLR", new KeyframeAnimationData)
     poseParents.put("hairLR", "idle")
 
+    allPoses.put("firstPerson", new KeyframeAnimationData)
+    // Technically violates the purpose of pose parenting, but in most cases this is what you have to design for
+    poseParents.put("firstPerson", "holdItem")
+
     // Note: The editor needs the PoseAnimation separately as something to read the interpolated values from.
     //       The editor will check if there's a keyframe at the point it's editing, and if there is,
     //       then it'll assume the output of this is that PoseAnimation.

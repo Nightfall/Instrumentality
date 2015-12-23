@@ -14,7 +14,7 @@ package moe.nightfall.instrumentality.editor.gui
 
 import moe.nightfall.instrumentality.PoseBoneTransform
 import moe.nightfall.instrumentality.editor.EditElement
-import moe.nightfall.instrumentality.editor.control.{AdjusterElement, AdjusterElementData, CheckboxElement, LabelElement}
+import moe.nightfall.instrumentality.editor.control.{AdjusterElement, AdjusterElementData}
 
 import scala.collection.mutable.MutableList
 
@@ -46,23 +46,10 @@ class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
         createElement("X2", _.X2, (a, b) => a.X2 = b) +=
         createElement("TX0", _.TX0, (a, b) => a.TX0 = b) +=
         createElement("TY0", _.TY0, (a, b) => a.TY0 = b) +=
-        createElement("TZ0", _.TZ0, (a, b) => a.TZ0 = b)
+      createElement("TZ0", _.TZ0, (a, b) => a.TZ0 = b) +=
+      createElement("α*", _.alphaMul, (a, b) => a.alphaMul = b)
     subElements ++= allAdjusters
 
-    // Elements
-    val showModel = new CheckboxElement()
-    showModel.checked = true
-    subElements += showModel
-
-    val showDebug = new CheckboxElement()
-    showDebug.checked = true
-    subElements += showDebug
-
-    val showModelText = new LabelElement("S.Mdl")
-    subElements += showModelText
-
-    val showDebugText = new LabelElement("S.Str")
-    subElements += showDebugText
 
     override def layout() {
         super.layout()
@@ -73,20 +60,5 @@ class PoseEditParamsElement(val parentPE: PoseEditElement) extends EditElement {
             ae.posX = (i % 3) * tW
             ae.posY = (i / 3) * tH
         }
-        showDebugText.posY = tH * 3
-        showDebug.posY = showDebugText.posY
-        showModel.posY = showDebug.posY
-        showModelText.posY = showModel.posY
-
-        val labelSize = (width / 2) - tH
-        showModel.posX = 0
-        showModel.setSize(tH, tH)
-        showModelText.posX = tH
-        showModelText.setSize(labelSize, tH)
-
-        showDebug.posX = tH + labelSize
-        showDebug.setSize(tH, tH)
-        showDebugText.posX = tH + labelSize + tH
-        showDebugText.setSize(labelSize, tH)
     }
 }

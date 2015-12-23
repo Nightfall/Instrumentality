@@ -12,9 +12,6 @@
  */
 package moe.nightfall.instrumentality.animations
 
-import scala.collection.mutable
-import scala.collection.mutable.{HashMap, Map}
-
 /**
  * Created on 13/09/15.
  */
@@ -27,15 +24,19 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
     var swingTime = -1d
     var itemHoldStrengthTarget = 0d
     var itemHoldStrength = 0d
+    var firstPerson = false
 
     val walkAnimation = new KeyframeAnimation(poseSet.allPoses("walk"), false, true, 1.0d)
     val walkStrength = new StrengthMultiplyAnimation(walkAnimation)
 
     val idleAnimation = new KeyframeAnimation(poseSet.allPoses("idle"), false, true, 0.25d)
 
-    val rootAnimation = new OverlayAnimation(idleAnimation, walkStrength)
+    val fpAnimation = new KeyframeAnimation(poseSet.allPoses("firstPerson"), false, true, 1.0)
 
-    override def getBoneTransform(boneName: String) = rootAnimation.getBoneTransform(boneName)
+    val rootAnimation = new OverlayAnimation(idleAnimation, walkStrength)
+    val fpRootAnimation = new OverlayAnimation(rootAnimation, fpAnimation)
+
+    override def getBoneTransform(boneName: String) = (if (firstPerson) fpRootAnimation else rootAnimation).getBoneTransform(boneName)
 
     def strengthChange(deltaTime: Double, in: Double, targ: Double) = {
         var res = in
@@ -93,6 +94,6 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
                 //                setupCycle(swingTime, Array(null, "useItemP25", "useItemP50", "useItemP75", null), 1, 1, 1, map)
             }
         }
-        rootAnimation.update(deltaTime)
+        fpRootAnimation.update(deltaTime)
     }
 }

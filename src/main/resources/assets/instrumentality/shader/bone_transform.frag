@@ -1,12 +1,22 @@
 #version 110
 
 uniform sampler2D tex_sampler;
-varying float originalY;
+varying float originalY, alpha;
 varying vec4 color;
 varying vec3 normal;
 uniform float fadeIn,fadeInDiscard,textured;
 void main() {
     vec4 col = color;
+    col = mat4(
+        1.0,0.0,0.0,0.0,
+        0.0,1.0,0.0,0.0,
+        0.0,0.0,1.0,0.0,
+        0.0,0.0,0.0,alpha
+    ) * col;
+
+    if (alpha < 0.05)
+        discard;
+
     if (textured > 0.5)
         col *= texture2D(tex_sampler, gl_TexCoord[0].st);
 

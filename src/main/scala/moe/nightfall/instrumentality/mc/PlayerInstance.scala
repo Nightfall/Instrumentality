@@ -129,6 +129,7 @@ class PlayerInstance(file: PMXModel, animSet: AnimSet) {
             lastKnownLightmap = lastKnownLightmap + 1
         }
         lastKnownLightmap = lastKnownLightmap - 1
+        Minecraft.getMinecraft.renderEngine
         // pull out the correct colour out of the lightmap
         val a = p.asInstanceOf[DynamicTexture].getTextureData
         val col = a(block + (sky * 16))
@@ -149,9 +150,18 @@ class PlayerInstance(file: PMXModel, animSet: AnimSet) {
         val rotBody = interpolate(player.prevRenderYawOffset, player.renderYawOffset, partialTick)
 
         GL11.glPushMatrix()
-        GL11.glTranslated(x, ((y - player.height) + player.eyeHeight) + adjustFactor, z)
-        GL11.glRotated(180 - rotBody, 0, 1, 0)
-        GL11.glScalef(scale, scale, scale)
+        if (firstPerson) {
+            // we need it to be at 0,0,0, and perfectly scaled,
+            // so that firstPerson applies perfectly
+            GL11.glLoadIdentity()
+            val scale = 1F / pmxInst.theModel.height
+            GL11.glScalef(scale, scale, scale)
+        } else {
+            GL11.glTranslated(x, ((y - player.height) + player.eyeHeight) + adjustFactor, z)
+            GL11.glRotated(180 - rotBody, 0, 1, 0)
+            GL11.glScalef(scale, scale, scale)
+            GL11.glRotated(math.toDegrees(directionAdjustment), 0, 1, 0)
+        }
         // I fixed the triangle order(I think. Or was that the -X bias, which would mean it's now broken again?), but skirts do not play well with culling
         GL11.glDisable(GL11.GL_CULL_FACE)
 
@@ -170,16 +180,9 @@ class PlayerInstance(file: PMXModel, animSet: AnimSet) {
         val col_f = ((col_x._1 + col_y._1 + col_z._1) / 3, (col_x._2 + col_y._2 + col_z._2) / 3, (col_x._3 + col_y._3 + col_z._3) / 3)
         // Everything but the division is done...
 
-        GL11.glRotated(math.toDegrees(directionAdjustment), 0, 1, 0)
-
         var renderClip = clippingPoint
-        if (firstPerson) {
-            // Quite a fine balance between chopping off a head and chopping off arms too
-            renderClip = Math.min(renderClip, 0.7d)
-            // try and keep hands in view
-            GL11.glScaled(1.125d, 1.125d, 1.125d)
-        }
-        pmxInst.render(Loader.shaderBoneTransform, col_f._1, col_f._2, col_f._3, renderClip.toFloat, if (firstPerson) 0.025f else 0.25f)
+        anim.firstPerson = firstPerson
+        pmxInst.render(Loader.shaderBoneTransform, col_f._1, col_f._2, col_f._3, renderClip.toFloat, 0.25f)
 
         GL11.glEnable(GL11.GL_CULL_FACE)
         GL11.glPopMatrix()

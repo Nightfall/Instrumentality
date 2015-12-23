@@ -19,7 +19,7 @@ import moe.nightfall.instrumentality.editor.control._
 import moe.nightfall.instrumentality.{Loader, PMXInstance, PMXModel, PoseBoneTransform}
 import org.lwjgl.opengl.GL11
 
-class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement {
+class PoseEditElement(val editedPose: String, pm: PMXModel, firstPerson: Boolean) extends EditElement {
 
     val pmxInst: PMXInstance = new PMXInstance(pm)
 
@@ -41,6 +41,8 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
     resetFrame
 
     var model: View3DElement = new View3DElement {
+        // NOTE: editing of the firstPerson animation triggers special cases in here,
+        //       since it has a very specific camera configuration
         colourR = 1
         colourG = 1
         colourB = 1
@@ -48,7 +50,8 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
         
         override protected def draw3D() {
             GL11.glPushMatrix()
-            GL11.glTranslated(0, -0.5, 0)
+            if (!firstPerson)
+                GL11.glTranslated(0, -0.5, 0)
             GL11.glBegin(GL11.GL_LINE_STRIP)
             GL11.glColor3d(0.5, 0.5, 0.5)
             GL11.glVertex3d(-0.5, 0, -0.5)
@@ -67,17 +70,32 @@ class PoseEditElement(val editedPose: String, pm: PMXModel) extends EditElement 
             val s = 1 / pmxInst.theModel.height
             GL11.glScaled(s, s, s)
             pmxInst.clearBoneCache()
-            if (params.showModel.checked) {
+            if (true) {
                 GL11.glEnable(GL11.GL_TEXTURE_2D)
                 pmxInst.render(Loader.shaderBoneTransform, 1, 1, 1, 1, 1)
                 GL11.glDisable(GL11.GL_TEXTURE_2D)
             }
             GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT)
-            if (params.showDebug.checked)
+            if (true)
                 pmxInst.renderDebug(tView.selectedNode.boneId)
             GL11.glPopMatrix()
         }
+
+        override def mouseMove(x: Int, y: Int, buttons: Array[Boolean]) {
+            if (!firstPerson)
+                super.mouseMove(x, y, buttons)
+        }
+
+        if (firstPerson) {
+            rotYaw = 0
+            rotPitch = 0
+            preTranslateZ = 0.0d
+            translateY = 0.0d
+            // The model is already scaled down inside the drawing code for both firstPerson and otherwise
+            scale = 1
+        }
     }
+
 
     val tView = new TreeviewElement[PMXBone](new TreeviewElementStructurer[PMXBone] {
         // note: "null" is the Root Node, and is invisible (only it's children are seen)
