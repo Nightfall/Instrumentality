@@ -64,7 +64,7 @@ class PoseBoneTransform {
         TX0 = (A.TX0 * i) + (B.TX0 * (1.0f - i))
         TY0 = (A.TY0 * i) + (B.TY0 * (1.0f - i))
         TZ0 = (A.TZ0 * i) + (B.TZ0 * (1.0f - i))
-        TZ0 = (A.alphaMul * i) + (B.alphaMul * (1.0f - i))
+        alphaMul = (A.alphaMul * i) + (B.alphaMul * (1.0f - i))
     }
 
     def this(boneTransform: PoseBoneTransform) {
