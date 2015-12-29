@@ -36,6 +36,9 @@ import scala.concurrent.Lock
 object ClientProxy {
 
     var editorBinding: KeyBinding = null
+    
+    // Allow the application host to skip rendering for steve
+    var skipRenderEvent = false
 
     // Assigns usernames to models.
     val knownModels: collection.concurrent.TrieMap[String, MHolder] = collection.concurrent.TrieMap()
@@ -268,6 +271,7 @@ class ClientProxy extends CommonProxy {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     def onPlayerRender(event: RenderPlayerEvent.Pre) {
+        if (ClientProxy.skipRenderEvent) return
         val player = event.entityPlayer
 
         val cache = cachedModel(player)

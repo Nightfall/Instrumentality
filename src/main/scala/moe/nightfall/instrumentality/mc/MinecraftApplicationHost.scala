@@ -13,10 +13,14 @@
 package moe.nightfall.instrumentality.mc
 
 import java.io.{FileNotFoundException, InputStream}
-
 import moe.nightfall.instrumentality.ApplicationHost
 import net.minecraft.client.Minecraft
 import net.minecraft.util.ResourceLocation
+import net.minecraft.client.renderer.entity.RenderPlayer
+import net.minecraft.client.renderer.entity.RenderManager
+import org.lwjgl.opengl.GL11
+import net.minecraft.client.gui.inventory.GuiInventory
+import net.minecraft.client.gui.GuiMainMenu
 
 /**
  * Created on 28/09/15.
@@ -36,6 +40,42 @@ class MinecraftApplicationHost extends ApplicationHost {
 
     // Draws the ordinary player. It should be scaled to within a 0-1 vertical range.
     override def drawPlayer(): Unit = {
-        // still nope
+        val player = Minecraft.getMinecraft.thePlayer
+        if (player == null) return;
+        
+        val f1 = player.renderYawOffset
+        val f2 = player.rotationYaw
+        val f3 = player.rotationPitch
+        val f4 = player.prevRotationYawHead
+        val f5 = player.rotationYawHead
+        
+        player.renderYawOffset = 0
+        player.rotationYaw = 0
+        player.rotationPitch = 0
+        player.prevRotationYawHead = 0
+        player.rotationYawHead = 0
+        
+        GL11.glEnable(GL11.GL_TEXTURE_2D)
+        ClientProxy.skipRenderEvent = true
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS)
+        GL11.glPushMatrix()
+        
+        GL11.glScalef(1 / 2F, 1 / 2F, 1 / 2F)
+        GL11.glRotatef(180, 0, 1, 0)
+        GL11.glTranslatef(0, player.height - player.eyeHeight, 0)
+        
+        RenderManager.instance.renderEntityWithPosYaw(player, 0, 0, 0, 0, 1)
+        
+        GL11.glPopMatrix()
+        GL11.glPopAttrib()
+        ClientProxy.skipRenderEvent = false
+        GL11.glDisable(GL11.GL_TEXTURE_2D)
+        
+        player.renderYawOffset = f1
+        player.rotationYaw = f2
+        player.rotationPitch = f3
+        player.prevRotationYawHead = f4
+        player.rotationYawHead = f5
+        
     }
 }
