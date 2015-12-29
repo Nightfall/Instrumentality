@@ -23,7 +23,6 @@ import org.lwjgl.util.Rectangle
 import org.lwjgl.util.vector.Vector2f
 
 object UIUtils {
-
     var widgetX = 0
     var widgetY = 0
     var scrWidth = 0

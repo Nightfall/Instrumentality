@@ -15,10 +15,11 @@ package moe.nightfall.instrumentality.editor.control
 import moe.nightfall.instrumentality.editor.{SelfResizable, EditElement, UIUtils}
 import org.lwjgl.util.vector.Vector2f
 import scala.collection.immutable
+import org.lwjgl.opengl.GL11
 
 class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditElement with SelfResizable {
-    var depthW = 32
-    var buttonH = 32
+    val depthW = 32
+    val buttonH = 32
     var numNodes = 1
     var maxWidth = 1
 
@@ -61,10 +62,10 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
         subElements.clear()
         doneCull = false
 
-        var dp, width = 0
+        var dp = 0
 
         numNodes = 0
-        maxWidth = 24
+        maxWidth = depthW
 
         for (node <- nodeStructurer.getChildNodes(None)) {
             dp = createElement(dp, 0, node)
@@ -93,6 +94,7 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
             })
             myNode.baseStrength = if (node == selectedNode) 0.9f else 1.0f
     
+            val subElemSize = subElements.size
             val arrowButtonElement = new ArrowButtonElement(if (sealedTrees.contains(node)) 0 else 45, {
                 if (sealedTrees.contains(node))
                     sealedTrees -= node
@@ -119,12 +121,10 @@ class TreeviewElement[Node](ns: TreeviewElementStructurer[Node]) extends EditEle
             val textsizemul = (buttonH - myNode.borderWidth) / textsize.getY
             myNode.setSize(math.ceil(textsize.getX * textsizemul).toInt, buttonH)
 
-            val endDepth = (depth * depthW) + myNode.width
+            val endDepth = (depth * depthW) + myNode.width + depthW
             if (maxWidth < endDepth)
                 maxWidth = endDepth
 
-            width = math.max(width, myNode.width + myNode.posX)
-    
             if (myNode.posY < 0) return p
             if (myNode.posY > height - buttonH) return p
     

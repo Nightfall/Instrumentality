@@ -41,7 +41,7 @@ class MinecraftApplicationHost extends ApplicationHost {
     // Draws the ordinary player. It should be scaled to within a 0-1 vertical range.
     override def drawPlayer(): Unit = {
         val player = Minecraft.getMinecraft.thePlayer
-        if (player == null) return;
+        if (player == null) return
         
         val f1 = player.renderYawOffset
         val f2 = player.rotationYaw

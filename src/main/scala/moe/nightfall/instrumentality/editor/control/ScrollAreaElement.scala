@@ -15,6 +15,7 @@ package moe.nightfall.instrumentality.editor.control
 import moe.nightfall.instrumentality.editor.{UIUtils, EditElement, SelfResizable}
 import org.lwjgl.opengl.GL11
 
+// TODO Scroll bar, mouse wheel support
 class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scrollStepY: Int) extends EditElement {
 
     var scrollAvailableX = false
@@ -32,19 +33,23 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
 
     private val upButton = new ArrowButtonElement(-90, {
         scrollY += scrollStepY
+        scrollY = math.min(scrollY, 0)
         layout
     })
     private val downButton = new ArrowButtonElement(+90, {
         scrollY -= scrollStepY
+        scrollY = math.max(scrollY, -child.height + height) 
         layout
     })
 
     private val leftButton = new ArrowButtonElement(180, {
         scrollX += scrollStepX
+        scrollX = math.min(scrollX, 0)
         layout
     })
     private val rightButton = new ArrowButtonElement(0, {
         scrollX -= scrollStepX
+        scrollX = math.max(scrollX, -child.width + width)
         layout
     })
 

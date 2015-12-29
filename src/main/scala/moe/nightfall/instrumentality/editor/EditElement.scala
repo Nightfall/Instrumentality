@@ -154,6 +154,7 @@ abstract class EditElement {
     }
 
     def drawWillCull(ee: EditElement) = {
+        // TODO Tuple-ception, what about using at least *some* classes somewhere?
         val rrect = UIUtils.clipRectByClippingBounds(UIUtils.widgetX + ee.posX, UIUtils.widgetY + ee.posY, ee.width, ee.height)
         ((rrect._3 <= 0) || (rrect._4 <= 0), rrect)
     }
