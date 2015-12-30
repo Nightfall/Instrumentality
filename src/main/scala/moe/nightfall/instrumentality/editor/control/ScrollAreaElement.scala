@@ -15,7 +15,7 @@ package moe.nightfall.instrumentality.editor.control
 import moe.nightfall.instrumentality.editor.{UIUtils, EditElement, SelfResizable}
 import org.lwjgl.opengl.GL11
 
-// TODO Scroll bar, mouse wheel support
+// TODO mouse wheel support
 class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scrollStepY: Int) extends EditElement {
 
     var scrollAvailableX = false
@@ -28,32 +28,23 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
     colourStrength = 0.8f
 
     val buttonSize = 32
-    private var scrollX = 0
-    private var scrollY = 0
-
-    private val upButton = new ArrowButtonElement(-90, {
-        scrollY += scrollStepY
-        scrollY = math.min(scrollY, 0)
-        layout
-    })
-    private val downButton = new ArrowButtonElement(+90, {
-        scrollY -= scrollStepY
-        scrollY = math.max(scrollY, -child.height + height) 
-        layout
-    })
-
-    private val leftButton = new ArrowButtonElement(180, {
-        scrollX += scrollStepX
-        scrollX = math.min(scrollX, 0)
-        layout
-    })
-    private val rightButton = new ArrowButtonElement(0, {
-        scrollX -= scrollStepX
-        scrollX = math.max(scrollX, -child.width + width)
-        layout
-    })
+    var scrollX = 0
+    var scrollY = 0
+    
+    val vertScrollBar = new ScrollbarElement.Vertical(scrollStepX)    
+    vertScrollBar.onScroll = () => {
+        scrollX = -vertScrollBar.barPosition
+        layout()
+    }
+    
+    val horScrollBar = new ScrollbarElement.Horizontal(scrollStepY)
+    horScrollBar.onScroll = () => {
+        scrollY = -horScrollBar.barPosition
+        layout()
+    }
 
     override def update(dT: Double) = {
+        // TODO It looks like this doesn't always work
         super.update(dT)
         if (child.isInstanceOf[SelfResizable])
             if (child.asInstanceOf[SelfResizable].hasSuggestionChanged)
@@ -62,25 +53,24 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
 
     override def layout() {
         super.layout()
+        
+        scrollAvailableX = child.width > width
+        scrollAvailableY = child.height > height
 
         val removeX = if (scrollAvailableY) buttonSize else 0
         val removeY = if (scrollAvailableX) buttonSize else 0
-
-        upButton.posX = width - buttonSize
-        upButton.posY = 0
-        downButton.posX = width - buttonSize
-        downButton.posY = height - (buttonSize + removeY)
-
-        leftButton.posX = 0
-        leftButton.posY = height - buttonSize
-        rightButton.posX = width - (buttonSize + removeX)
-        rightButton.posY = height - buttonSize
-
-        upButton.setSize(buttonSize, buttonSize)
-        downButton.setSize(buttonSize, buttonSize)
-        leftButton.setSize(buttonSize, buttonSize)
-        rightButton.setSize(buttonSize, buttonSize)
-
+       
+        vertScrollBar.posY = height - buttonSize
+        vertScrollBar.setSize(width - removeX, buttonSize)
+        vertScrollBar.setSize(child.width - width)
+        vertScrollBar.setBarSize(32)
+        vertScrollBar.setBarSize(math.max((width / child.width.toFloat) * (width - buttonSize * 2 - removeX), 32).toInt)
+        
+        horScrollBar.posX = width - buttonSize
+        horScrollBar.setSize(buttonSize, height - removeY)
+        horScrollBar.setSize(child.height - height)
+        horScrollBar.setBarSize(math.max((height / child.height.toFloat) * (height - buttonSize * 2 - removeY), 32).toInt)
+        
         // Set child to our size so that the child has some knowledge of the container
         child.setSize(width - buttonSize, height - buttonSize)
 
@@ -98,21 +88,20 @@ class ScrollAreaElement(val child: EditElement, var scrollStepX: Int, var scroll
             )
         }
 
-        scrollAvailableX = child.width > width
-        scrollAvailableY = child.height > height
-
         subElements.clear()
         subElements += child
         if (scrollAvailableX)
-            subElements += leftButton += rightButton
+            subElements += vertScrollBar
         else
             scrollX = 0
         if (scrollAvailableY)
-            subElements += upButton += downButton
+            subElements += horScrollBar
         else
             scrollY = 0
 
         child.posX = scrollX
         child.posY = scrollY
     }
+    
+    layout()
 }
