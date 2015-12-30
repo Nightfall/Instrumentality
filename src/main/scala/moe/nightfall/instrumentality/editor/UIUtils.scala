@@ -13,7 +13,6 @@
 package moe.nightfall.instrumentality.editor
 
 import java.awt.Font
-
 import moe.nightfall.instrumentality.ModelCache
 import moe.nightfall.instrumentality.editor.control.PowerlineContainerElement
 import moe.nightfall.instrumentality.editor.gui.ModelChooserElement
@@ -21,6 +20,8 @@ import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
 import org.lwjgl.util.Rectangle
 import org.lwjgl.util.vector.Vector2f
+import org.lwjgl.BufferUtils
+import org.lwjgl.util.vector.Matrix4f
 
 object UIUtils {
     var widgetX = 0

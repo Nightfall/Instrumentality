@@ -106,7 +106,13 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                 val nameSize = UIUtils.sizeText(name)
                 val textScale = if (nameSize.getX > 64) 1 / (((nameSize.getX - 64) / 64) + 1) else 1
                 GL11.glScaled(textScale, textScale, 1)
+
+                // Rotate text into position, facing the camera
+                GL11.glRotated(rotYaw + math.toDegrees(angle), 0, 1, 0)
+                GL11.glRotated(-rotPitch, 1, 0, 0)
+                
                 GL11.glTranslated(-nameSize.getX / 2, -nameSize.getY, 0)
+                
                 UIUtils.drawText(name)
                 GL11.glPopMatrix()
             }
