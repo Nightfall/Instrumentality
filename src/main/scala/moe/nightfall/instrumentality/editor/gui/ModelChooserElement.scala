@@ -38,15 +38,15 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     // Used to prevent a total failure.
     var slowLoad = 0
 
-    availableModels.zipWithIndex.foreach(kv => {
-        if (kv._1 != null) {
-            val mdl = ModelCache.getLocal(kv._1)
+    availableModels.zipWithIndex.foreach { case (k, v) =>
+        if (k != null) {
+            val mdl = ModelCache.getLocal(k)
             if (mdl != null) {
-                availableModelUnits(kv._2) = new PMXInstance(mdl)
-                availableModelUnits(kv._2).anim = new NewPCAAnimation(mdl.defaultAnims)
+                availableModelUnits(v) = new PMXInstance(mdl)
+                availableModelUnits(v).anim = new NewPCAAnimation(mdl.defaultAnims)
             }
         }
-    })
+    }
 
     private var mainRotary = new View3DElement {
         override protected def draw3D(): Unit = {
@@ -55,29 +55,29 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             GL11.glLineWidth(4)
             GL11.glBegin(GL11.GL_LINE_LOOP)
             GL11.glColor3b(0, 0, 0)
-            availableModels.zipWithIndex.foreach(kv => {
-                val angle = sliceOfs + (sliceSize * kv._2)
+            availableModels.zipWithIndex.foreach { case (k, v) =>
+                val angle = sliceOfs + (sliceSize * v)
                 GL11.glVertex3d(math.sin(angle) * rotaryScale, 0, math.cos(angle) * rotaryScale)
-            })
+            }
             GL11.glEnd()
             GL11.glBegin(GL11.GL_LINES)
             GL11.glColor3b(0, 0, 0)
             GL11.glVertex3d(0, 0, 0)
             GL11.glVertex3d(math.sin(angleValue) * rotaryScale, 0, math.cos(angleValue) * rotaryScale)
             GL11.glEnd()
-            availableModels.zipWithIndex.foreach(kv => {
-                val angle = sliceOfs + (sliceSize * kv._2)
+            availableModels.zipWithIndex.foreach { case (k, v) =>
+                val angle = sliceOfs + (sliceSize * v)
                 GL11.glPushMatrix()
                 GL11.glTranslated(math.sin(angle) * rotaryScale, 0, math.cos(angle) * rotaryScale)
                 GL11.glRotated(math.toDegrees(angle) + 180, 0, 1, 0)
                 GL11.glPushMatrix()
-                if (slowLoad > kv._2) {
-                    if (availableModelUnits(kv._2) != null) {
-                        val scale = 1 / availableModelUnits(kv._2).theModel.height
+                if (slowLoad > v) {
+                    if (availableModelUnits(v) != null) {
+                        val scale = 1 / availableModelUnits(v).theModel.height
                         GL11.glScaled(scale, scale, scale)
-                        availableModelUnits(kv._2).render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
+                        availableModelUnits(v).render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
                     } else {
-                        if (kv._1 == null) {
+                        if (k == null) {
                             // Player
                             Loader.applicationHost.drawPlayer()
                         } else {
@@ -94,7 +94,12 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                     UIUtils.drawText("Please wait")
                 }
                 GL11.glPopMatrix()
-                val name = if (kv._1 == null) "Default" else kv._1
+                val name = if (k == null) "Default" else {
+                    val instance = availableModelUnits(v)
+                    if (instance != null) instance.theFile.globalCharname
+                    else "Loading..."
+                }
+                
                 GL11.glTranslated(0, 1.1d, 0)
                 GL11.glScaled(-0.1d, -0.1d, 0.1d)
                 GL11.glScaled(0.125d, 0.125d, 0.125d)
@@ -104,7 +109,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                 GL11.glTranslated(-nameSize.getX / 2, -nameSize.getY, 0)
                 UIUtils.drawText(name)
                 GL11.glPopMatrix()
-            })
+            }
             slowLoad += 1
             if (slowLoad > availableModelUnits.length)
                 slowLoad = availableModelUnits.length
