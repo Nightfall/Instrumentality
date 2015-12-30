@@ -20,8 +20,6 @@ import org.lwjgl.input.Mouse
 import org.lwjgl.opengl.{Display, GL11}
 import org.lwjgl.util.Rectangle
 import org.lwjgl.util.vector.Vector2f
-import org.lwjgl.BufferUtils
-import org.lwjgl.util.vector.Matrix4f
 
 object UIUtils {
     var widgetX = 0
