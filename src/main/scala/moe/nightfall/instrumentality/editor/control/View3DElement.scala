@@ -19,18 +19,18 @@ import org.lwjgl.opengl.GL11
 import org.lwjgl.util.glu.GLU
 
 abstract class View3DElement extends EditElement {
-    var rotYaw: Double = 0
-    var rotPitch: Double = 0
+    var rotYaw = 0D
+    var rotPitch = 0D
 
     protected def draw3D(): Unit
 
     // these are applied at different stages
     // translateY is adjusted by scale, preTranslateZ is not
-    var preTranslateZ = -5.0d
+    var preTranslateZ = -5.0D
 
-    var translateY = 0.0d
+    var translateY = 0.0D
 
-    var scale = 3.0d
+    var scale = 3.0D
 
     private var dragX = 0
     private var dragY = 0
@@ -77,8 +77,7 @@ abstract class View3DElement extends EditElement {
 
         GL11.glScaled(scale, scale, scale)
 
-        GL11.glRotated(rotPitch, 1, 0, 0)
-        GL11.glRotated(rotYaw, 0, 1, 0)
+        rotate()
 
         GL11.glTranslated(0, translateY, 0)
 
@@ -90,6 +89,11 @@ abstract class View3DElement extends EditElement {
         GL11.glPopMatrix()
         GL11.glMatrixMode(GL11.GL_MODELVIEW)
         GL11.glPopMatrix()
+    }
+    
+    protected def rotate() {
+        GL11.glRotated(rotPitch, 1, 0, 0)
+        GL11.glRotated(rotYaw, 0, 1, 0)
     }
 
     private def dumpProject(fb: FloatBuffer) {
@@ -112,10 +116,10 @@ abstract class View3DElement extends EditElement {
             rotPitch += y - dragY
         }
         if (buttons(1)) {
-            translateY -= (y - dragY) / (20.0d * scale)
-            scale += (x - dragX) / 20.0d
-            if (scale < 0.05d)
-                scale = 0.05d
+            translateY -= (y - dragY) / (20.0D * scale)
+            scale += (x - dragX) / 20.0D
+            if (scale < 0.05D)
+                scale = 0.05D
         }
         ignoreFirstDrag = false
         dragX = x

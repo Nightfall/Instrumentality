@@ -26,18 +26,7 @@ import org.lwjgl.opengl.GL11
  */
 class ModelChooserElement(val availableModels: Seq[String], powerlineContainerElement: PowerlineContainerElement) extends EditElement {
     private val availableModelUnits = new Array[PMXInstance](availableModels.length)
-
-    // Used for angle calculations in the Rotary
-    private val sliceSize = math.Pi / (0.5 * availableModelUnits.length)
-    private val sliceOfs = -math.Pi
-    private val rotaryScale = availableModelUnits.length / 4.0d
-
-    private var angleValue = 0d
-    private var angleTarget = 0d
-
-    // Used to prevent a total failure.
-    var slowLoad = 0
-
+    
     availableModels.zipWithIndex.foreach { case (k, v) =>
         if (k != null) {
             val mdl = ModelCache.getLocal(k)
@@ -47,75 +36,74 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             }
         }
     }
+    
+    // offset for rendering to get animation
+    var renderOffset = 0D
+    
+    // Used to prevent a total failure.
+    var slowLoad = 0
 
     private var mainRotary = new View3DElement {
-        override protected def draw3D(): Unit = {
-            GL11.glTranslated(0, 0, -rotaryScale)
-            GL11.glRotated(math.toDegrees(-angleValue), 0, 1, 0)
-            GL11.glLineWidth(4)
-            GL11.glBegin(GL11.GL_LINE_LOOP)
-            GL11.glColor3b(0, 0, 0)
-            availableModels.zipWithIndex.foreach { case (k, v) =>
-                val angle = sliceOfs + (sliceSize * v)
-                GL11.glVertex3d(math.sin(angle) * rotaryScale, 0, math.cos(angle) * rotaryScale)
-            }
-            GL11.glEnd()
-            GL11.glBegin(GL11.GL_LINES)
-            GL11.glColor3b(0, 0, 0)
-            GL11.glVertex3d(0, 0, 0)
-            GL11.glVertex3d(math.sin(angleValue) * rotaryScale, 0, math.cos(angleValue) * rotaryScale)
-            GL11.glEnd()
-            availableModels.zipWithIndex.foreach { case (k, v) =>
-                val angle = sliceOfs + (sliceSize * v)
-                GL11.glPushMatrix()
-                GL11.glTranslated(math.sin(angle) * rotaryScale, 0, math.cos(angle) * rotaryScale)
-                GL11.glRotated(math.toDegrees(angle) + 180, 0, 1, 0)
-                GL11.glPushMatrix()
-                if (slowLoad > v) {
-                    if (availableModelUnits(v) != null) {
-                        val scale = 1 / availableModelUnits(v).theModel.height
-                        GL11.glScaled(scale, scale, scale)
-                        availableModelUnits(v).render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
-                    } else {
-                        if (k == null) {
-                            // Player
-                            Loader.applicationHost.drawPlayer()
-                        } else {
-                            GL11.glTranslated(0.5, 0.5, 0)
-                            GL11.glScaled(-0.1d, -0.1d, 0.1d)
-                            GL11.glScaled(0.125d, 0.125d, 0.125d)
-                            UIUtils.drawText("Load failed!")
-                        }
-                    }
+        
+        override def rotate() = ()  
+        
+        override def draw3D(): Unit = {
+            def renderModel(index: Int) {
+                if (index > slowLoad || index < 0 || index >= availableModelUnits.length) return
+                if (availableModels(index) == null) {
+                    // Player
+                    GL11.glPushMatrix()
+                    Loader.applicationHost.drawPlayer()
+                    GL11.glPopMatrix()
                 } else {
-                    GL11.glTranslated(0.5, 0.5, 0)
-                    GL11.glScaled(-0.1d, -0.1d, 0.1d)
-                    GL11.glScaled(0.125d, 0.125d, 0.125d)
-                    UIUtils.drawText("Please wait")
+                    val mu = availableModelUnits(index)
+                    if (mu != null) {
+                        GL11.glPushMatrix()
+                        val scale = 1 / mu.theModel.height
+                        GL11.glScaled(scale, scale, scale)
+                        mu.render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
+                        GL11.glPopMatrix()
+                    }
                 }
-                GL11.glPopMatrix()
-                val name = if (k == null) "Default" else {
-                    val instance = availableModelUnits(v)
-                    if (instance != null) instance.theFile.globalCharname
-                    else "Loading..."
+            }
+            
+            def drawText(index: Int) {
+                if (index < 0 || index >= availableModelUnits.length) return
+                val name = if (availableModels(index) == null) "Default" else {
+                    val mu = availableModelUnits(index)
+                    if (mu != null) mu.theFile.globalCharname
+                    else return
                 }
-                
+
+                GL11.glPushMatrix()
                 GL11.glTranslated(0, 1.1d, 0)
                 GL11.glScaled(-0.1d, -0.1d, 0.1d)
                 GL11.glScaled(0.125d, 0.125d, 0.125d)
                 val nameSize = UIUtils.sizeText(name)
                 val textScale = if (nameSize.getX > 64) 1 / (((nameSize.getX - 64) / 64) + 1) else 1
                 GL11.glScaled(textScale, textScale, 1)
-
-                // Rotate text into position, facing the camera
-                GL11.glRotated(rotYaw + math.toDegrees(angle), 0, 1, 0)
-                GL11.glRotated(-rotPitch, 1, 0, 0)
-                
                 GL11.glTranslated(-nameSize.getX / 2, -nameSize.getY, 0)
                 
                 UIUtils.drawText(name)
                 GL11.glPopMatrix()
             }
+            
+            GL11.glRotatef(180, 0, 1, 0)
+            GL11.glTranslatef(0, 0, 1)
+            
+            val current = availableModels.indexOf(Loader.currentFile)
+            for (offset <- -2 to 2) {
+                GL11.glPushMatrix()
+                GL11.glTranslated((offset + renderOffset) * 0.75, 0, math.abs(offset + renderOffset) * 0.5 - 1)
+                drawText(current + offset)
+                // Selected
+                if (offset == 0) {
+                    GL11.glRotated(rotYaw, 0, 1, 0)
+                }
+                renderModel(current + offset)
+                GL11.glPopMatrix()
+            }
+            
             slowLoad += 1
             if (slowLoad > availableModelUnits.length)
                 slowLoad = availableModelUnits.length
@@ -129,10 +117,18 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
 
     private var buttonbar = Array[EditElement](
         new ArrowButtonElement(180, {
-            Loader.setCurrentFile(availableModels(getFB._1))
+            val next = availableModels(getFB._2)
+            if (next != Loader.currentFile) {
+                Loader.setCurrentFile(next)
+                renderOffset = 1
+            }
         }),
         new ArrowButtonElement(0, {
-            Loader.setCurrentFile(availableModels(getFB._2))
+            val next = availableModels(getFB._1)
+            if (next != Loader.currentFile) {
+                Loader.setCurrentFile(next)
+                renderOffset = -1
+            }
         }),
         new TextButtonElement("Downloader", {
             val l = new DownloaderElement(powerlineContainerElement)
@@ -161,11 +157,11 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
 
     private def getFB: (Int, Int) = {
         val point = availableModels.zipWithIndex.filter(_._1 == Loader.currentFile)
-        val current = point.head
-        val next = if (current._2 == (availableModelUnits.length - 1)) 0 else current._2 + 1
-        if (current._2 == 0)
-            return (availableModelUnits.length - 1, next)
-        (current._2 - 1, next)
+        val index = point.head._2
+        val next = if (index == (availableModelUnits.length - 1)) index else index + 1
+        if (index == 0)
+            return (index, next)
+        (index - 1, next)
     }
 
     override def layout() = {
@@ -191,35 +187,21 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
         mainRotary.setSize(width, y * 7)
     }
 
-    // Both values are from -Pi to Pi.
-    // If there is a difference of > Pi between them, it's more efficient to go in reverse
-    private def aComp(angleValue: Double, angleTarget: Double): Double = if (math.abs(angleValue - angleTarget) <= math.Pi) angleValue - angleTarget else angleTarget - angleValue
-
-    private def aFlow(angle: Double): Double = {
-        if (angle < -math.Pi)
-            return angle + (math.Pi * 2)
-        if (angle > math.Pi)
-            return angle - (math.Pi * 2)
-        angle
-    }
-
     override def update(dT: Double) = {
-        availableModels.zipWithIndex.filter(_._1 == Loader.currentFile).foreach(kv => angleTarget = sliceOfs + (sliceSize * kv._2))
+        
+        // Fancy animation
+        if (renderOffset > 0) {
+            renderOffset -= dT * 2
+            if (renderOffset < 0) renderOffset = 0
+        } else if (renderOffset < 0) {
+            renderOffset += dT * 2
+            if (renderOffset > 0) renderOffset = 0
+        }
+        
         availableModels.zipWithIndex.foreach(kv => {
             if (availableModelUnits(kv._2) != null)
                 availableModelUnits(kv._2).update(dT)
         })
-        if (aComp(angleValue, angleTarget) < 0) {
-            angleValue += dT
-            angleValue = aFlow(angleValue)
-            if (aComp(angleValue, angleTarget) > 0)
-                angleValue = angleTarget
-        } else {
-            angleValue -= dT
-            angleValue = aFlow(angleValue)
-            if (aComp(angleValue, angleTarget) < 0)
-                angleValue = angleTarget
-        }
     }
 
     override def cleanup() = {
