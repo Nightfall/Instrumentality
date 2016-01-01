@@ -183,7 +183,8 @@ class PMXInstance(val theModel: PMXModel) {
      *
      * @param s The animation shader.
      */
-    def render(s: Shader, red: Double, green: Double, blue: Double, clippingSize: Float, clippingSizeDiscard: Float) {
+    def render(red: Double, green: Double, blue: Double, clippingSize: Float, clippingSizeDiscard: Float) {
+        val s = Loader.shaderBoneTransform
         // Makes things simpler
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT)
         val matrix = BufferUtils.createFloatBuffer(16)

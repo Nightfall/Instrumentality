@@ -68,7 +68,7 @@ class ModelElement(ib: Boolean) extends View3DElement {
             val sFactor: Float = 1.0f / workModel.theModel.height
             GL11.glTranslated(0, -0.5f, 0)
             GL11.glScaled(sFactor, sFactor, sFactor)
-            workModel.render(Loader.shaderBoneTransform, 1, 1, 1, 1.0f, 1.0f)
+            workModel.render(1, 1, 1, 1.0f, 1.0f)
         } else {
             GL11.glTranslated(-0.25, 0, 0)
             GL11.glScaled(0.01, -0.01, 0.01)

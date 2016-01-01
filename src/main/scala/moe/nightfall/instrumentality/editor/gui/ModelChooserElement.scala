@@ -17,7 +17,7 @@ import moe.nightfall.instrumentality.animations.NewPCAAnimation
 import moe.nightfall.instrumentality.editor.control._
 import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance}
-import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.{GL11, GL14}
 import moe.nightfall.instrumentality.FBO
 
 /**
@@ -40,12 +40,9 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     
     // offset for rendering to get animation
     var renderOffset = 0D
-    
     // Used to prevent a total failure.
     var slowLoad = 0
-    
-    private var fbo: FBO = _
-    
+
     private var mainRotary = new View3DElement {
         
         override def rotate() = ()  
@@ -64,7 +61,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                         GL11.glPushMatrix()
                         val scale = 1 / mu.theModel.height
                         GL11.glScaled(scale, scale, scale)
-                        mu.render(Loader.shaderBoneTransform, 1, 1, 1, 1.1f, 1.1f)
+                        mu.render(1, 1, 1, 1.1F, 1.1F)
                         GL11.glPopMatrix()
                     }
                 }
@@ -91,22 +88,11 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                 GL11.glPopMatrix()
             }
             
+            GL11.glPushMatrix()
             GL11.glRotatef(180, 0, 1, 0)
             GL11.glTranslatef(0, 0, 1)
             
             val current = availableModels.indexOf(Loader.currentFile)
-            
-            // Draw models
-            for (offset <- -2 to 2) {
-                GL11.glPushMatrix()
-                GL11.glTranslated((offset + renderOffset) * 0.75, 0, math.abs(offset + renderOffset) * 0.5 - 1)
-                // Selected
-                if (offset == 0) {
-                    GL11.glRotated(rotYaw, 0, 1, 0)
-                }
-                renderModel(current + offset)
-                GL11.glPopMatrix()
-            } 
             
             // Draw text
             for (offset <- -2 to 2) {
@@ -116,6 +102,35 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                 GL11.glPopMatrix()
             }
             
+            def renderModels() {
+                for (offset <- -2 to 2) {
+                    GL11.glPushMatrix()
+                    GL11.glTranslated((offset + renderOffset) * 0.75, 0, math.abs(offset + renderOffset) * 0.5 - 1)
+                    // Selected
+                    if (offset == 0) {
+                        GL11.glRotated(rotYaw, 0, 1, 0)
+                    }
+                    renderModel(current + offset)
+                    GL11.glPopMatrix()
+                }
+            }
+
+            renderModels()
+            GL11.glScaled(1, -1, 1)
+            renderModels()
+            
+            GL11.glEnable(GL11.GL_BLEND)
+            GL11.glColor4f(1, 1, 1, 0.5F)
+            GL11.glPopMatrix()
+            GL11.glBegin(GL11.GL_QUADS)
+            GL11.glVertex3d(-20, 0, -20)
+            GL11.glVertex3d(20, 0, -20)
+            GL11.glVertex3d(20, 0, 20)
+            GL11.glVertex3d(-20, 0, 20)
+            GL11.glEnd()
+            GL11.glColor4f(1, 1, 1, 1)
+            GL11.glDisable(GL11.GL_BLEND)
+
             slowLoad += 1
             if (slowLoad > availableModelUnits.length)
                 slowLoad = availableModelUnits.length
@@ -132,6 +147,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             val next = availableModels(getFB._2)
             if (next != Loader.currentFile) {
                 Loader.setCurrentFile(next)
+                mainRotary.rotYaw = 0
                 renderOffset = 1
             }
         }),
@@ -139,6 +155,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             val next = availableModels(getFB._1)
             if (next != Loader.currentFile) {
                 Loader.setCurrentFile(next)
+                mainRotary.rotYaw = 0
                 renderOffset = -1
             }
         }),
@@ -217,7 +234,6 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     }
 
     override def cleanup() = {
-        if (FBO.supported && fbo != null) fbo.dispose()
         availableModels.zipWithIndex.foreach(kv => {
             if (availableModelUnits(kv._2) != null)
                 availableModelUnits(kv._2).cleanupGL()

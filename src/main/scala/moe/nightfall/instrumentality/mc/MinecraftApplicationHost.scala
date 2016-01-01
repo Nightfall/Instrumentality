@@ -62,8 +62,9 @@ class MinecraftApplicationHost extends ApplicationHost {
         
         GL11.glScalef(1 / 2F, 1 / 2F, 1 / 2F)
         GL11.glRotatef(180, 0, 1, 0)
-        GL11.glTranslatef(0, player.height - player.eyeHeight, 0)
-        
+        // TODO This should be calculatable somehow
+        GL11.glTranslated(0, 1.6, 0)
+
         RenderManager.instance.renderEntityWithPosYaw(player, 0, 0, 0, 0, 1)
         
         GL11.glPopMatrix()

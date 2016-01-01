@@ -182,7 +182,7 @@ class PlayerInstance(file: PMXModel, animSet: AnimSet) {
 
         var renderClip = clippingPoint
         anim.firstPerson = firstPerson
-        pmxInst.render(Loader.shaderBoneTransform, col_f._1, col_f._2, col_f._3, renderClip.toFloat, 0.25f)
+        pmxInst.render(col_f._1, col_f._2, col_f._3, renderClip.toFloat, 0.25f)
 
         GL11.glEnable(GL11.GL_CULL_FACE)
         GL11.glPopMatrix()
