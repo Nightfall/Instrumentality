@@ -18,6 +18,7 @@ import moe.nightfall.instrumentality.editor.control._
 import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance}
 import org.lwjgl.opengl.GL11
+import moe.nightfall.instrumentality.FBO
 
 /**
  * Created on 25/08/15, ported to Scala on 2015-09-20. Oh, and our date formats are inconsistent.
@@ -42,7 +43,9 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     
     // Used to prevent a total failure.
     var slowLoad = 0
-
+    
+    private var fbo: FBO = _
+    
     private var mainRotary = new View3DElement {
         
         override def rotate() = ()  
@@ -92,15 +95,24 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             GL11.glTranslatef(0, 0, 1)
             
             val current = availableModels.indexOf(Loader.currentFile)
+            
+            // Draw models
             for (offset <- -2 to 2) {
                 GL11.glPushMatrix()
                 GL11.glTranslated((offset + renderOffset) * 0.75, 0, math.abs(offset + renderOffset) * 0.5 - 1)
-                drawText(current + offset)
                 // Selected
                 if (offset == 0) {
                     GL11.glRotated(rotYaw, 0, 1, 0)
                 }
                 renderModel(current + offset)
+                GL11.glPopMatrix()
+            } 
+            
+            // Draw text
+            for (offset <- -2 to 2) {
+                GL11.glPushMatrix()
+                GL11.glTranslated((offset + renderOffset) * 0.75, 0, math.abs(offset + renderOffset) * 0.5 - 1)
+                drawText(current + offset)
                 GL11.glPopMatrix()
             }
             
@@ -205,6 +217,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     }
 
     override def cleanup() = {
+        if (FBO.supported && fbo != null) fbo.dispose()
         availableModels.zipWithIndex.foreach(kv => {
             if (availableModelUnits(kv._2) != null)
                 availableModelUnits(kv._2).cleanupGL()

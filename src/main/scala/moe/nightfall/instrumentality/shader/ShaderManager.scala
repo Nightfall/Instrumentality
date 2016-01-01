@@ -13,12 +13,11 @@
 package moe.nightfall.instrumentality.shader
 
 import java.util.regex.Pattern
-
 import moe.nightfall.instrumentality.Loader
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.{GL11, GL20}
-
 import scala.collection.mutable.MutableList
+import org.lwjgl.opengl.GLContext
 
 /**
  * See http://lwjgl.org/wiki/index.php?title=GLSL_Shaders_with_LWJGL
