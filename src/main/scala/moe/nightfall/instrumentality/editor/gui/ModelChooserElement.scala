@@ -19,6 +19,7 @@ import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance}
 import org.lwjgl.opengl.{GL11, GL14}
 import moe.nightfall.instrumentality.FBO
+import org.lwjgl.BufferUtils
 
 /**
  * Created on 25/08/15, ported to Scala on 2015-09-20. Oh, and our date formats are inconsistent.
@@ -48,12 +49,17 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
         override def rotate() = ()  
         
         override def draw3D(): Unit = {
-            def renderModel(index: Int) {
+            def renderModel(index: Int, clipping: Float) {
                 if (index > slowLoad || index < 0 || index >= availableModelUnits.length) return
                 if (availableModels(index) == null) {
                     // Player
                     GL11.glPushMatrix()
+                    GL11.glEnable(GL11.GL_CLIP_PLANE0)
+                    val buffer = BufferUtils.createDoubleBuffer(4).put(Array(0D, -1D, 0D, clipping))
+                    buffer.rewind()
+                    GL11.glClipPlane(GL11.GL_CLIP_PLANE0, buffer)
                     Loader.applicationHost.drawPlayer()
+                    GL11.glDisable(GL11.GL_CLIP_PLANE0)
                     GL11.glPopMatrix()
                 } else {
                     val mu = availableModelUnits(index)
@@ -61,7 +67,7 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
                         GL11.glPushMatrix()
                         val scale = 1 / mu.theModel.height
                         GL11.glScaled(scale, scale, scale)
-                        mu.render(1, 1, 1, 1.1F, 1.1F)
+                        mu.render(1, 1, 1, clipping, 0.25F)
                         GL11.glPopMatrix()
                     }
                 }
@@ -103,14 +109,20 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             }
             
             def renderModels() {
-                for (offset <- -2 to 2) {
+                for (offset <- (if (renderOffset > 0) -3 else -2) to (if (renderOffset < 0) 3 else 2)) {
                     GL11.glPushMatrix()
                     GL11.glTranslated((offset + renderOffset) * 0.75, 0, math.abs(offset + renderOffset) * 0.5 - 1)
                     // Selected
                     if (offset == 0) {
                         GL11.glRotated(rotYaw, 0, 1, 0)
                     }
-                    renderModel(current + offset)
+                    val fadeIn = if (math.abs(offset) == 3) {
+                        math.abs(renderOffset).toFloat
+                    } else if (renderOffset < 0 && offset == -2 || renderOffset > 0 && offset == 2) {
+                        1 - math.abs(renderOffset).toFloat
+                    } else 1
+                    
+                    renderModel(current + offset, fadeIn)
                     GL11.glPopMatrix()
                 }
             }
