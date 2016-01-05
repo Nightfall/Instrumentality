@@ -43,6 +43,10 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     var renderOffset = 0D
     // Used to prevent a total failure.
     var slowLoad = 0
+    
+    // No border, no shadow
+    borderWidth = 0
+    shadowWidth = 0
 
     private var mainRotary = new View3DElement {
         
@@ -153,24 +157,20 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
     mainRotary.scale = 3
 
     subElements += mainRotary
+    
+    private var buttonLeft = new ArrowButtonElement(180, updateModelPosition(availableModels(getFB._2), 1)) 
+    private var buttonRight = new ArrowButtonElement(0, updateModelPosition(availableModels(getFB._1), -1))
+    
+    private def updateModelPosition(next: String, offset: Int) {
+        if (next != Loader.currentFile) {
+            Loader.setCurrentFile(next)
+            mainRotary.rotYaw = 0
+            renderOffset = offset
+            updateButtons()
+        }
+    }
 
-    private var buttonbar = Array[EditElement](
-        new ArrowButtonElement(180, {
-            val next = availableModels(getFB._2)
-            if (next != Loader.currentFile) {
-                Loader.setCurrentFile(next)
-                mainRotary.rotYaw = 0
-                renderOffset = 1
-            }
-        }),
-        new ArrowButtonElement(0, {
-            val next = availableModels(getFB._1)
-            if (next != Loader.currentFile) {
-                Loader.setCurrentFile(next)
-                mainRotary.rotYaw = 0
-                renderOffset = -1
-            }
-        }),
+    private var buttonbar = Array[TextButtonElement](
         new TextButtonElement("Downloader", {
             val l = new DownloaderElement(powerlineContainerElement)
             powerlineContainerElement.addAndGo("PMX Downloader", l)
@@ -194,8 +194,15 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
             }
         })
     )
-    subElements ++= buttonbar
+    subElements ++= buttonbar += buttonRight += buttonLeft
+    
+    private def updateButtons() {
+        val isDefault = Loader.currentFile == null
+        buttonbar(1).disabled = isDefault
+        buttonbar(2).disabled = isDefault
+    }
 
+    // TODO This method does not comply with my standards because of the overuse of tuples, divide into two methods pls
     private def getFB: (Int, Int) = {
         val point = availableModels.zipWithIndex.filter(_._1 == Loader.currentFile)
         val index = point.head._2
@@ -205,27 +212,31 @@ class ModelChooserElement(val availableModels: Seq[String], powerlineContainerEl
         (index - 1, next)
     }
 
-    override def layout() = {
-        val y = height / 8
-
-        var genWidth = width / buttonbar.length
-        var pos = 0
-        for ((button, index) <- buttonbar.view.zipWithIndex) {
+    override def layout() {
+        
+        var pos = width - 35
+        buttonbar.view.zipWithIndex.foreach { case (button, index) =>       
+            val buttonWidth = math.ceil(UIUtils.sizeText(button.text).getX).toInt * 5
+            pos -= buttonWidth
+            button.setSize(buttonWidth, 48)
             button.posX = pos
-            button.posY = y * 7
-            var usedWidth = genWidth
-            if (button.isInstanceOf[ArrowButtonElement]) {
-                // recalculate based on remaining. (This will not work if an arrow is last!!!)
-                usedWidth = y
-                genWidth = (width - (pos + usedWidth)) / ((buttonbar.length - index) - 1)
-            }
-            button.setSize(usedWidth, y)
-            pos += button.width
+            button.posY = height - button.height - 5
         }
+        
+        buttonLeft.setSize(30, height)
+        buttonRight.posY = 0
+        buttonRight.posX = 0
+        
+        buttonRight.setSize(30, height)
+        buttonRight.posY = 0
+        buttonRight.posX = width - 30
 
         mainRotary.posX = 0
         mainRotary.posY = 0
-        mainRotary.setSize(width, y * 7)
+        mainRotary.setSize(width, height)
+        
+        // Don't know if this is needed, just in case it was changed elsewhere...
+        updateButtons()
     }
 
     override def update(dT: Double) = {

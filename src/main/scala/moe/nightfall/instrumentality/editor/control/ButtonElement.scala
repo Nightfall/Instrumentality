@@ -16,25 +16,32 @@ package moe.nightfall.instrumentality.editor.control
 import moe.nightfall.instrumentality.editor.EditElement
 import org.lwjgl.input.Mouse
 
+// TODO Might want to move toRun to an apply function so that you can do something like
+// new ExtendsButtonElement(a, b, c) { ... } instead of new ExtendsButtonElement(a, b, c, {...})
+// with double brackets
 class ButtonElement(toRun : => Unit) extends EditElement {
 
     // So this can be changed...
     var onClick = () => toRun
+    
+    var disabled = false
 
     var isHover = false
-    var baseStrength = 0.9f
+    var baseStrength = 0.9F
 
     override def mouseStateChange(x: Int, y: Int, isDown: Boolean, button: Int) {
         super.mouseStateChange(x, y, isDown, button)
-        if ((button == 0) && (!isDown) && (onClick != null))
+        if (!disabled && (button == 0) && !isDown && (onClick != null))
             onClick()
     }
 
     override def draw() {
-        if (isHover && Mouse.isButtonDown(0))
+        if (disabled) 
+            colourStrength = baseStrength * 0.5F
+        else if (isHover && Mouse.isButtonDown(0))
             colourStrength = baseStrength - (baseStrength / 8)
         else
-            colourStrength = baseStrength * (if (isHover) 1.1f else 1.0f)
+            colourStrength = baseStrength * (if (isHover) 1.1F else 1F)
 
         super.draw()
     }
