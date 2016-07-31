@@ -5,35 +5,40 @@ This is made up of:
 
 1. A common library, containing the animation code, PMX loader, PMX renderer for LWJGL, etc.
 
-2. This testbench application(Main.java)
-
-3. The MC mod
+2. The MC mod for 1.7.10
 
 ## Current status
 
-We need to separate the majority of the code from the "mc" package as a different repo
-The idea is that the MC mod just integrates the code with MC.
-Also, PlayerControlAnimation's MC-specific way of handling things should be moved out somehow.
+Other Minecraft versions are on the TODO list.
+
+We need to get a few premade AnimSets into the system.
+
+PlayerControlAnimation's MC-specific way of handling things should be moved out somehow.
 
 ## Setup
 
-1. Run `./gradlew setupDecompWorkspace idea` or `./gradlew setupDecompWorkspace eclipse`, depending on what you use
+Substitute "idea" for "eclipse" where required:
 
-2. Setup a run config as for a normal MC mod
+1. Do a normal `./gradlew build idea` in core, and a `./gradlew setupDecompWorkspace build idea` in mc1710
 
-3. Put your model into the folder "eclipse" in the sub-folder "mdl"(you may have to create it) in a sub-sub-folder using the name "mdl.pmx".
+2. Open the mc1710 project & setup run config, then add Core as a module
+
+3. Remove the JAR dependency in mc1710 and replace it with a project dependency
+
+4. Put your model into the folder "run" in the sub-folder "mdl"
+   (you may have to create it) in a sub-sub-folder using the name "mdl.pmx".
    Don't forget to add all textures relative to the model, and note that all filenames are made lowercase
    (because some model authors aren't consistent. This matters on case-sensitive filesystems)
 
 The filestructure should be:
 
-    eclipse-+-mdl-+-someModelName-+-mdl.pmx
-                  |               |
-                  |               +-someTexture.png
-                  |
-                  +-someOtherModel-+-mdl.pmx
-                                   |
-                                   +-otherTex.png
+    run-+-mdl-+-someModelName-+-mdl.pmx
+           |                      |
+           |                      +-someTexture.png
+           |
+           +-someOtherModel-+-mdl.pmx
+                            |
+                            +-otherTex.png
 
 4. When using, press the = button to open the Editor,
    and select a model to apply it.

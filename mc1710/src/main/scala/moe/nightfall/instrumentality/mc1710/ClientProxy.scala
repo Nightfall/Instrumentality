@@ -10,7 +10,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package moe.nightfall.instrumentality.mc
+package moe.nightfall.instrumentality.mc1710
 
 import java.io.IOException
 
@@ -19,8 +19,8 @@ import cpw.mods.fml.common.eventhandler.{EventPriority, SubscribeEvent}
 import cpw.mods.fml.common.gameevent.{InputEvent, TickEvent}
 import moe.nightfall.instrumentality.ModelCache.IPMXLocator
 import moe.nightfall.instrumentality.animations.AnimSet
-import moe.nightfall.instrumentality.mc.gui.EditorHostGui
-import moe.nightfall.instrumentality.mc.network.{RequestFileMessage, SendSHAMessage}
+import moe.nightfall.instrumentality.mc1710.gui.EditorHostGui
+import moe.nightfall.instrumentality.mc1710.network.{RequestFileMessage, SendSHAMessage}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXModel}
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.entity.RenderManager
@@ -131,7 +131,7 @@ object ClientProxy {
         // here's the workaround: we're not communicating with the server when the world is null anyway,
         // and it's kind enough to set it to null while shutting down.
         // So this is the best compromise I can think of.
-        while ((tries < 200) & (Minecraft.getMinecraft.theWorld != null)) {
+        while ((tries < 200) && (Minecraft.getMinecraft.theWorld != null)) {
             tries += 1
             Thread.sleep(100)
             val res = dataReceived
