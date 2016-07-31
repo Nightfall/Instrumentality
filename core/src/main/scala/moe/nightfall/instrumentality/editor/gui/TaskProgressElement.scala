@@ -12,8 +12,7 @@
  */
 package moe.nightfall.instrumentality.editor.gui
 
-import moe.nightfall.instrumentality.{TaskState, MeasurableTask}
-import moe.nightfall.instrumentality.editor.EditElement
+import moe.nightfall.instrumentality.editor.{TaskState, MeasurableTask, EditElement}
 import moe.nightfall.instrumentality.editor.control.{ProgressBarElement, LabelElement, PowerlineContainerElement}
 import org.lwjgl.opengl.GL11
 

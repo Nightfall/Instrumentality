@@ -16,9 +16,9 @@ import java.awt.Desktop
 import java.net.URI
 
 import moe.nightfall.instrumentality.RecommendedInfoCache.DownloadableEntry
-import moe.nightfall.instrumentality.editor.EditElement
+import moe.nightfall.instrumentality.editor.{EditElement, ModelDownloadTask}
 import moe.nightfall.instrumentality.editor.control.{PowerlineContainerElement, TreeviewElement, TreeviewElementStructurer}
-import moe.nightfall.instrumentality.{ModelCache, ModelDownloadTask, RecommendedInfoCache}
+import moe.nightfall.instrumentality.{ModelCache, RecommendedInfoCache}
 
 /**
  * Automatically downloads and sets up models.

@@ -18,7 +18,6 @@ import moe.nightfall.instrumentality.editor.control._
 import moe.nightfall.instrumentality.editor.{EditElement, UIUtils}
 import moe.nightfall.instrumentality.{Loader, ModelCache, PMXInstance}
 import org.lwjgl.opengl.{GL11, GL14}
-import moe.nightfall.instrumentality.FBO
 import org.lwjgl.BufferUtils
 
 /**

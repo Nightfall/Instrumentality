@@ -1,3 +1,6 @@
+// NOTES: Before any final release, do make sure to figure out some way of getting Core into the classpath!!!
+//        Gradle is rubbish at specifying "embedded dependencies" like the ones we'd want here.
+
 buildscript {
     repositories {
         mavenCentral()
@@ -9,6 +12,9 @@ buildscript {
             name = "sonatype"
             url = "https://oss.sonatype.org/content/repositories/snapshots/"
         }
+        flatDir {
+            dirs '../core/build/libs'
+        }
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
@@ -17,15 +23,18 @@ buildscript {
 
 apply plugin: "scala"
 apply plugin: "forge"
-apply plugin: "application"
+apply plugin: "idea"
+apply plugin: "eclipse"
+
+dependencies {
+      compile files('../core/build/libs/MikuMikuCraft-Core.jar')
+}
 
 sourceCompatibility = 1.6
-mainClassName = "moe.nightfall.instrumentality.Main"
-applicationDefaultJvmArgs = ["-Djava.library.path=."]
 
 version = "${mcVersion}-${modVersion}"
 group = "moe.nightfall.instrumentality"
-archivesBaseName = "MikuMikuCraft"
+archivesBaseName = "MikuMikuCraft-MC1.7.10"
 
 if (System.env.BUILD_NUMBER != null) version = "$version.$System.env.BUILD_NUMBER"
 
