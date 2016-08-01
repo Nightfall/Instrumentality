@@ -21,3 +21,11 @@
 !/mc1710/build.gradle
 !/mc1710/gradle.properties
 !/mc1710/src/
+
+!/mc194/
+/mc194/*
+!/mc194/gradlew
+!/mc194/gradlew.bat
+!/mc194/build.gradle
+!/mc194/gradle.properties
+!/mc194/src/
