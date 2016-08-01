@@ -29,14 +29,18 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
     val walkAnimation = new KeyframeAnimation(poseSet.allPoses("walk"), false, true, 1.0d)
     val walkStrength = new StrengthMultiplyAnimation(walkAnimation)
 
+    val lookLrAnimation = new KeyframeAnimation(poseSet.allPoses("lookLR"), false, false, 0.0d)
+    val lookUdAnimation = new KeyframeAnimation(poseSet.allPoses("lookUD"), false, false, 0.0d)
+
     val idleAnimation = new KeyframeAnimation(poseSet.allPoses("idle"), false, true, 0.25d)
 
     val fpAnimation = new KeyframeAnimation(poseSet.allPoses("firstPerson"), false, true, 1.0)
 
     val rootAnimation = new OverlayAnimation(idleAnimation, walkStrength)
+    val exRootAnimation = new OverlayAnimation(rootAnimation, lookLrAnimation, lookUdAnimation)
     val fpRootAnimation = new OverlayAnimation(rootAnimation, fpAnimation)
 
-    override def getBoneTransform(boneName: String) = (if (firstPerson) fpRootAnimation else rootAnimation).getBoneTransform(boneName)
+    override def getBoneTransform(boneName: String) = (if (firstPerson) fpRootAnimation else exRootAnimation).getBoneTransform(boneName)
 
     def strengthChange(deltaTime: Double, in: Double, targ: Double) = {
         var res = in
@@ -81,6 +85,9 @@ class NewPCAAnimation(var poseSet: AnimSet) extends Animation {
         //            map.put("lookD", -lookUD)
         //        else if (lookUD > 0)
         //            map.put("lookU", lookUD)
+
+        lookLrAnimation.pos = (-lookLR) + 0.5f
+        lookUdAnimation.pos = (lookUD / 2.0f) + 0.5f
 
         walkStrength.mulAmount = strengthChange(deltaTime * 4, walkStrength.mulAmount, walkStrengthTarget)
         itemHoldStrength = strengthChange(deltaTime, itemHoldStrength, itemHoldStrengthTarget)

@@ -23,7 +23,7 @@ object MikuMikuCraft {
 
     var mikuNet: SimpleNetworkWrapper = NetworkRegistry.INSTANCE.newSimpleChannel("instrumentality")
 
-    @SidedProxy(serverSide = "moe.nightfall.instrumentality.mc.CommonProxy", clientSide = "moe.nightfall.instrumentality.mc.ClientProxy")
+    @SidedProxy(serverSide = "moe.nightfall.instrumentality.mc1710.CommonProxy", clientSide = "moe.nightfall.instrumentality.mc1710.ClientProxy")
     var proxy: CommonProxy = _
 
     @EventHandler

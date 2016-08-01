@@ -118,7 +118,6 @@ class AnimSet {
                     zos.writeDouble(pbtValue.TX0)
                     zos.writeDouble(pbtValue.TY0)
                     zos.writeDouble(pbtValue.TZ0)
-                    zos.writeDouble(pbtValue.TZ0)
                     zos.writeDouble(pbtValue.alphaMul)
                 }
                 zos.write(0)
@@ -164,7 +163,8 @@ class AnimSet {
             allPoses.put(poseName, pa)
             while (dis.read() != 0) {
                 val kf = new PoseAnimation()
-                pa.frameMap = pa.frameMap + (dis.readInt() -> kf)
+                val frame = dis.readInt()
+                pa.frameMap = pa.frameMap + (frame -> kf)
                 while (dis.read() != 0) {
                     val pbt = new PoseBoneTransform
                     kf.hashMap.put(dis.readUTF(), pbt)

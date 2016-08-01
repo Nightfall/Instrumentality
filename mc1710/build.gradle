@@ -31,6 +31,7 @@ dependencies {
 }
 
 sourceCompatibility = 1.6
+targetCompatibility = 1.6
 
 version = "${mcVersion}-${modVersion}"
 group = "moe.nightfall.instrumentality"
